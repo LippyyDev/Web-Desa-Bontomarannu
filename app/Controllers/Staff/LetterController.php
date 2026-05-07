@@ -332,7 +332,7 @@ class LetterController extends ProtectedController
             return redirect()->to('/staff/surat/' . $id)->with('error', 'Surat tidak dapat diterima pada status saat ini.');
         }
 
-        $catatanPenerimaan = $this->request->getPost('catatan_penerimaan') ?? null;
+        $catatanPenerimaan = $this->request->getPost('reply_text') ?? null;
 
         $letterModel->update($id, [
             'status'             => LetterModel::STATUS_DITERIMA,
@@ -340,6 +340,24 @@ class LetterController extends ProtectedController
             'decided_at'         => date('Y-m-d H:i:s'),
             'assigned_staff_id'  => $this->currentUser['id'],
         ]);
+
+        $files = $this->request->getFileMultiple('reply_attachments');
+        $hasFiles = false;
+        if ($files) {
+            foreach ($files as $file) {
+                if ($file->isValid()) { $hasFiles = true; break; }
+            }
+        }
+        
+        if (!empty(trim($catatanPenerimaan)) || $hasFiles) {
+            $replyModel = new LetterReplyModel();
+            $replyId    = $replyModel->insert([
+                'letter_id'  => $id,
+                'staff_id'   => $this->currentUser['id'],
+                'reply_text' => trim($catatanPenerimaan) ?: 'Surat telah diterima.',
+            ], true);
+            $this->handleReplyAttachments($replyId);
+        }
 
         // Ambil nama staff
         $profileModel = new UserProfileModel();
@@ -402,11 +420,11 @@ class LetterController extends ProtectedController
             return redirect()->to('/staff/surat/' . $id)->with('error', 'Surat tidak dapat ditolak pada status saat ini.');
         }
 
-        $catatanPenolakan = trim($this->request->getPost('catatan_penolakan') ?? '');
+        $catatanPenolakan = trim($this->request->getPost('reply_text') ?? '');
 
         // Catatan penolakan wajib diisi
         if (empty($catatanPenolakan)) {
-            return redirect()->to('/staff/surat/' . $id)->with('error', 'Catatan penolakan wajib diisi.');
+            return redirect()->to('/staff/surat/' . $id)->with('error', 'Catatan penolakan / pesan wajib diisi.');
         }
 
         $letterModel->update($id, [
@@ -415,6 +433,14 @@ class LetterController extends ProtectedController
             'decided_at'        => date('Y-m-d H:i:s'),
             'assigned_staff_id' => $this->currentUser['id'],
         ]);
+
+        $replyModel = new LetterReplyModel();
+        $replyId    = $replyModel->insert([
+            'letter_id'  => $id,
+            'staff_id'   => $this->currentUser['id'],
+            'reply_text' => $catatanPenolakan,
+        ], true);
+        $this->handleReplyAttachments($replyId);
 
         // Ambil nama staff
         $profileModel = new UserProfileModel();

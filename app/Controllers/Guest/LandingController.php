@@ -14,6 +14,12 @@ use App\Models\PerangkatDesaModel;
 use App\Models\InventarisDesaModel;
 use App\Models\PengumumanModel;
 use App\Models\PengaduanModel;
+use App\Models\UmkmModel;
+use App\Models\UmkmEcommerceModel;
+use App\Models\UmkmProdukModel;
+use App\Models\UmkmProdukGambarModel;
+use App\Models\PariwisataModel;
+use App\Models\PariwisataGambarModel;
 
 class LandingController extends BaseController
 {
@@ -205,6 +211,120 @@ class LandingController extends BaseController
         return view('Guest/berita_detail', [
             'item'  => $news,
             'media' => $media,
+        ]);
+    }
+
+
+    public function umkm()
+    {
+        $umkmModel    = new UmkmModel();
+        $produkModel  = new UmkmProdukModel();
+        $gambarModel  = new UmkmProdukGambarModel();
+
+        $search = $this->request->getGet('search') ?? '';
+
+        $builder = $umkmModel->where('status', 'approved');
+        if (!empty($search)) {
+            $builder->like('nama_toko', $search);
+        }
+
+        $list = $builder->orderBy('approved_at', 'DESC')->findAll();
+
+        // Ambil produk pertama + thumbnail untuk tiap toko
+        foreach ($list as &$item) {
+            $produkPertama = $produkModel->where('umkm_id', $item['id'])->first();
+            if ($produkPertama) {
+                $gambar = $gambarModel->where('produk_id', $produkPertama['id'])->first();
+                $item['thumbnail'] = $gambar ? $gambar['gambar_path'] : null;
+            } else {
+                $item['thumbnail'] = null;
+            }
+        }
+        unset($item);
+
+        return view('Guest/umkm', [
+            'title'  => 'UMKM Desa Padang Loang',
+            'list'   => $list,
+            'search' => $search,
+        ]);
+    }
+
+    public function umkmDetail($id)
+    {
+        $umkmModel   = new UmkmModel();
+        $ecomModel   = new UmkmEcommerceModel();
+        $produkModel = new UmkmProdukModel();
+        $gambarModel = new UmkmProdukGambarModel();
+
+        $umkm = $umkmModel->where('status', 'approved')->find($id);
+        if (!$umkm) {
+            return redirect()->to('/umkm')->with('error', 'UMKM tidak ditemukan.');
+        }
+
+        $ecommerce  = $ecomModel->where('umkm_id', $id)->findAll();
+        $produkList = $produkModel->where('umkm_id', $id)->findAll();
+
+        foreach ($produkList as &$produk) {
+            $produk['gambar'] = $gambarModel->where('produk_id', $produk['id'])->findAll();
+        }
+        unset($produk);
+
+        return view('Guest/umkm_detail', [
+            'title'     => $umkm['nama_toko'] . ' - UMKM Desa Padang Loang',
+            'umkm'      => $umkm,
+            'ecommerce' => $ecommerce,
+            'produk'    => $produkList,
+        ]);
+    }
+
+    public function pariwisata()
+    {
+        $pariwisataModel = new PariwisataModel();
+        $gambarModel     = new PariwisataGambarModel();
+
+        $search = $this->request->getGet('search') ?? '';
+
+        $builder = $pariwisataModel;
+        if (!empty($search)) {
+            $builder->like('nama_tempat', $search);
+        }
+
+        $list = $builder->orderBy('created_at', 'DESC')->findAll();
+
+        // Ambil gambar pertama jika tidak ada thumbnail
+        foreach ($list as &$item) {
+            if (empty($item['thumbnail'])) {
+                $gambar = $gambarModel->where('pariwisata_id', $item['id'])->first();
+                $item['thumbnail_display'] = $gambar ? $gambar['gambar_path'] : null;
+            } else {
+                $item['thumbnail_display'] = $item['thumbnail'];
+            }
+        }
+        unset($item);
+
+        return view('Guest/pariwisata', [
+            'title'  => 'Pariwisata Desa Padang Loang',
+            'list'   => $list,
+            'search' => $search,
+        ]);
+    }
+
+    public function pariwisataDetail($id)
+    {
+        $pariwisataModel = new PariwisataModel();
+        $gambarModel     = new PariwisataGambarModel();
+
+        $item = $pariwisataModel->find($id);
+        if (!$item) {
+            return redirect()->to('/pariwisata')->with('error', 'Data pariwisata tidak ditemukan.');
+        }
+
+        $gambar = $gambarModel->where('pariwisata_id', $id)->findAll();
+
+        return view('Guest/pariwisata_detail', [
+            'title'  => $item['nama_tempat'] . ' - Pariwisata Desa Padang Loang',
+            'item'   => $item,
+            'gambar' => $gambar,
         ]);
     }
 

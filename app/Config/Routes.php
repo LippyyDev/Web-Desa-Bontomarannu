@@ -17,6 +17,10 @@ $routes->get('/inventaris', 'Guest\LandingController::inventaris');
 $routes->get('/pengumuman', 'Guest\LandingController::pengumuman');
 $routes->get('/pengaduan', 'Guest\LandingController::pengaduan');
 $routes->post('/pengaduan', 'Guest\LandingController::submitPengaduan');
+$routes->get('/umkm', 'Guest\LandingController::umkm');
+$routes->get('/umkm/(:num)', 'Guest\LandingController::umkmDetail/$1');
+$routes->get('/pariwisata', 'Guest\LandingController::pariwisata');
+$routes->get('/pariwisata/(:num)', 'Guest\LandingController::pariwisataDetail/$1');
 
 $routes->get('/login', 'Guest\AuthController::login');
 $routes->post('/login', 'Guest\AuthController::doLogin');
@@ -58,6 +62,14 @@ $routes->group('user', static function ($routes) {
 
     $routes->get('pengaduan', 'User\PengaduanController::index');
     $routes->post('pengaduan', 'User\PengaduanController::store');
+
+    $routes->get('umkm', 'User\UmkmController::index');
+    $routes->get('umkm/tambah', 'User\UmkmController::create');
+    $routes->post('umkm', 'User\UmkmController::store');
+    $routes->get('umkm/(:num)', 'User\UmkmController::show/$1');
+    $routes->get('umkm/(:num)/edit', 'User\UmkmController::edit/$1');
+    $routes->post('umkm/(:num)', 'User\UmkmController::update/$1');
+    $routes->get('umkm/(:num)/hapus', 'User\UmkmController::delete/$1');
 
     $routes->get('notifikasi', 'User\NotificationController::index');
     $routes->get('notifikasi/(:num)/read', 'User\NotificationController::markRead/$1');
@@ -136,6 +148,27 @@ $routes->group('staff', static function ($routes) {
     $routes->post('perangkat-desa', 'Staff\ContentController::storePerangkatDesa');
     $routes->post('perangkat-desa/(:num)', 'Staff\ContentController::updatePerangkatDesa/$1');
     $routes->get('perangkat-desa/(:num)/hapus', 'Staff\ContentController::deletePerangkatDesa/$1');
+
+    $routes->get('umkm', 'Staff\UmkmController::index');
+    $routes->get('umkm/tambah', 'Staff\UmkmController::create');
+    $routes->post('umkm', 'Staff\UmkmController::store');
+    $routes->get('umkm/(:num)', 'Staff\UmkmController::show/$1');
+    $routes->get('umkm/(:num)/edit', 'Staff\UmkmController::edit/$1');
+    $routes->post('umkm/(:num)', 'Staff\UmkmController::update/$1');
+    $routes->get('umkm/(:num)/hapus', 'Staff\UmkmController::delete/$1');
+    $routes->post('umkm/(:num)/approve', 'Staff\UmkmController::approve/$1');
+    $routes->post('umkm/(:num)/reject', 'Staff\UmkmController::reject/$1');
+    $routes->get('umkm/produk/(:num)/hapus', 'Staff\UmkmController::deleteProduk/$1');
+    $routes->get('umkm/gambar-produk/(:num)/hapus', 'Staff\UmkmController::deleteGambarProduk/$1');
+
+    $routes->get('pariwisata', 'Staff\PariwisataController::index');
+    $routes->get('pariwisata/tambah', 'Staff\PariwisataController::create');
+    $routes->post('pariwisata', 'Staff\PariwisataController::store');
+    $routes->get('pariwisata/(:num)', 'Staff\PariwisataController::show/$1');
+    $routes->get('pariwisata/(:num)/edit', 'Staff\PariwisataController::edit/$1');
+    $routes->post('pariwisata/(:num)', 'Staff\PariwisataController::update/$1');
+    $routes->get('pariwisata/(:num)/hapus', 'Staff\PariwisataController::delete/$1');
+    $routes->get('pariwisata/gambar/(:num)/hapus', 'Staff\PariwisataController::deleteGambar/$1');
 
     $routes->get('notifikasi', 'Staff\NotificationController::index');
     $routes->get('notifikasi/(:num)/read', 'Staff\NotificationController::markRead/$1');

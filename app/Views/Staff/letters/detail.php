@@ -31,18 +31,7 @@ function statusBadgeStaff(string $status): string {
     </div>
 </div>
 
-<?php if (session()->getFlashdata('success')): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('success') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
-<?php if (session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <?= session()->getFlashdata('error') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-<?php endif; ?>
+
 
 <div class="card mb-3">
     <div class="card-body">
@@ -64,48 +53,57 @@ function statusBadgeStaff(string $status): string {
                 <div class="small text-danger fw-semibold mb-1"><i class="bi bi-x-circle-fill me-1"></i>Catatan Penolakan</div>
                 <div class="text-danger"><?= nl2br(esc($letter['catatan_penolakan'])) ?></div>
             </div>
-        <?php elseif (!empty($letter['catatan_penolakan']) && $letter['status'] === 'Diterima'): ?>
-            <div class="mt-3 p-3 border border-success rounded bg-success bg-opacity-10">
-                <div class="small text-success fw-semibold mb-1"><i class="bi bi-check-circle-fill me-1"></i>Catatan Penerimaan</div>
-                <div class="text-success"><?= nl2br(esc($letter['catatan_penolakan'])) ?></div>
-            </div>
         <?php endif; ?>
     </div>
 </div>
 
-<?php if (in_array($letter['status'], ['Dibaca', 'Menunggu'], true)): ?>
-<div class="card mb-3 border-0 bg-light">
-    <div class="card-body">
-        <h6 class="fw-semibold mb-3">Keputusan Surat</h6>
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalTerima">
-                <i class="bi bi-check-circle me-1"></i> Terima Surat
-            </button>
-            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalTolak">
-                <i class="bi bi-x-circle me-1"></i> Tolak Surat
-            </button>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
-
 <div class="card mb-3">
     <div class="card-body">
-        <h5 class="fw-semibold mb-3">Kirim Balasan</h5>
-        <form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/surat/' . $letter['id'] . '/balas') ?>">
+        <h5 class="fw-semibold mb-3">Tindak Lanjut Surat</h5>
+        <form id="formTindakLanjut" method="post" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <div class="mb-3">
-                <label class="form-label">Isi Balasan</label>
-                <textarea class="form-control" name="reply_text" rows="5" required></textarea>
+                <label class="form-label">Pesan / Catatan</label>
+                <textarea class="form-control" name="reply_text" id="reply_text" rows="5" placeholder="Tuliskan balasan atau catatan keputusan di sini..."></textarea>
+                <div class="form-text text-muted">Catatan wajib diisi jika Anda menolak surat atau mengirim balasan.</div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Lampiran (opsional)</label>
                 <input type="file" class="form-control" name="reply_attachments[]" multiple>
             </div>
-            <button class="btn btn-primary w-100" type="submit">Kirim Balasan</button>
+            <div class="d-flex gap-2 flex-wrap">
+                <?php if (in_array($letter['status'], ['Dibaca', 'Menunggu'], true)): ?>
+                    <button class="btn btn-success" type="button" onclick="submitAction('<?= base_url('/staff/surat/' . $letter['id'] . '/terima') ?>', false)">
+                        <i class="bi bi-check-circle me-1"></i> Terima Surat
+                    </button>
+                    <button class="btn btn-danger" type="button" onclick="submitAction('<?= base_url('/staff/surat/' . $letter['id'] . '/tolak') ?>', true, 'Yakin ingin menolak surat ini?')">
+                        <i class="bi bi-x-circle me-1"></i> Tolak Surat
+                    </button>
+                <?php else: ?>
+                    <button class="btn btn-primary" type="button" onclick="submitAction('<?= base_url('/staff/surat/' . $letter['id'] . '/balas') ?>', true)">
+                        <i class="bi bi-send me-1"></i> Kirim Balasan
+                    </button>
+                <?php endif; ?>
+            </div>
         </form>
     </div>
 </div>
+
+<script>
+function submitAction(actionUrl, requireText = false, confirmMsg = null) {
+    const text = document.getElementById('reply_text').value.trim();
+    if (requireText && !text) {
+        alert('Pesan / Catatan wajib diisi untuk tindakan ini.');
+        return;
+    }
+    if (confirmMsg && !confirm(confirmMsg)) {
+        return;
+    }
+    const form = document.getElementById('formTindakLanjut');
+    form.action = actionUrl;
+    form.submit();
+}
+</script>
 
 <div class="card">
     <div class="card-header">
@@ -159,67 +157,6 @@ function statusBadgeStaff(string $status): string {
     </div>
 </div>
 
-<!-- Modal Terima Surat -->
-<div class="modal fade" id="modalTerima" tabindex="-1" aria-labelledby="modalTerimaLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="post" action="<?= base_url('/staff/surat/' . $letter['id'] . '/terima') ?>">
-                <?= csrf_field() ?>
-                <div class="modal-header border-0">
-                    <h5 class="modal-title text-success" id="modalTerimaLabel">
-                        <i class="bi bi-check-circle-fill me-2"></i>Terima Surat
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted">Anda akan menerima surat: <strong><?= esc($letter['judul_perihal']) ?></strong></p>
-                    <div class="mb-3">
-                        <label class="form-label">Catatan Penerimaan <span class="text-muted">(opsional)</span></label>
-                        <textarea class="form-control" name="catatan_penerimaan" rows="3" 
-                                  placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle me-1"></i> Konfirmasi Terima
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<!-- Modal Tolak Surat -->
-<div class="modal fade" id="modalTolak" tabindex="-1" aria-labelledby="modalTolakLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="post" action="<?= base_url('/staff/surat/' . $letter['id'] . '/tolak') ?>">
-                <?= csrf_field() ?>
-                <div class="modal-header border-0">
-                    <h5 class="modal-title text-danger" id="modalTolakLabel">
-                        <i class="bi bi-x-circle-fill me-2"></i>Tolak Surat
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted">Anda akan menolak surat: <strong><?= esc($letter['judul_perihal']) ?></strong></p>
-                    <div class="mb-3">
-                        <label class="form-label">Catatan Penolakan <span class="text-danger">*</span></label>
-                        <textarea class="form-control" name="catatan_penolakan" rows="3" required
-                                  placeholder="Tuliskan alasan penolakan..."></textarea>
-                        <div class="form-text text-danger">Wajib diisi sebelum menolak surat.</div>
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x-circle me-1"></i> Konfirmasi Tolak
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <?= $this->endSection() ?>

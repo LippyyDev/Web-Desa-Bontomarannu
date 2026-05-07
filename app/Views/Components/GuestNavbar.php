@@ -70,6 +70,15 @@ $dashboardUrl = match($userRole) {
                     <li class="nav-item">
                         <a class="nav-link <?= strpos(uri_string(), 'berita') !== false ? 'active' : '' ?>" href="<?= base_url('/berita') ?>">Berita</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <?= (strpos(current_url(), '/umkm') !== false || strpos(current_url(), '/pariwisata') !== false) ? 'active' : '' ?>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Potensi Desa
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item <?= (strpos(current_url(), '/umkm') !== false) ? 'active' : '' ?>" href="<?= base_url('/umkm') ?>"><i class="bi bi-shop me-2"></i>UMKM</a></li>
+                            <li><a class="dropdown-item <?= (strpos(current_url(), '/pariwisata') !== false) ? 'active' : '' ?>" href="<?= base_url('/pariwisata') ?>"><i class="bi bi-compass me-2"></i>Pariwisata</a></li>
+                        </ul>
+                    </li>
 
                 </ul>
             </div>

@@ -269,6 +269,12 @@ Web Desa Bontomarannu/
 - pengaduan              → PengaduanModel
 - notifications          → NotificationModel
 - email_queue            → EmailQueueModel
+- umkm                   → UmkmModel
+- umkm_ecommerce         → UmkmEcommerceModel
+- umkm_produk            → UmkmProdukModel
+- umkm_produk_gambar     → UmkmProdukGambarModel
+- pariwisata             → PariwisataModel
+- pariwisata_gambar      → PariwisataGambarModel
 
 # Migrations
 - Always create a new migration file; do NOT manually alter tables in production
@@ -437,7 +443,8 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] User letter system CRUD (create, view, edit, delete, send to staff)
 - [x] User letter export (Word .docx + PDF via official letterhead template)
 - [x] User letter status tracking (sent, read, replied)
-- [x] User notifications (letter status, staff reply)
+- [x] User notifications (letter status, staff reply, UMKM approval)
+- [x] User UMKM management (submit toko, edit, resubmit setelah ditolak)
 - [x] Staff dashboard (incoming letter summary)
 - [x] Staff profile management
 - [x] Staff letter inbox (view, reply with attachment, delete)
@@ -451,6 +458,8 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] Staff announcements CRUD (pengumuman)
 - [x] Staff complaint management (pengaduan)
 - [x] Staff notifications (incoming letters from users)
+- [x] Staff UMKM management (CRUD + approve/reject user submissions)
+- [x] Staff Pariwisata management (CRUD + gallery photos)
 - [x] Admin dashboard
 - [x] Admin account management CRUD (admin/staff/user accounts)
 - [x] Admin profile management

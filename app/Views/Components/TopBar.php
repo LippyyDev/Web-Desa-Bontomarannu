@@ -14,9 +14,6 @@ $unreadCount = $userId ? $notificationModel->where('user_id', $userId)
     ->countAllResults() : 0;
 
 $userName = ($profile && !empty($profile['nama_lengkap'])) ? $profile['nama_lengkap'] : ($currentUser['username'] ?? 'User');
-$userPhoto = ($profile && !empty($profile['foto_profil'])) 
-    ? base_url($profile['foto_profil']) 
-    : base_url('assets/img/guest.webp');
 $notificationUrl = match($currentUser['role'] ?? '') {
     'admin' => '#', // Admin belum punya route notifikasi
     'staf' => base_url('/staff/notifikasi'),
@@ -56,9 +53,6 @@ $notificationUrl = match($currentUser['role'] ?? '') {
                     <span class="notification-badge"><?= $unreadCount > 99 ? '99+' : $unreadCount ?></span>
                 <?php endif; ?>
             </a>
-            <div class="user-profile">
-                <img src="<?= esc($userPhoto) ?>" alt="Profile" class="profile-image">
-            </div>
         </div>
     </div>
 </div>
