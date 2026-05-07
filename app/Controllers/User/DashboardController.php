@@ -20,9 +20,9 @@ class DashboardController extends ProtectedController
 
         $data = [
             'totalLetters'  => $letterModel->where('user_id', $uid)->countAllResults(),
-            'sentCount'     => $letterModel->where('user_id', $uid)->where('status', 'Terkirim')->countAllResults(),
+            'sentCount'     => $letterModel->where('user_id', $uid)->where('status', 'Menunggu')->countAllResults(),
             'readCount'     => $letterModel->where('user_id', $uid)->where('status', 'Dibaca')->countAllResults(),
-            'repliedCount'  => $letterModel->where('user_id', $uid)->where('status', 'Dibalas')->countAllResults(),
+            'repliedCount'  => $letterModel->where('user_id', $uid)->whereIn('status', ['Diterima', 'Ditolak'])->countAllResults(),
             'notifications' => $notifModel->where('user_id', $uid)->orderBy('created_at', 'DESC')->findAll(5),
         ];
 

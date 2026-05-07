@@ -26,7 +26,7 @@
             <div class="stat-icon">
                 <i class="bi bi-send-fill"></i>
             </div>
-            <div class="stat-label">Terkirim</div>
+            <div class="stat-label">Menunggu</div>
             <div class="stat-value"><?= $sentCount ?></div>
         </div>
     </div>
@@ -44,7 +44,7 @@
             <div class="stat-icon">
                 <i class="bi bi-reply-fill"></i>
             </div>
-            <div class="stat-label">Dibalas</div>
+            <div class="stat-label">Diputuskan</div>
             <div class="stat-value"><?= $repliedCount ?></div>
         </div>
     </div>

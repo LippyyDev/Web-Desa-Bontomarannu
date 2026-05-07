@@ -1,10 +1,22 @@
 <?= $this->extend('User/layout') ?>
 
 <?= $this->section('content') ?>
+<?php
+function statusBadgeUser(string $status): string {
+    return match($status) {
+        'Menunggu' => '<span class="badge bg-warning text-dark">Menunggu</span>',
+        'Dibaca'   => '<span class="badge bg-info text-white">Dibaca</span>',
+        'Diterima' => '<span class="badge bg-success">Diterima</span>',
+        'Ditolak'  => '<span class="badge bg-danger">Ditolak</span>',
+        default    => '<span class="badge bg-secondary">' . esc($status) . '</span>',
+    };
+}
+?>
+
 <div class="page-header">
     <div>
         <h4><?= esc($letter['judul_perihal']) ?></h4>
-        <div class="text-muted small">Status: <span class="badge bg-primary"><?= esc($letter['status']) ?></span></div>
+        <div class="text-muted small">Status: <?= statusBadgeUser($letter['status']) ?></div>
     </div>
     <div class="page-header-actions">
         <a href="<?= base_url('/user/surat/' . $letter['id'] . '/edit') ?>" class="page-header-icon" title="Edit Surat">
@@ -31,6 +43,28 @@
                 <?php foreach ($attachments as $att): ?>
                     <div class="mb-1"><a href="<?= base_url($att['file_path']) ?>" target="_blank"><?= esc($att['original_name'] ?: basename($att['file_path'])) ?></a></div>
                 <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($letter['status'] === 'Ditolak' && !empty($letter['catatan_penolakan'])): ?>
+            <div class="mt-3 p-3 border border-danger rounded bg-danger bg-opacity-10">
+                <div class="small text-danger fw-semibold mb-1">
+                    <i class="bi bi-x-circle-fill me-1"></i>Surat Anda Ditolak
+                </div>
+                <div class="text-danger">Alasan: <?= nl2br(esc($letter['catatan_penolakan'])) ?></div>
+            </div>
+        <?php elseif ($letter['status'] === 'Diterima' && !empty($letter['catatan_penolakan'])): ?>
+            <div class="mt-3 p-3 border border-success rounded bg-success bg-opacity-10">
+                <div class="small text-success fw-semibold mb-1">
+                    <i class="bi bi-check-circle-fill me-1"></i>Surat Anda Diterima
+                </div>
+                <div class="text-success">Catatan: <?= nl2br(esc($letter['catatan_penolakan'])) ?></div>
+            </div>
+        <?php elseif ($letter['status'] === 'Diterima'): ?>
+            <div class="mt-3 p-3 border border-success rounded bg-success bg-opacity-10">
+                <div class="small text-success fw-semibold">
+                    <i class="bi bi-check-circle-fill me-1"></i>Surat Anda telah diterima oleh pihak desa.
+                </div>
             </div>
         <?php endif; ?>
     </div>
@@ -80,5 +114,3 @@
     </div>
 </div>
 <?= $this->endSection() ?>
-
-

@@ -76,9 +76,10 @@
                 <label class="form-label">Status</label>
                 <select id="filterStatus" class="form-select">
                     <option value="">Semua Status</option>
-                    <option value="Terkirim">Terkirim</option>
+                    <option value="Menunggu">Menunggu</option>
                     <option value="Dibaca">Dibaca</option>
-                    <option value="Dibalas">Dibalas</option>
+                    <option value="Diterima">Diterima</option>
+                    <option value="Ditolak">Ditolak</option>
                 </select>
             </div>
             <div class="col-6 col-md-4 col-lg">
@@ -154,12 +155,14 @@ $(document).ready(function() {
 });
 
 function getStatusBadge(status) {
-    const statusClass = {
-        'Terkirim': 'bg-secondary',
-        'Dibaca': 'bg-info',
-        'Dibalas': 'bg-success'
+    const statusMap = {
+        'Menunggu': { cls: 'bg-warning text-dark', label: 'Menunggu' },
+        'Dibaca':   { cls: 'bg-info text-white',   label: 'Dibaca'   },
+        'Diterima': { cls: 'bg-success',            label: 'Diterima' },
+        'Ditolak':  { cls: 'bg-danger',             label: 'Ditolak'  },
     };
-    return '<span class="badge ' + (statusClass[status] || 'bg-primary') + '">' + status + '</span>';
+    const s = statusMap[status] || { cls: 'bg-secondary', label: status };
+    return '<span class="badge ' + s.cls + '">' + s.label + '</span>';
 }
 
 function loadCards(page = 1) {

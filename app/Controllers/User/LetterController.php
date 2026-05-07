@@ -165,7 +165,7 @@ class LetterController extends ProtectedController
             'judul_perihal' => $this->request->getPost('judul_perihal'),
             'tipe_surat'    => $tipeSurat,
             'isi_surat'     => $this->request->getPost('isi_surat'),
-            'status'        => 'Terkirim',
+            'status'        => 'Menunggu',
             'sent_at'       => date('Y-m-d H:i:s'),
         ];
 

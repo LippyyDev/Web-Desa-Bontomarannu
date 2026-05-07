@@ -132,21 +132,21 @@ class LetterController extends ProtectedController
         $data = [];
         foreach ($letters as $letter) {
             $data[] = [
-                'id' => $letter['id'],
-                'kode_unik' => $letter['kode_unik'] ?? '-',
-                'judul_perihal' => $letter['judul_perihal'],
-                'tipe_surat' => $letter['tipe_surat'] ?? '-',
-                'sender_name' => $letter['sender_name'],
-                'status' => $letter['status'],
-                'sent_at' => date('d M Y H:i', strtotime($letter['sent_at'])),
+                'id'           => $letter['id'],
+                'kode_unik'    => $letter['kode_unik'] ?? '-',
+                'judul_perihal'=> $letter['judul_perihal'],
+                'tipe_surat'   => $letter['tipe_surat'] ?? '-',
+                'sender_name'  => $letter['sender_name'],
+                'status'       => $letter['status'],
+                'sent_at'      => date('d M Y H:i', strtotime($letter['sent_at'])),
             ];
         }
 
         return $this->response->setJSON([
-            'draw' => intval($draw),
-            'recordsTotal' => $recordsTotal,
+            'draw'            => intval($draw),
+            'recordsTotal'    => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'data'            => $data,
         ]);
     }
 
@@ -168,18 +168,23 @@ class LetterController extends ProtectedController
             return redirect()->to('/staff/surat')->with('error', 'Surat tidak ditemukan.');
         }
 
-        if ($letter['status'] === 'Terkirim') {
-            $letterModel->update($id, ['status' => 'Dibaca', 'read_at' => date('Y-m-d H:i:s'), 'assigned_staff_id' => $this->currentUser['id']]);
-            $letter['status']  = 'Dibaca';
+        // Otomatis ubah status Menunggu → Dibaca saat staff membuka surat
+        if ($letter['status'] === LetterModel::STATUS_MENUNGGU) {
+            $letterModel->update($id, [
+                'status'           => LetterModel::STATUS_DIBACA,
+                'read_at'          => date('Y-m-d H:i:s'),
+                'assigned_staff_id'=> $this->currentUser['id'],
+            ]);
+            $letter['status']  = LetterModel::STATUS_DIBACA;
             $letter['read_at'] = date('Y-m-d H:i:s');
             
-            // Ambil nama staff (nama_lengkap dari profile, fallback ke username)
+            // Ambil nama staff
             $staffProfile = $profileModel->find($this->currentUser['id']);
             $staffName = ($staffProfile && !empty($staffProfile['nama_lengkap'])) 
                 ? $staffProfile['nama_lengkap'] 
                 : $this->currentUser['username'];
             
-            // Buat notifikasi untuk user bahwa suratnya telah dibaca
+            // Notifikasi untuk user
             $notifModel = new NotificationModel();
             $notifModel->insert([
                 'user_id'           => $letter['user_id'],
@@ -191,7 +196,7 @@ class LetterController extends ProtectedController
                 'created_at'        => date('Y-m-d H:i:s'),
             ]);
             
-            // Kirim email notifikasi ke user
+            // Email notifikasi ke user
             $user = $userModel->find($letter['user_id']);
             if ($user) {
                 $emailService = new \App\Libraries\EmailService();
@@ -216,15 +221,14 @@ class LetterController extends ProtectedController
         foreach ($replies as $reply) {
             $replyAttachments[$reply['id']] = $replyAttachModel->where('reply_id', $reply['id'])->findAll();
             
-            // Get staff profile for reply
             if (!empty($reply['staff_id'])) {
                 $staffProfile = $profileModel->find($reply['staff_id']);
                 $staffUser = $userModel->find($reply['staff_id']);
                 
                 $replyProfiles[$reply['id']] = [
-                    'foto_profil' => $staffProfile['foto_profil'] ?? null,
+                    'foto_profil'  => $staffProfile['foto_profil'] ?? null,
                     'nama_lengkap' => $staffProfile['nama_lengkap'] ?? null,
-                    'username' => $staffUser['username'] ?? 'Staff',
+                    'username'     => $staffUser['username'] ?? 'Staff',
                 ];
             }
         }
@@ -252,18 +256,22 @@ class LetterController extends ProtectedController
             return redirect()->to('/staff/surat')->with('error', 'Surat tidak ditemukan.');
         }
 
-        $replyModel  = new LetterReplyModel();
-        $replyId     = $replyModel->insert([
-            'letter_id' => $id,
-            'staff_id'  => $this->currentUser['id'],
-            'reply_text'=> $this->request->getPost('reply_text'),
+        $replyModel = new LetterReplyModel();
+        $replyId    = $replyModel->insert([
+            'letter_id'  => $id,
+            'staff_id'   => $this->currentUser['id'],
+            'reply_text' => $this->request->getPost('reply_text'),
         ], true);
 
         $this->handleReplyAttachments($replyId);
 
-        $letterModel->update($id, ['status' => 'Dibalas', 'replied_at' => date('Y-m-d H:i:s'), 'assigned_staff_id' => $this->currentUser['id']]);
+        // Tidak mengubah status surat — status diatur lewat tombol Terima/Tolak
+        // Hanya update assigned_staff_id jika belum diisi
+        if (empty($letter['assigned_staff_id'])) {
+            $letterModel->update($id, ['assigned_staff_id' => $this->currentUser['id']]);
+        }
 
-        // Ambil nama staff (nama_lengkap dari profile, fallback ke username)
+        // Ambil nama staff
         $profileModel = new UserProfileModel();
         $staffProfile = $profileModel->find($this->currentUser['id']);
         $staffName = ($staffProfile && !empty($staffProfile['nama_lengkap'])) 
@@ -282,7 +290,7 @@ class LetterController extends ProtectedController
             'created_at'        => date('Y-m-d H:i:s'),
         ]);
         
-        // Kirim email notifikasi ke user
+        // Email notifikasi ke user
         $userModel = new UserModel();
         $user = $userModel->find($letter['user_id']);
         if ($user) {
@@ -301,6 +309,151 @@ class LetterController extends ProtectedController
         }
 
         return redirect()->to('/staff/surat/' . $id)->with('success', 'Balasan dikirim.');
+    }
+
+    /**
+     * Terima surat — ubah status menjadi Diterima
+     */
+    public function accept($id)
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $redirect;
+        }
+
+        $letterModel = new LetterModel();
+        $letter      = $letterModel->find($id);
+
+        if (!$letter) {
+            return redirect()->to('/staff/surat')->with('error', 'Surat tidak ditemukan.');
+        }
+
+        // Hanya bisa diterima jika status Dibaca
+        if (!in_array($letter['status'], [LetterModel::STATUS_DIBACA, LetterModel::STATUS_MENUNGGU], true)) {
+            return redirect()->to('/staff/surat/' . $id)->with('error', 'Surat tidak dapat diterima pada status saat ini.');
+        }
+
+        $catatanPenerimaan = $this->request->getPost('catatan_penerimaan') ?? null;
+
+        $letterModel->update($id, [
+            'status'             => LetterModel::STATUS_DITERIMA,
+            'catatan_penolakan'  => $catatanPenerimaan, // dipakai juga untuk catatan penerimaan opsional
+            'decided_at'         => date('Y-m-d H:i:s'),
+            'assigned_staff_id'  => $this->currentUser['id'],
+        ]);
+
+        // Ambil nama staff
+        $profileModel = new UserProfileModel();
+        $staffProfile = $profileModel->find($this->currentUser['id']);
+        $staffName = ($staffProfile && !empty($staffProfile['nama_lengkap'])) 
+            ? $staffProfile['nama_lengkap'] 
+            : $this->currentUser['username'];
+
+        // Notifikasi untuk user
+        $notifModel = new NotificationModel();
+        $notifModel->insert([
+            'user_id'           => $letter['user_id'],
+            'type'              => 'letter_accepted',
+            'title'             => 'Surat Anda diterima',
+            'message'           => 'Surat Anda: ' . $letter['judul_perihal'] . ' telah diterima oleh ' . $staffName,
+            'related_letter_id' => $id,
+            'is_read'           => 0,
+            'created_at'        => date('Y-m-d H:i:s'),
+        ]);
+
+        // Email notifikasi ke user
+        $userModel = new UserModel();
+        $user = $userModel->find($letter['user_id']);
+        if ($user) {
+            $emailService = new \App\Libraries\EmailService();
+            $letterUrl = base_url('/user/surat/' . $id);
+            $emailService->sendNotification(
+                $user['email'],
+                $user['username'],
+                'Surat Anda diterima',
+                'Surat Anda: ' . $letter['judul_perihal'] . ' telah diterima oleh ' . $staffName,
+                'letter_accepted',
+                $letterUrl,
+                $letter['judul_perihal'],
+                $letter['tipe_surat'] ?? null
+            );
+        }
+
+        return redirect()->to('/staff/surat/' . $id)->with('success', 'Surat berhasil diterima.');
+    }
+
+    /**
+     * Tolak surat — ubah status menjadi Ditolak
+     */
+    public function reject($id)
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $redirect;
+        }
+
+        $letterModel = new LetterModel();
+        $letter      = $letterModel->find($id);
+
+        if (!$letter) {
+            return redirect()->to('/staff/surat')->with('error', 'Surat tidak ditemukan.');
+        }
+
+        // Hanya bisa ditolak jika status Dibaca atau Menunggu
+        if (!in_array($letter['status'], [LetterModel::STATUS_DIBACA, LetterModel::STATUS_MENUNGGU], true)) {
+            return redirect()->to('/staff/surat/' . $id)->with('error', 'Surat tidak dapat ditolak pada status saat ini.');
+        }
+
+        $catatanPenolakan = trim($this->request->getPost('catatan_penolakan') ?? '');
+
+        // Catatan penolakan wajib diisi
+        if (empty($catatanPenolakan)) {
+            return redirect()->to('/staff/surat/' . $id)->with('error', 'Catatan penolakan wajib diisi.');
+        }
+
+        $letterModel->update($id, [
+            'status'            => LetterModel::STATUS_DITOLAK,
+            'catatan_penolakan' => $catatanPenolakan,
+            'decided_at'        => date('Y-m-d H:i:s'),
+            'assigned_staff_id' => $this->currentUser['id'],
+        ]);
+
+        // Ambil nama staff
+        $profileModel = new UserProfileModel();
+        $staffProfile = $profileModel->find($this->currentUser['id']);
+        $staffName = ($staffProfile && !empty($staffProfile['nama_lengkap'])) 
+            ? $staffProfile['nama_lengkap'] 
+            : $this->currentUser['username'];
+
+        // Notifikasi untuk user
+        $notifModel = new NotificationModel();
+        $notifModel->insert([
+            'user_id'           => $letter['user_id'],
+            'type'              => 'letter_rejected',
+            'title'             => 'Surat Anda ditolak',
+            'message'           => 'Surat Anda: ' . $letter['judul_perihal'] . ' ditolak oleh ' . $staffName . '. Alasan: ' . $catatanPenolakan,
+            'related_letter_id' => $id,
+            'is_read'           => 0,
+            'created_at'        => date('Y-m-d H:i:s'),
+        ]);
+
+        // Email notifikasi ke user
+        $userModel = new UserModel();
+        $user = $userModel->find($letter['user_id']);
+        if ($user) {
+            $emailService = new \App\Libraries\EmailService();
+            $letterUrl = base_url('/user/surat/' . $id);
+            $emailService->sendNotification(
+                $user['email'],
+                $user['username'],
+                'Surat Anda ditolak',
+                'Surat Anda: ' . $letter['judul_perihal'] . ' ditolak. Alasan: ' . $catatanPenolakan,
+                'letter_rejected',
+                $letterUrl,
+                $letter['judul_perihal'],
+                $letter['tipe_surat'] ?? null
+            );
+        }
+
+        return redirect()->to('/staff/surat/' . $id)->with('success', 'Surat berhasil ditolak.');
     }
 
     public function delete($id)
@@ -333,7 +486,6 @@ class LetterController extends ProtectedController
         // Hapus balasan dan lampiran balasan
         $replies = $replyModel->where('letter_id', $id)->findAll();
         foreach ($replies as $reply) {
-            // Hapus lampiran balasan
             $replyAttachments = $replyAttachModel->where('reply_id', $reply['id'])->findAll();
             foreach ($replyAttachments as $replyAtt) {
                 $filePath = FCPATH . ltrim($replyAtt['file_path'], '/');
@@ -365,13 +517,13 @@ class LetterController extends ProtectedController
         $replyAttachModel = new ReplyAttachmentModel();
 
         $letter = $letterModel->find($letterId);
-        $reply = $replyModel->find($replyId);
+        $reply  = $replyModel->find($replyId);
 
         if (!$letter || !$reply || $reply['letter_id'] != $letterId) {
             return redirect()->to('/staff/surat/' . $letterId)->with('error', 'Balasan tidak ditemukan.');
         }
 
-        // Cek apakah balasan adalah milik staff yang login
+        // Cek apakah balasan milik staff yang login
         if ($reply['staff_id'] != $this->currentUser['id']) {
             return redirect()->to('/staff/surat/' . $letterId)->with('error', 'Anda hanya bisa menghapus balasan Anda sendiri.');
         }
@@ -389,17 +541,6 @@ class LetterController extends ProtectedController
         // Hapus balasan
         $replyModel->delete($replyId);
 
-        // Cek jumlah balasan yang tersisa
-        $remainingReplies = $replyModel->where('letter_id', $letterId)->countAllResults();
-
-        // Jika tidak ada balasan lagi, ubah status menjadi "Dibaca" (tanpa notifikasi)
-        if ($remainingReplies == 0) {
-            $letterModel->update($letterId, [
-                'status' => 'Dibaca',
-                'replied_at' => null
-            ]);
-        }
-
         return redirect()->to('/staff/surat/' . $letterId)->with('success', 'Balasan dihapus.');
     }
 
@@ -410,8 +551,8 @@ class LetterController extends ProtectedController
             return;
         }
 
-        $uploadPath      = FCPATH . 'uploads/replies';
-        $replyAttachModel= new ReplyAttachmentModel();
+        $uploadPath       = FCPATH . 'uploads/replies';
+        $replyAttachModel = new ReplyAttachmentModel();
         $this->ensureUploadPath($uploadPath);
 
         foreach ($files as $file) {
@@ -432,5 +573,3 @@ class LetterController extends ProtectedController
         }
     }
 }
-
-

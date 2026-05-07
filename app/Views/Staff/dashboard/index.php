@@ -71,7 +71,16 @@
                             <div class="small text-muted">Dari: <?= esc($letter['sender_name']) ?></div>
                         </div>
                         <div class="text-end">
-                            <span class="badge bg-<?= $letter['status'] === 'Dibalas' ? 'success' : ($letter['status'] === 'Dibaca' ? 'info' : 'warning') ?> mb-2">
+                            <?php
+                            $badgeCls = match($letter['status']) {
+                                'Menunggu' => 'warning',
+                                'Dibaca'   => 'info',
+                                'Diterima' => 'success',
+                                'Ditolak'  => 'danger',
+                                default    => 'secondary',
+                            };
+                            ?>
+                            <span class="badge bg-<?= $badgeCls ?> mb-2">
                                 <?= esc($letter['status']) ?>
                             </span>
                             <div class="small text-muted"><?= date('d M Y', strtotime($letter['created_at'])) ?></div>
@@ -114,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         fill: true
                     },
                     {
-                        label: 'Surat Dibalas',
+                        label: 'Surat Diputuskan',
                         data: <?= json_encode($chartReplied) ?>,
                         borderColor: 'rgb(25, 135, 84)',
                         backgroundColor: 'rgba(25, 135, 84, 0.1)',

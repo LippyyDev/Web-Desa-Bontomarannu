@@ -67,9 +67,9 @@ class DashboardController extends ProtectedController
             
             // Hitung surat dibalas per bulan
             $repliedCount = $letterModelForReplied
-                ->where('status', 'Dibalas')
-                ->where('replied_at >=', $monthStart . ' 00:00:00')
-                ->where('replied_at <=', $monthEnd)
+                ->whereIn('status', ['Diterima', 'Ditolak'])
+                ->where('decided_at >=', $monthStart . ' 00:00:00')
+                ->where('decided_at <=', $monthEnd)
                 ->countAllResults(false);
             $chartReplied[] = $repliedCount;
         }
