@@ -1,0 +1,29 @@
+/* ============================================================
+   Alert Base
+   ============================================================ */
+
+.alert {
+  border-radius: 12px;
+  border: none;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================================
+   Alert Variants
+   ============================================================ */
+
+.alert-success {
+  background: linear-gradient(135deg, #d1e7dd 0%, #badbcc 100%);
+  color: #0f5132;
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c2c7 100%);
+  color: #842029;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #cff4fc 0%, #b6effb 100%);
+  color: #055160;
+}

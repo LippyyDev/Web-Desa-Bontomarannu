@@ -1,0 +1,74 @@
+/* ============================================================
+   Table Base
+   ============================================================ */
+
+.table {
+  margin-bottom: 0;
+}
+
+/* Hide scrollbar on table-responsive and DataTables */
+.table-responsive {
+  overflow-x: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.table-responsive::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* ============================================================
+   DataTables Scroll Overrides
+   ============================================================ */
+
+.dataTables_wrapper {
+  overflow-x: visible !important;
+}
+
+.dataTables_wrapper .dataTables_scroll {
+  overflow-x: visible !important;
+}
+
+.dataTables_wrapper .dataTables_scrollBody {
+  overflow-x: visible !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.dataTables_wrapper .dataTables_scrollBody::-webkit-scrollbar {
+  display: none;
+}
+
+.dataTables_wrapper .dataTables_info {
+  display: none !important;
+}
+
+/* ============================================================
+   Table Cell & Header Styling
+   ============================================================ */
+
+.table > :not(caption) > * > * {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.table thead th {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
