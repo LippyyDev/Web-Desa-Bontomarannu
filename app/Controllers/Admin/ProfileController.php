@@ -48,10 +48,16 @@ class ProfileController extends ProtectedController
 
         $file = $this->request->getFile('foto_profil');
         if ($file && $file->isValid()) {
-            // Tolak format .GIF
-            $extension = $file->getClientExtension();
-            if (strtolower($extension) === 'gif') {
-                return redirect()->to('/admin/profil')->with('error', 'Format file .GIF tidak diperbolehkan.');
+            // Validasi Ekstensi (Whitelist JPG/JPEG/PNG)
+            $allowedExtensions = ['jpg', 'jpeg', 'png'];
+            $extension = strtolower($file->getClientExtension());
+            if (!in_array($extension, $allowedExtensions)) {
+                return redirect()->to('/admin/profil')->with('error', 'Format foto profil hanya boleh JPG, JPEG, atau PNG.');
+            }
+
+            // Validasi Ukuran (Max 1 MB)
+            if ($file->getSize() > 1048576) {
+                return redirect()->to('/admin/profil')->with('error', 'Ukuran foto profil maksimal 1 MB.');
             }
 
             $path = FCPATH . 'uploads/profile';

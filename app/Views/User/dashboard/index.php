@@ -19,7 +19,7 @@ if ($hour < 12) {
     $greeting = 'Selamat malam';
 }
 ?>
-<div class="mb-5 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
         <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
             <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
@@ -31,11 +31,11 @@ if ($hour < 12) {
         <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Ringkasan surat dan notifikasi Anda terkini.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        <a href="<?= base_url('/user/surat/buat') ?>" class="btn btn-primary shadow-sm rounded-3 px-3 py-2 fw-medium d-flex align-items-center gap-2">
-            <i class="bi bi-envelope-plus-fill"></i> Ajukan Surat
+        <a href="<?= base_url('/user/surat/buat') ?>" class="btn btn-success">
+            Ajukan Surat
         </a>
-        <a href="<?= base_url('/user/pengaduan') ?>" class="btn bg-white border text-dark shadow-sm rounded-3 px-3 py-2 fw-medium d-flex align-items-center gap-2">
-            <i class="bi bi-chat-dots-fill text-danger"></i> Lapor/Aduan
+        <a href="<?= base_url('/user/pengaduan') ?>" class="btn btn-outline-success">
+            Lapor/Aduan
         </a>
     </div>
 </div>
@@ -47,7 +47,7 @@ if ($hour < 12) {
                 <i class="bi bi-envelope-fill"></i>
             </div>
             <div class="stat-label">Total Surat</div>
-            <div class="stat-value text-primary"><?= $totalLetters ?></div>
+            <div class="stat-value"><?= $totalLetters ?></div>
         </div>
     </div>
     <div class="col-md-6 col-lg-3">
@@ -81,15 +81,12 @@ if ($hour < 12) {
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-bell-fill"></i>
-            <div>
-                <div class="fw-semibold">Notifikasi Terbaru</div>
-                <div class="small text-muted">Update status surat Anda</div>
-            </div>
+        <div>
+            <div class="fw-semibold">Notifikasi Terbaru</div>
+            <div class="small text-muted fw-normal">Update status surat Anda</div>
         </div>
-        <a href="<?= base_url('/user/notifikasi') ?>" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-arrow-right"></i> Lihat Semua
+        <a href="<?= base_url('/user/notifikasi') ?>" class="btn btn-outline-success btn-sm">
+            Lihat Semua
         </a>
     </div>
     <div class="list-group list-group-flush">

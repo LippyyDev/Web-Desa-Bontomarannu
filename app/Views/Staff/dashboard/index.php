@@ -19,7 +19,7 @@ if ($hour < 12) {
     $greeting = 'Selamat malam';
 }
 ?>
-<div class="mb-5 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
         <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
             <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
@@ -31,26 +31,26 @@ if ($hour < 12) {
         <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Ringkasan aktivitas dan data desa terkini.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        <a href="<?= base_url('/staff/berita/tambah') ?>" class="btn btn-primary shadow-sm rounded-3 px-3 py-2 fw-medium d-flex align-items-center gap-2">
-            <i class="bi bi-pencil-square"></i> Tulis Berita
+        <a href="<?= base_url('/staff/berita/tambah') ?>" class="btn btn-success">
+            Tulis Berita
         </a>
-        <a href="<?= base_url('/staff/pengumuman/tambah') ?>" class="btn bg-white border text-dark shadow-sm rounded-3 px-3 py-2 fw-medium d-flex align-items-center gap-2">
-            <i class="bi bi-megaphone-fill text-warning"></i> Buat Pengumuman
+        <a href="<?= base_url('/staff/pengumuman/tambah') ?>" class="btn btn-outline-success">
+            Buat Pengumuman
         </a>
     </div>
 </div>
 
 <div class="row g-4 mb-4">
-    <div class="col-md-6 col-lg-4 col-xl">
+    <div class="col-md-6 col-lg-3">
         <div class="stat-card h-100">
             <div class="stat-icon">
                 <i class="bi bi-envelope-fill"></i>
             </div>
             <div class="stat-label">Surat Masuk</div>
-            <div class="stat-value text-primary"><?= $incoming ?></div>
+            <div class="stat-value"><?= $incoming ?></div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-4 col-xl">
+    <div class="col-md-6 col-lg-3">
         <div class="stat-card h-100">
             <div class="stat-icon">
                 <i class="bi bi-images"></i>
@@ -59,7 +59,7 @@ if ($hour < 12) {
             <div class="stat-value"><?= $galleryTotal ?></div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-4 col-xl">
+    <div class="col-md-6 col-lg-3">
         <div class="stat-card h-100">
             <div class="stat-icon">
                 <i class="bi bi-newspaper"></i>
@@ -69,7 +69,7 @@ if ($hour < 12) {
         </div>
     </div>
 
-    <div class="col-md-6 col-lg-4 col-xl">
+    <div class="col-md-6 col-lg-3">
         <div class="stat-card h-100">
             <div class="stat-icon">
                 <i class="bi bi-people-fill"></i>
@@ -82,12 +82,11 @@ if ($hour < 12) {
 
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <span class="fw-semibold d-flex align-items-center gap-2">
-            <i class="bi bi-clock-history"></i>
+        <span class="fw-semibold">
             Riwayat Surat Masuk
         </span>
-        <a href="<?= base_url('/staff/surat') ?>" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-arrow-right"></i> Lihat Semua
+        <a href="<?= base_url('/staff/surat') ?>" class="btn btn-sm btn-outline-success">
+            Lihat Semua
         </a>
     </div>
     <div class="list-group list-group-flush">
@@ -124,8 +123,7 @@ if ($hour < 12) {
 </div>
 
 <div class="card">
-    <div class="card-header fw-semibold d-flex align-items-center gap-2">
-        <i class="bi bi-bar-chart-fill"></i>
+    <div class="card-header fw-semibold">
         Grafik Jumlah Surat Masuk (6 Bulan Terakhir)
     </div>
     <div class="card-body">
