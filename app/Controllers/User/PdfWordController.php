@@ -155,49 +155,49 @@ class PdfWordController extends ProtectedController
             'borderRightSize' => 0,
             'borderRightColor' => 'FFFFFF',
         ]);
-        $textCell->addText('PEMERINTAH KABUPATEN BULUKUMBA', 
-            ['bold' => true, 'size' => 16, 'name' => 'Arial'], 
+        $textCell->addText('PEMERINTAH DESA BONTO MARANNU', 
+            ['bold' => true, 'size' => 16, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('KECAMATAN UJUNGLOE', 
-            ['bold' => true, 'size' => 16, 'name' => 'Arial'], 
+        $textCell->addText('KECAMATAN ULU ERE', 
+            ['bold' => true, 'size' => 16, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('DESA PADANGLOANG', 
-            ['bold' => true, 'size' => 14, 'name' => 'Arial'], 
+        $textCell->addText('KABUPATEN BANTAENG', 
+            ['bold' => true, 'size' => 14, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('Alamat : Jl. Poros Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba', 
-            ['size' => 11, 'name' => 'Arial', 'italic' => true], 
+        $textCell->addText('Jln. Pendidikan Loka Desa Bonto Marannu Kec.Ulu Ere Kab.Bantaeng Kode Pos 92451', 
+            ['size' => 9, 'name' => 'Bookman Old Style', 'italic' => true], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 100]);
         
         $section->addLine([
-            'weight' => 1,
-            'width' => 450,
+            'weight' => 2,
+            'width' => 480,
             'height' => 0,
         ]);
         $section->addTextBreak(0.5);
 
         $section->addText($judulSurat, 
-            ['bold' => true, 'size' => 12, 'underline' => 'single', 'name' => 'Arial'], 
+            ['bold' => true, 'size' => 12, 'underline' => 'single', 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 180]);
 
         $section->addText('Kepada Yth.', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 0]);
         $section->addText('Bapak Kepala Desa Padangloang dan Staf Desa Padangloang', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 0]);
         $section->addText('di', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 0]);
         $section->addText('Tempat', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 240]);
 
         $section->addText('Dengan hormat,', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 240]);
 
         $section->addText('Yang bertanda tangan di bawah ini:', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data profil dengan cellMargin 0 dan spaceAfter 0
@@ -219,68 +219,68 @@ class PdfWordController extends ProtectedController
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($profile['nama_lengkap'] ?? '-', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($profile['nama_lengkap'] ?? '-', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/ Tanggal Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/ Tanggal Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($tempatTanggalLahir, ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($tempatTanggalLahir, ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($profile, 'jenis_kelamin'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($profile, 'jenis_kelamin'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($profile, 'alamat'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($profile, 'alamat'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('No NIK', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('No NIK', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($profile, 'nik'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($profile, 'nik'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         // Permohonan tanpa 11 spasi
         $section->addText('Dengan ini mengajukan permohonan pembuatan Surat ' . $letter['tipe_surat'] . '.', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Isi surat tanpa 11 spasi
         $section->addText($letter['isi_surat'], 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Penutup tanpa 11 spasi
         $penutup = 'Demikian surat permohonan ini saya sampaikan. Atas perhatian dan bantuan Bapak/Ibu, saya ucapkan terima kasih.';
         $section->addText($penutup, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 360]);
 
         $section->addText('Padangloang, ' . $tanggalSekarang, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 1400]);
         
         $section->addText($profile['nama_lengkap'] ?? '-', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END]);
 
         $filename = 'Surat_' . str_replace(' ', '_', $letter['tipe_surat']) . '_' . $letter['kode_unik'] . '.docx';
@@ -377,22 +377,22 @@ class PdfWordController extends ProtectedController
         $pdf->SetY(18);
         $pdf->SetX(55);
         $pdf->SetFont('helvetica', 'B', 16);
-        $pdf->Cell(135, 5, 'PEMERINTAH KABUPATEN BULUKUMBA', 0, 1, 'C');
+        $pdf->Cell(135, 5, 'PEMERINTAH DESA BONTO MARANNU', 0, 1, 'C');
         
         $pdf->SetX(55);
-        $pdf->Cell(135, 5, 'KECAMATAN UJUNGLOE', 0, 1, 'C');
+        $pdf->Cell(135, 5, 'KECAMATAN ULU ERE', 0, 1, 'C');
         
         $pdf->SetX(55);
         $pdf->SetFont('helvetica', 'B', 14);
-        $pdf->Cell(135, 5, 'DESA PADANGLOANG', 0, 1, 'C');
+        $pdf->Cell(135, 5, 'KABUPATEN BANTAENG', 0, 1, 'C');
         
         $pdf->SetX(55);
-        $pdf->SetFont('helvetica', 'I', 11);
-        $pdf->Cell(135, 5, 'Alamat : Jl. Poros Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba', 0, 1, 'C');
+        $pdf->SetFont('helvetica', 'I', 9);
+        $pdf->Cell(135, 5, 'Jln. Pendidikan Loka Desa Bonto Marannu Kec.Ulu Ere Kab.Bantaeng Kode Pos 92451', 0, 1, 'C');
         
         $pdf->SetY(50);
-        $pdf->SetLineWidth(0.5);
-        $pdf->Line(25, $pdf->GetY(), 190, $pdf->GetY());
+        $pdf->SetLineWidth(0.8);
+        $pdf->Line(25, $pdf->GetY(), 195, $pdf->GetY());
         
         $pdf->SetY(57);
         $pdf->SetFont('helvetica', 'BU', 12);
@@ -565,38 +565,38 @@ class PdfWordController extends ProtectedController
             'borderRightSize' => 0,
             'borderRightColor' => 'FFFFFF',
         ]);
-        $textCell->addText('PEMERINTAH KABUPATEN BULUKUMBA', 
-            ['bold' => true, 'size' => 16, 'name' => 'Arial'], 
+        $textCell->addText('PEMERINTAH DESA BONTO MARANNU', 
+            ['bold' => true, 'size' => 16, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('KECAMATAN UJUNGLOE', 
-            ['bold' => true, 'size' => 16, 'name' => 'Arial'], 
+        $textCell->addText('KECAMATAN ULU ERE', 
+            ['bold' => true, 'size' => 16, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('DESA PADANGLOANG', 
-            ['bold' => true, 'size' => 14, 'name' => 'Arial'], 
+        $textCell->addText('KABUPATEN BANTAENG', 
+            ['bold' => true, 'size' => 14, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('Alamat : Jl. Poros Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba', 
-            ['size' => 11, 'name' => 'Arial', 'italic' => true], 
+        $textCell->addText('Jln. Pendidikan Loka Desa Bonto Marannu Kec.Ulu Ere Kab.Bantaeng Kode Pos 92451', 
+            ['size' => 9, 'name' => 'Bookman Old Style', 'italic' => true], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 100]);
         
         $section->addLine([
-            'weight' => 1,
-            'width' => 450,
+            'weight' => 2,
+            'width' => 480,
             'height' => 0,
         ]);
         $section->addTextBreak(0.5);
 
         $section->addText($judulSurat, 
-            ['bold' => true, 'size' => 12, 'underline' => 'single', 'name' => 'Arial'], 
+            ['bold' => true, 'size' => 12, 'underline' => 'single', 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 180]);
 
-        $section->addText('Kepada Yth.', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
-        $section->addText('Bapak Kepala Desa Padangloang dan Staf Desa Padangloang', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
-        $section->addText('di', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
-        $section->addText('Tempat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 240]);
+        $section->addText('Kepada Yth.', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
+        $section->addText('Bapak Kepala Desa Padangloang dan Staf Desa Padangloang', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
+        $section->addText('di', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
+        $section->addText('Tempat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 240]);
 
-        $section->addText('Dengan hormat,', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 240]);
+        $section->addText('Dengan hormat,', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 240]);
 
-        $section->addText('Yang bertanda tangan di bawah ini:', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 120]);
+        $section->addText('Yang bertanda tangan di bawah ini:', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 120]);
 
         $dataTable = $section->addTable(['borderSize' => 0, 'cellMargin' => 0]);
         
@@ -609,62 +609,62 @@ class PdfWordController extends ProtectedController
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($profile['nama_lengkap'] ?? '-', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($profile['nama_lengkap'] ?? '-', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/ Tanggal Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/ Tanggal Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($tempatTanggalLahir, ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($tempatTanggalLahir, ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($profile, 'jenis_kelamin'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($profile, 'jenis_kelamin'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($profile, 'alamat'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($profile, 'alamat'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $dataTable->addRow();
         $cell1 = $dataTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('No NIK', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('No NIK', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $dataTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $dataTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($profile, 'nik'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($profile, 'nik'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         $section->addText('Dengan ini mengajukan permohonan pembuatan Surat ' . $tipeSurat . '.', 
-            ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 120]);
+            ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 120]);
 
         $section->addText($isiSurat, 
-            ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 120]);
+            ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 120]);
 
         $penutup = 'Demikian surat permohonan ini saya sampaikan. Atas perhatian dan bantuan Bapak/Ibu, saya ucapkan terima kasih.';
         $section->addText($penutup, 
-            ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 360]);
+            ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 360]);
 
         $section->addText('Padangloang, ' . $tanggalSekarang, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 1400]);
         
         $section->addText($profile['nama_lengkap'] ?? '-', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END]);
 
         $filename = 'Surat_' . str_replace(' ', '_', $tipeSurat) . '_' . date('YmdHis') . '.docx';
@@ -764,22 +764,22 @@ class PdfWordController extends ProtectedController
         $pdf->SetY(18);
         $pdf->SetX(55);
         $pdf->SetFont('helvetica', 'B', 16);
-        $pdf->Cell(135, 5, 'PEMERINTAH KABUPATEN BULUKUMBA', 0, 1, 'C');
+        $pdf->Cell(135, 5, 'PEMERINTAH DESA BONTO MARANNU', 0, 1, 'C');
         
         $pdf->SetX(55);
-        $pdf->Cell(135, 5, 'KECAMATAN UJUNGLOE', 0, 1, 'C');
+        $pdf->Cell(135, 5, 'KECAMATAN ULU ERE', 0, 1, 'C');
         
         $pdf->SetX(55);
         $pdf->SetFont('helvetica', 'B', 14);
-        $pdf->Cell(135, 5, 'DESA PADANGLOANG', 0, 1, 'C');
+        $pdf->Cell(135, 5, 'KABUPATEN BANTAENG', 0, 1, 'C');
         
         $pdf->SetX(55);
-        $pdf->SetFont('helvetica', 'I', 11);
-        $pdf->Cell(135, 5, 'Alamat : Jl. Poros Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba', 0, 1, 'C');
+        $pdf->SetFont('helvetica', 'I', 9);
+        $pdf->Cell(135, 5, 'Jln. Pendidikan Loka Desa Bonto Marannu Kec.Ulu Ere Kab.Bantaeng Kode Pos 92451', 0, 1, 'C');
         
         $pdf->SetY(50);
-        $pdf->SetLineWidth(0.5);
-        $pdf->Line(25, $pdf->GetY(), 190, $pdf->GetY());
+        $pdf->SetLineWidth(0.8);
+        $pdf->Line(25, $pdf->GetY(), 195, $pdf->GetY());
         
         $pdf->SetY(57);
         $pdf->SetFont('helvetica', 'BU', 12);

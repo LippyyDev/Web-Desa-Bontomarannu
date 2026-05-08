@@ -211,23 +211,23 @@ class PdfWordController extends ProtectedController
                 'borderRightSize' => 0,
                 'borderRightColor' => 'FFFFFF',
             ]);
-            $textCell->addText('PEMERINTAH KABUPATEN BULUKUMBA', 
-                ['bold' => true, 'size' => 16, 'name' => 'Arial'], 
+            $textCell->addText('PEMERINTAH DESA BONTO MARANNU', 
+                ['bold' => true, 'size' => 16, 'name' => 'Bookman Old Style'], 
                 ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-            $textCell->addText('KECAMATAN UJUNGLOE', 
-                ['bold' => true, 'size' => 16, 'name' => 'Arial'], 
+            $textCell->addText('KECAMATAN ULU ERE', 
+                ['bold' => true, 'size' => 16, 'name' => 'Bookman Old Style'], 
                 ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-            $textCell->addText('DESA PADANGLOANG', 
-                ['bold' => true, 'size' => 14, 'name' => 'Arial'], 
+            $textCell->addText('KABUPATEN BANTAENG', 
+                ['bold' => true, 'size' => 14, 'name' => 'Bookman Old Style'], 
                 ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-            $textCell->addText('Alamat : Jl. Poros Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba', 
-                ['size' => 11, 'name' => 'Arial', 'italic' => true], 
+            $textCell->addText('Jln. Pendidikan Loka Desa Bonto Marannu Kec.Ulu Ere Kab.Bantaeng Kode Pos 92451', 
+                ['size' => 9, 'name' => 'Bookman Old Style', 'italic' => true], 
                 ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 100]);
             
             // Garis pemisah
             $section->addLine([
-                'weight' => 1,
-                'width' => 450,
+                'weight' => 2,
+                'width' => 480,
                 'height' => 0,
             ]);
             $section->addTextBreak(0.5);
@@ -235,12 +235,12 @@ class PdfWordController extends ProtectedController
             // Judul surat (hanya untuk surat keterangan, bukan undangan)
             if ($letter['tipe_surat'] !== 'Undangan') {
                 $section->addText($judulSurat, 
-                    ['bold' => true, 'size' => 12, 'underline' => 'single', 'name' => 'Arial'], 
+                    ['bold' => true, 'size' => 12, 'underline' => 'single', 'name' => 'Bookman Old Style'], 
                     ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
 
                 // Nomor (di bawah judul, tengah)
                 $section->addText('Nomor :', 
-                    ['size' => 11, 'name' => 'Arial'], 
+                    ['size' => 11, 'name' => 'Bookman Old Style'], 
                     ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 240]);
             }
 
@@ -283,7 +283,7 @@ class PdfWordController extends ProtectedController
     {
         // Yang bertanda tangan
         $section->addText('Yang bertanda tangan dibawah ini :', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data staff yang menerangkan (dengan indentasi)
@@ -305,38 +305,38 @@ class PdfWordController extends ProtectedController
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jabatan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jabatan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
 
         // Menerangkan bahwa
         $section->addText('Menerangkan bahwa :', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data pengirim yang diterangkan (dengan indentasi)
@@ -347,76 +347,76 @@ class PdfWordController extends ProtectedController
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'nama_lengkap'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'nama_lengkap'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/ Tanggal Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/ Tanggal Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($tempatTanggalLahirSender, ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($tempatTanggalLahirSender, ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('-', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('-', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'alamat'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'alamat'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('No NIK', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('No NIK', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'nik'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'nik'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         // Isi surat keterangan usaha (dengan 11 spasi manual di awal dan rata kiri kanan)
         $isiKeterangan = '           Yang tersebut namanya diatas adalah benar mempunyai Usaha (Nama Usaha) berdiri Sejak tahun (Tahun) sampai sekarang, yang terletak di Dusun (Nama Dusun) Desa Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba.';
         $section->addText($isiKeterangan, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 120]);
 
         // Penutup (dengan 11 spasi manual di awal dan rata kiri kanan)
         $penutup = '           Demikian Surat keterangan usaha ini diberikan untuk dipergunakan sebagaimana mestinya.';
         $section->addText($penutup, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 360]);
 
         // Tanda tangan
         $section->addText('Padangloang, ' . $tanggalSekarang, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 1400]);
         
         // Nama penandatangan
         $section->addText('( ISI DISINI)', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END]);
     }
 
@@ -438,7 +438,7 @@ class PdfWordController extends ProtectedController
 
         // Yang bertanda tangan di bawah ini menerangkang bahwa pada
         $section->addText('Yang bertanda tangan di bawah ini menerangkang bahwa pada :', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data staff yang menerangkan
@@ -449,38 +449,38 @@ class PdfWordController extends ProtectedController
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jabatan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jabatan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
 
         // Yang Menerangkan Bahwa
         $section->addText('Yang Menerangkan Bahwa :', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data pengirim yang diterangkan
@@ -491,78 +491,78 @@ class PdfWordController extends ProtectedController
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'nama_lengkap'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'nama_lengkap'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/ Tgl Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/ Tgl Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($tempatTanggalLahirSender, ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($tempatTanggalLahirSender, ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('-', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('-', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Agama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Agama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'agama'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'agama'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('NIK', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('NIK', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'nik'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'nik'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'pekerjaan'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'pekerjaan'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'alamat'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'alamat'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
 
         // Orang Tua/Ayah
         $section->addText('Orang Tua/Ayah', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         $ayahTable = $section->addTable([
@@ -572,68 +572,68 @@ class PdfWordController extends ProtectedController
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/ Tgl Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/ Tgl Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Agama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Agama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
 
         // Orang Tua/Ibu
         $section->addText('Orang Tua/Ibu', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         $ibuTable = $section->addTable([
@@ -643,86 +643,86 @@ class PdfWordController extends ProtectedController
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/ Tgl Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/ Tgl Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Agama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Agama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         // Isi surat
         $isiKeterangan = '           Setelah diadakan penelitian hingga saat dikeluarkan surat keterangan ini yang bersangkutan benar-benar keadaan sosial ekonominya kurang mampu yang penghasilannya kurang dari Rp 750.000 / bulan';
         $section->addText($isiKeterangan, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 120]);
 
         // Penutup
         $penutup = '           Demikan surat keterangan ini dibuat dan diberikan kepada yang berkepentingan untuk selanjutnya supaya dipergunakan sebagai persyaratan untuk mendapatkan bantuan siswa miskin (BSM)';
         $section->addText($penutup, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 360]);
 
         // Tanda tangan
         $section->addText('Padangloang, ' . $tanggalSekarang, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 1400]);
         
         // Nama penandatangan
         $section->addText('( ISI DISINI)', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END]);
     }
 
@@ -744,7 +744,7 @@ class PdfWordController extends ProtectedController
 
         // Yang bertanda tangan di bawah ini
         $section->addText('Yang bertanda tangan di bawah ini :', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data staff yang menerangkan
@@ -755,39 +755,39 @@ class PdfWordController extends ProtectedController
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jabatan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jabatan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         // Menerangkan Bahwa
         $section->addText('Menerangkan Bahwa :', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data pengirim yang diterangkan
@@ -798,59 +798,59 @@ class PdfWordController extends ProtectedController
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'nama_lengkap'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'nama_lengkap'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/Tgl Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/Tgl Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($tempatTanggalLahirSender, ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($tempatTanggalLahirSender, ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Agama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Agama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'agama'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'agama'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'pekerjaan'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'pekerjaan'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'alamat'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'alamat'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         // Nama Orang Tua / Wali
         $section->addText('Nama Orang Tua / Wali :', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         $ayahTable = $section->addTable([
@@ -860,53 +860,53 @@ class PdfWordController extends ProtectedController
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama Ayah', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama Ayah', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/Tgl Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/Tgl Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ayahTable->addRow();
         $cell0 = $ayahTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ayahTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ayahTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ayahTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
@@ -917,76 +917,76 @@ class PdfWordController extends ProtectedController
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama Ibu', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama Ibu', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/Tgl Lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/Tgl Lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jenis Kelamin', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $ibuTable->addRow();
         $cell0 = $ibuTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $ibuTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $ibuTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $ibuTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         // Isi surat
         $isiKeterangan = '           Yang  tersebut  Namanya  di atas  adalah  benar  selama berdomisili di Dusun Salebboe Desa Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba Belum Pernah Menikah.';
         $section->addText($isiKeterangan, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 120]);
 
         // Penutup
         $penutup = '           Demikian surat keterangan ini kami buat dan di berikan kepadanya untuk di pergunakan sebagaimana mestinya';
         $section->addText($penutup, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 360]);
 
         // Tanda tangan
         $section->addText('Padangloang, ' . $tanggalSekarang, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 1400]);
         
         // Nama penandatangan
         $section->addText('( ISI DISINI)', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END]);
     }
 
@@ -1008,7 +1008,7 @@ class PdfWordController extends ProtectedController
 
         // Yang bertanda tangan dibawah ini
         $section->addText('Yang bertanda tangan dibawah ini:', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data staff yang menerangkan
@@ -1019,39 +1019,39 @@ class PdfWordController extends ProtectedController
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Jabatan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Jabatan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $staffTable->addRow();
         $cell0 = $staffTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $staffTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $staffTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $staffTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText('( ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         // Menerangkan Bahwa
         $section->addText('Menerangkan Bahwa :', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['spaceAfter' => 120]);
 
         // Data pengirim yang diterangkan
@@ -1062,76 +1062,76 @@ class PdfWordController extends ProtectedController
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Nama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Nama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'nama_lengkap'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'nama_lengkap'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Tempat/Tgl lahir', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Tempat/Tgl lahir', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($tempatTanggalLahirSender, ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($tempatTanggalLahirSender, ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Agama', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Agama', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'agama'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'agama'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Pekerjaan', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'pekerjaan'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'pekerjaan'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         
         $senderTable->addRow();
         $cell0 = $senderTable->addCell(700, $cellStyleNoBorder);
-        $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell1 = $senderTable->addCell(2500, $cellStyleNoBorder);
-        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell1->addText('Alamat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell2 = $senderTable->addCell(300, $cellStyleNoBorder);
-        $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
         $cell3 = $senderTable->addCell(6000, $cellStyleNoBorder);
-        $cell3->addText($this->getProfileValue($senderProfile, 'alamat'), ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+        $cell3->addText($this->getProfileValue($senderProfile, 'alamat'), ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
         $section->addTextBreak(1);
 
         // Isi surat
         $isiKeterangan = '           Orang tersebut disaksikan dengan sebenarnya bahwa ia penduduk Dusun Latamba ,Desa Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba.';
         $section->addText($isiKeterangan, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 120]);
 
         // Penutup
         $penutup = '           Demikian Surat Keterangan Domisili ini kami buat dengan sebenarnya untuk dipergunakan sebagai mana mestinya.';
         $section->addText($penutup, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 360]);
 
         // Tanda tangan
         $section->addText('Padangloang, ' . $tanggalSekarang, 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 1400]);
         
         // Nama penandatangan
         $section->addText('( ISI DISINI)', 
-            ['size' => 11, 'name' => 'Arial'], 
+            ['size' => 11, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END]);
     }
 
@@ -1153,7 +1153,7 @@ private function generateUndangan($section, $tanggalSekarang)
 
     // Padangloang, tanggal (kanan atas)
     $section->addText('Padangloang, ' . $tanggalSekarang, 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 240]);
 
     // Nomor, Sifat, Lampiran, Perihal
@@ -1164,77 +1164,77 @@ private function generateUndangan($section, $tanggalSekarang)
 
     $infoTable->addRow();
     $cell1 = $infoTable->addCell(2000, $cellStyleNoBorder);
-    $cell1->addText('Nomor', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell1->addText('Nomor', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell2 = $infoTable->addCell(300, $cellStyleNoBorder);
-    $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell3 = $infoTable->addCell(6000, $cellStyleNoBorder);
-    $cell3->addText('(ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell3->addText('(ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
     $infoTable->addRow();
     $cell1 = $infoTable->addCell(2000, $cellStyleNoBorder);
-    $cell1->addText('Sifat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell1->addText('Sifat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell2 = $infoTable->addCell(300, $cellStyleNoBorder);
-    $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell3 = $infoTable->addCell(6000, $cellStyleNoBorder);
-    $cell3->addText('(ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell3->addText('(ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
     $infoTable->addRow();
     $cell1 = $infoTable->addCell(2000, $cellStyleNoBorder);
-    $cell1->addText('Lampiran', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell1->addText('Lampiran', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell2 = $infoTable->addCell(300, $cellStyleNoBorder);
-    $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell3 = $infoTable->addCell(6000, $cellStyleNoBorder);
-    $cell3->addText('(ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell3->addText('(ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
     $infoTable->addRow();
     $cell1 = $infoTable->addCell(2000, $cellStyleNoBorder);
-    $cell1->addText('Perihal', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell1->addText('Perihal', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell2 = $infoTable->addCell(300, $cellStyleNoBorder);
-    $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell3 = $infoTable->addCell(6000, $cellStyleNoBorder);
-    $cell3->addText('(ISI DISINI)', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell3->addText('(ISI DISINI)', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
     $section->addTextBreak(1);
 
     // Kepada - DIUBAH: Indentasi diperbesar dari 700 menjadi 850
     $section->addText('Kepada', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['left' => 850], 'spaceAfter' => 120]);
     
     $section->addText('Yth.', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['left' => 850], 'spaceAfter' => 120]);
 
     // Daftar penerima - DIUBAH: Indentasi diperbesar dari 700 menjadi 850
     $section->addText('1.         ( ISI DISINI)', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['left' => 850], 'spaceAfter' => 60]);
     
     $section->addText('2.         ( ISI DISINI)', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['left' => 850], 'spaceAfter' => 60]);
     
     $section->addText('3.         ( ISI DISINI)', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['left' => 850], 'spaceAfter' => 60]);
     
     $section->addText('4.         ( ISI DISINI)', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['left' => 850], 'spaceAfter' => 120]);
 
     // Di - dan Tempat - DIUBAH: Indentasi diperbesar dari 700 menjadi 2000
     $section->addText('Di –', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['left' => 2000], 'spaceAfter' => 60]);
     
     $section->addText('Tempat', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['left' => 2000], 'spaceAfter' => 240]);
 
     // Isi surat
     $isiSurat = '         ISI DISINI , maka kami pandang perlu untuk mengundang bapak/ibu saudara/(i) untuk menghadiri perihal tersebut diatas yang akan dilaksanakan pada hari :';
     $section->addText($isiSurat, 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 240]);
 
     // Detail acara
@@ -1245,63 +1245,63 @@ private function generateUndangan($section, $tanggalSekarang)
 
     $acaraTable->addRow();
     $cell0 = $acaraTable->addCell(700, $cellStyleNoBorder);
-    $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell1 = $acaraTable->addCell(2500, $cellStyleNoBorder);
-    $cell1->addText('Hari/Tanggal', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell1->addText('Hari/Tanggal', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell2 = $acaraTable->addCell(300, $cellStyleNoBorder);
-    $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell3 = $acaraTable->addCell(6000, $cellStyleNoBorder);
-    $cell3->addText('ISI DISINI', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell3->addText('ISI DISINI', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
     $acaraTable->addRow();
     $cell0 = $acaraTable->addCell(700, $cellStyleNoBorder);
-    $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell1 = $acaraTable->addCell(2500, $cellStyleNoBorder);
-    $cell1->addText('Jam', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell1->addText('Jam', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell2 = $acaraTable->addCell(300, $cellStyleNoBorder);
-    $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell3 = $acaraTable->addCell(6000, $cellStyleNoBorder);
-    $cell3->addText('ISI DISINI', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell3->addText('ISI DISINI', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
     $acaraTable->addRow();
     $cell0 = $acaraTable->addCell(700, $cellStyleNoBorder);
-    $cell0->addText('', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell0->addText('', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell1 = $acaraTable->addCell(2500, $cellStyleNoBorder);
-    $cell1->addText('Tempat', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell1->addText('Tempat', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell2 = $acaraTable->addCell(300, $cellStyleNoBorder);
-    $cell2->addText(':', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell2->addText(':', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
     $cell3 = $acaraTable->addCell(6000, $cellStyleNoBorder);
-    $cell3->addText('ISI DISINI', ['size' => 11, 'name' => 'Arial'], ['spaceAfter' => 0]);
+    $cell3->addText('ISI DISINI', ['size' => 11, 'name' => 'Bookman Old Style'], ['spaceAfter' => 0]);
 
     $section->addTextBreak(1);
 
     // Penutup
     $penutup = '         Demikian undangan ini disampaikan untuk mendapatkan perhatian dan atas kehadiran bapak/ibu saudara (i) kami ucapkan terimaksih.';
     $section->addText($penutup, 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::BOTH, 'spaceAfter' => 360]);
 
     // Tanda tangan
     $section->addText('Kepala Desa Padangloang,', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 1400]);
 
     // Nama penandatangan
     $section->addText('( ISI DISINI)', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::END, 'spaceAfter' => 240]);
 
     // Tembusan
     $section->addText('Tembusan :', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['spaceAfter' => 120]);
     
     $section->addText('1.  Arsip', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['firstLine' => 700], 'spaceAfter' => 60]);
     
     $section->addText('2.  ISI DISINI', 
-        ['size' => 11, 'name' => 'Arial'], 
+        ['size' => 11, 'name' => 'Bookman Old Style'], 
         ['indentation' => ['firstLine' => 700], 'spaceAfter' => 0]);
 }
 
@@ -1451,23 +1451,23 @@ private function generateUndangan($section, $tanggalSekarang)
             'borderRightSize' => 0,
             'borderRightColor' => 'FFFFFF',
         ]);
-        $textCell->addText('PEMERINTAH KABUPATEN BULUKUMBA', 
-            ['bold' => true, 'size' => 16, 'name' => 'Arial'], 
+        $textCell->addText('PEMERINTAH DESA BONTO MARANNU', 
+            ['bold' => true, 'size' => 16, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('KECAMATAN UJUNGLOE', 
-            ['bold' => true, 'size' => 16, 'name' => 'Arial'], 
+        $textCell->addText('KECAMATAN ULU ERE', 
+            ['bold' => true, 'size' => 16, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('DESA PADANGLOANG', 
-            ['bold' => true, 'size' => 14, 'name' => 'Arial'], 
+        $textCell->addText('KABUPATEN BANTAENG', 
+            ['bold' => true, 'size' => 14, 'name' => 'Bookman Old Style'], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
-        $textCell->addText('Alamat : Jl. Poros Padangloang Kecamatan Ujung Loe Kabupaten Bulukumba', 
-            ['size' => 11, 'name' => 'Arial', 'italic' => true], 
+        $textCell->addText('Jln. Pendidikan Loka Desa Bonto Marannu Kec.Ulu Ere Kab.Bantaeng Kode Pos 92451', 
+            ['size' => 9, 'name' => 'Bookman Old Style', 'italic' => true], 
             ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 100]);
         
         // Garis pemisah
         $section->addLine([
-            'weight' => 1,
-            'width' => 450,
+            'weight' => 2,
+            'width' => 480,
             'height' => 0,
         ]);
         $section->addTextBreak(0.5);
@@ -1475,12 +1475,12 @@ private function generateUndangan($section, $tanggalSekarang)
         // Judul surat (hanya untuk surat keterangan, bukan undangan)
         if ($tipeSurat !== 'Undangan') {
             $section->addText($judulSurat, 
-                ['bold' => true, 'size' => 12, 'underline' => 'single', 'name' => 'Arial'], 
+                ['bold' => true, 'size' => 12, 'underline' => 'single', 'name' => 'Bookman Old Style'], 
                 ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 0]);
 
             // Nomor (di bawah judul, tengah)
             $section->addText('Nomor :', 
-                ['size' => 11, 'name' => 'Arial'], 
+                ['size' => 11, 'name' => 'Bookman Old Style'], 
                 ['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER, 'spaceAfter' => 240]);
         }
 
