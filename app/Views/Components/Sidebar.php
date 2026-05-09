@@ -17,12 +17,11 @@ $menus = match($role) {
     'admin' => [
         ['header' => 'UMUM'],
         ['label' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'bi-speedometer2'],
+        ['label' => 'Profil', 'url' => '/admin/profil', 'icon' => 'bi-person'],
+        ['label' => 'Notifikasi', 'url' => '/admin/notifikasi', 'icon' => 'bi-bell'],
         
         ['header' => 'MANAJEMEN PENGGUNA'],
         ['label' => 'Kelola Akun', 'url' => '/admin/akun', 'icon' => 'bi-people'],
-        
-        ['header' => 'PENGATURAN'],
-        ['label' => 'Profil Admin', 'url' => '/admin/profil', 'icon' => 'bi-person'],
     ],
     'staf' => [
         ['header' => 'UMUM'],

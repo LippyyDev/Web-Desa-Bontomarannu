@@ -17,6 +17,7 @@ class NotificationModel extends Model
         'related_letter_id',
         'related_reply_id',
         'related_umkm_id',
+        'related_pengaduan_id',
         'is_read',
         'created_at',
         'read_at',

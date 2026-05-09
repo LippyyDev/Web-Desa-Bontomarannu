@@ -30,9 +30,7 @@ $routes->get('/verify', 'Guest\AuthController::verify');
 $routes->post('/verify', 'Guest\AuthController::doVerify');
 $routes->get('/verify/(:segment)', 'Guest\AuthController::verifyByLink/$1');
 
-// Email queue processing endpoint (untuk AJAX/cron)
-$routes->post('/api/email-queue/process', 'Api\EmailQueueController::process');
-$routes->get('/api/email-queue/process', 'Api\EmailQueueController::process');
+// Email queue processing endpoint (removed, now using cron)
 $routes->get('/forgot-password', 'Guest\AuthController::forgotPassword');
 $routes->post('/forgot-password', 'Guest\AuthController::sendReset');
 $routes->get('/reset-password', 'Guest\AuthController::resetPassword');
@@ -72,7 +70,10 @@ $routes->group('user', static function ($routes) {
     $routes->get('umkm/(:num)/hapus', 'User\UmkmController::delete/$1');
 
     $routes->get('notifikasi', 'User\NotificationController::index');
-    $routes->get('notifikasi/(:num)/read', 'User\NotificationController::markRead/$1');
+    $routes->post('notifikasi/data', 'User\NotificationController::data');
+    $routes->post('notifikasi/read-all', 'User\NotificationController::markAllRead');
+    $routes->post('notifikasi/delete-all', 'User\NotificationController::deleteAll');
+    $routes->post('notifikasi/(:num)/read', 'User\NotificationController::markRead/$1');
 });
 
 $routes->group('staff', static function ($routes) {
@@ -171,7 +172,10 @@ $routes->group('staff', static function ($routes) {
     $routes->get('pariwisata/gambar/(:num)/hapus', 'Staff\PariwisataController::deleteGambar/$1');
 
     $routes->get('notifikasi', 'Staff\NotificationController::index');
-    $routes->get('notifikasi/(:num)/read', 'Staff\NotificationController::markRead/$1');
+    $routes->post('notifikasi/data', 'Staff\NotificationController::data');
+    $routes->post('notifikasi/read-all', 'Staff\NotificationController::markAllRead');
+    $routes->post('notifikasi/delete-all', 'Staff\NotificationController::deleteAll');
+    $routes->post('notifikasi/(:num)/read', 'Staff\NotificationController::markRead/$1');
 });
 
 $routes->group('admin', static function ($routes) {
@@ -187,4 +191,10 @@ $routes->group('admin', static function ($routes) {
     $routes->get('profil', 'Admin\ProfileController::index');
     $routes->post('profil', 'Admin\ProfileController::update');
     $routes->post('profil/ubah-password', 'Admin\ProfileController::changePassword');
+    
+    $routes->get('notifikasi', 'Admin\NotificationController::index');
+    $routes->post('notifikasi/data', 'Admin\NotificationController::data');
+    $routes->post('notifikasi/read-all', 'Admin\NotificationController::markAllRead');
+    $routes->post('notifikasi/delete-all', 'Admin\NotificationController::deleteAll');
+    $routes->post('notifikasi/(:num)/read', 'Admin\NotificationController::markRead/$1');
 });

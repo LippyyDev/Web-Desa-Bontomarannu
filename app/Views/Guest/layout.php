@@ -45,31 +45,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= base_url('assets/js/components/guest-navbar.js') ?>"></script>
 <script src="<?= base_url('assets/js/guest/main.js') ?>"></script>
-<script>
-// Process email queue in background (non-blocking)
-(function() {
-    // Wait for page to fully load
-    if (document.readyState === 'complete') {
-        processEmailQueue();
-    } else {
-        window.addEventListener('load', processEmailQueue);
-    }
-    
-    function processEmailQueue() {
-        // Use fetch with keepalive to ensure request completes even if page unloads
-        fetch('<?= base_url('/api/email-queue/process') ?>', {
-            method: 'POST',
-            keepalive: true,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        }).catch(function(err) {
-            // Silently fail - email will be processed on next request
-            console.debug('Email queue processing failed (non-critical):', err);
-        });
-    }
-})();
-</script>
 </body>
 </html>
 

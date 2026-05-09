@@ -231,6 +231,11 @@ Web Desa Bontomarannu/
 - CSS/JS assets go in public/assets/ or public/css/, public/js/
 - Images used as UI assets go in public/images/
 - User-uploaded content goes in public/uploads/
+
+# UI Components
+- SweetAlert2 is used for global alerts, confirmations, and CI4 flash messages.
+- Global SweetAlert helpers are located in `public/assets/js/components/sweetalert.js`.
+- Use `showSuccess()`, `showError()`, `showInfo()`, and `showConfirm()` instead of native browser `alert()` or `confirm()`.
 ```
 
 ---

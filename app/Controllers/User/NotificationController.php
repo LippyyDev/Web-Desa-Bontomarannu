@@ -13,19 +13,55 @@ class NotificationController extends ProtectedController
             return $redirect;
         }
 
-        $notifModel = new NotificationModel();
+        return view('User/notifications/index');
+    }
 
-        return view('User/notifications/index', [
-            'notifications' => $notifModel->where('user_id', $this->currentUser['id'])
-                ->orderBy('created_at', 'DESC')
-                ->findAll(),
+    public function data()
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $notifModel = new NotificationModel();
+        
+        $page = (int)$this->request->getPost('page') ?: 1;
+        $perPage = (int)$this->request->getPost('per_page') ?: 15;
+        
+        $builder = $notifModel->where('user_id', $this->currentUser['id'])->orderBy('created_at', 'DESC');
+        
+        $total = $builder->countAllResults(false);
+        $notifications = $builder->paginate($perPage, 'default', $page);
+        
+        $hasMore = ($page * $perPage) < $total;
+        
+        foreach ($notifications as &$notif) {
+            $notif['created_at_formatted'] = date('d M Y H:i', strtotime($notif['created_at']));
+            $notif['action_url'] = null;
+            $notif['action_label'] = '';
+            
+            if ($notif['related_letter_id']) {
+                $notif['action_url'] = base_url('/user/surat/' . $notif['related_letter_id']);
+                $notif['action_label'] = 'Lihat Surat';
+            } elseif ($notif['related_umkm_id']) {
+                $notif['action_url'] = base_url('/user/umkm/' . $notif['related_umkm_id']);
+                $notif['action_label'] = 'Lihat UMKM';
+            } elseif (!empty($notif['related_pengaduan_id'])) {
+                $notif['action_url'] = base_url('/user/pengaduan');
+                $notif['action_label'] = 'Lihat Pengaduan';
+            }
+        }
+
+        return $this->response->setJSON([
+            'success'       => true,
+            'notifications' => $notifications,
+            'has_more'      => $hasMore
         ]);
     }
 
     public function markRead($id)
     {
         if ($redirect = $this->guard(['user'])) {
-            return $redirect;
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
         }
 
         $notifModel = new NotificationModel();
@@ -33,9 +69,34 @@ class NotificationController extends ProtectedController
 
         if ($notif) {
             $notifModel->update($id, ['is_read' => 1, 'read_at' => date('Y-m-d H:i:s')]);
+            return $this->response->setJSON(['success' => true]);
         }
 
-        return redirect()->back();
+        return $this->response->setJSON(['success' => false, 'message' => 'Not found']);
+    }
+
+    public function markAllRead()
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $notifModel = new NotificationModel();
+        $notifModel->where('user_id', $this->currentUser['id'])->set(['is_read' => 1, 'read_at' => date('Y-m-d H:i:s')])->update();
+
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    public function deleteAll()
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $notifModel = new NotificationModel();
+        $notifModel->where('user_id', $this->currentUser['id'])->delete();
+
+        return $this->response->setJSON(['success' => true]);
     }
 }
 

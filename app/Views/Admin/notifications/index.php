@@ -1,4 +1,4 @@
-<?= $this->extend('Staff/layout') ?>
+<?= $this->extend('Admin/layout') ?>
 
 <?= $this->section('content') ?>
 <div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
@@ -10,7 +10,7 @@
         <h2 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">
             Notifikasi <span style="color: #15803d;">Sistem</span>
         </h2>
-        <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Info terbaru terkait surat dan pengaduan.</p>
+        <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Status terbaru sistem dan notifikasi admin.</p>
     </div>
     <div class="d-flex gap-2">
         <button id="btn-mark-all-read" class="btn btn-outline-success">Tandai Semua Dibaca</button>
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('per_page', 15);
         formData.append(csrfHeaderName, getCsrfHash());
         
-        fetch('<?= base_url('/staff/notifikasi/data') ?>', {
+        fetch('<?= base_url('/admin/notifikasi/data') ?>', {
             method: 'POST',
             body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             let actionHtml = '';
-            if (notif.action_url) {
+            if (notif.action_url && notif.action_url !== '#') {
                 actionHtml = `<a href="${notif.action_url}" class="d-block small mt-1 text-decoration-none text-success fw-medium">${notif.action_label} <i class="bi bi-arrow-right"></i></a>`;
             }
             
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btnElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
         btnElement.disabled = true;
         
-        fetch(`<?= base_url('/staff/notifikasi') ?>/${id}/read`, {
+        fetch(`<?= base_url('/admin/notifikasi') ?>/${id}/read`, {
             method: 'POST',
             body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new URLSearchParams();
             formData.append(csrfHeaderName, getCsrfHash());
             
-            fetch('<?= base_url('/staff/notifikasi/read-all') ?>', {
+            fetch('<?= base_url('/admin/notifikasi/read-all') ?>', {
                 method: 'POST',
                 body: formData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new URLSearchParams();
             formData.append(csrfHeaderName, getCsrfHash());
             
-            fetch('<?= base_url('/staff/notifikasi/delete-all') ?>', {
+            fetch('<?= base_url('/admin/notifikasi/delete-all') ?>', {
                 method: 'POST',
                 body: formData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -291,5 +291,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <?= $this->endSection() ?>
-
-

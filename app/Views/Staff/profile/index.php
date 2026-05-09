@@ -129,7 +129,8 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Tanggal Lahir</label>
-                            <input type="date" class="form-control" name="tanggal_lahir" value="<?= old('tanggal_lahir', $profile['tanggal_lahir'] ?? '') ?>">
+                            <?php $tgl = old('tanggal_lahir', $profile['tanggal_lahir'] ?? ''); ?>
+                            <input type="date" class="form-control" name="tanggal_lahir" value="<?= $tgl === '0000-00-00' ? '' : esc($tgl) ?>">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Agama</label>
@@ -163,6 +164,7 @@
             <div class="tab-pane fade" id="content-password" role="tabpanel">
                 <form method="post" action="<?= base_url('/staff/profil/ubah-password') ?>">
                     <?= csrf_field() ?>
+                    <input type="text" name="username" value="<?= esc($user['username'] ?? '') ?>" autocomplete="username" style="display:none;" aria-hidden="true">
                     <div class="row g-3">
                         <div class="col-md-12">
                             <label class="form-label">Masukkan Password Lama</label>

@@ -125,7 +125,39 @@ class LandingController extends BaseController
             $data['foto'] = 'uploads/pengaduan/' . $newName;
         }
 
-        $pengaduanModel->save($data);
+        $pengaduanId = $pengaduanModel->insert($data, true);
+
+        // Buat notifikasi untuk semua staff
+        $userModel = new \App\Models\UserModel();
+        $staffList = $userModel->where('role', 'staf')->findAll();
+        $notifModel = new \App\Models\NotificationModel();
+        $emailService = new \App\Libraries\EmailService();
+        
+        $pengaduanUrl = base_url('/staff/pengaduan/' . $pengaduanId);
+
+        foreach ($staffList as $staff) {
+            $notifModel->insert([
+                'user_id'              => $staff['id'],
+                'type'                 => 'new_pengaduan',
+                'title'                => 'Pengaduan Baru Masuk',
+                'message'              => 'Pengaduan baru dari ' . $data['nama'] . ' - ' . $data['perihal'],
+                'related_pengaduan_id' => $pengaduanId,
+                'is_read'              => 0,
+                'created_at'           => date('Y-m-d H:i:s'),
+            ]);
+            
+            // Kirim email notifikasi ke staff (masuk ke EmailQueue)
+            $emailService->sendNotification(
+                $staff['email'],
+                $staff['username'],
+                'Pengaduan Baru Masuk',
+                'Pengaduan baru dari ' . $data['nama'],
+                'info',
+                $pengaduanUrl,
+                $data['perihal'],
+                'Pengaduan'
+            );
+        }
 
         return redirect()->to('/pengaduan')->with('message', 'Pengaduan Anda telah berhasil dikirim. Terima kasih.');
     }

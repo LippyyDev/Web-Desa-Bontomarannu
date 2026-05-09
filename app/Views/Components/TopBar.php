@@ -15,7 +15,7 @@ $unreadCount = $userId ? $notificationModel->where('user_id', $userId)
 
 $userName = ($profile && !empty($profile['nama_lengkap'])) ? $profile['nama_lengkap'] : ($currentUser['username'] ?? 'User');
 $notificationUrl = match($currentUser['role'] ?? '') {
-    'admin' => '#', // Admin belum punya route notifikasi
+    'admin' => base_url('/admin/notifikasi'),
     'staf' => base_url('/staff/notifikasi'),
     'user' => base_url('/user/notifikasi'),
     default => '#'
