@@ -17,6 +17,11 @@ use App\Models\PengaduanModel;
 
 class ContentController extends ProtectedController
 {
+    public function __construct()
+    {
+        helper('upload');
+    }
+
     public function desaProfile()
     {
         if ($redirect = $this->guard(['staf'])) {
@@ -139,78 +144,63 @@ class ContentController extends ProtectedController
     public function galleryApi()
     {
         if ($redirect = $this->guard(['staf'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
         }
 
-        $albumModel = new GalleryAlbumModel();
-        
-        $page = (int)($this->request->getGet('page') ?? 1);
-        $limit = (int)($this->request->getGet('limit') ?? 12);
-        $search = $this->request->getGet('search') ?? '';
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
-        $offset = ($page - 1) * $limit;
-
-        // Apply date filter
-        if (!empty($dateStart)) {
-            $albumModel->where('DATE(tanggal_waktu) >=', $dateStart);
-        }
-        if (!empty($dateEnd)) {
-            $albumModel->where('DATE(tanggal_waktu) <=', $dateEnd);
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
         }
 
-        // Apply search filter
-        if (!empty($search)) {
-            $albumModel->groupStart()
-                ->like('nama_album', $search)
-                ->orLike('deskripsi', $search)
-                ->groupEnd();
-        }
+        $page      = (int)($this->request->getPost('page') ?: 1);
+        $limit     = (int)($this->request->getPost('limit') ?: 12);
+        $search    = trim($this->request->getPost('search') ?? '');
+        $dateStart = trim($this->request->getPost('date_start') ?? '');
+        $dateEnd   = trim($this->request->getPost('date_end') ?? '');
+        $offset    = ($page - 1) * $limit;
 
-        // Get total count with filters
-        $total = $albumModel->countAllResults(false);
-        
-        // Reset and apply filters again for data fetch
-        $albumModel = new GalleryAlbumModel();
-        
-        // Apply date filter again
-        if (!empty($dateStart)) {
-            $albumModel->where('DATE(tanggal_waktu) >=', $dateStart);
-        }
-        if (!empty($dateEnd)) {
-            $albumModel->where('DATE(tanggal_waktu) <=', $dateEnd);
-        }
-        
-        // Apply search filter again
-        if (!empty($search)) {
-            $albumModel->groupStart()
-                ->like('nama_album', $search)
-                ->orLike('deskripsi', $search)
-                ->groupEnd();
-        }
+        $total  = $this->applyGalleryFilters(new GalleryAlbumModel(), $search, $dateStart, $dateEnd)
+                      ->countAllResults(false);
 
-        $albums = $albumModel->orderBy('tanggal_waktu', 'DESC')
-            ->findAll($limit, $offset);
+        $albums = $this->applyGalleryFilters(new GalleryAlbumModel(), $search, $dateStart, $dateEnd)
+                      ->orderBy('tanggal_waktu', 'DESC')
+                      ->findAll($limit, $offset);
 
         $data = [];
         foreach ($albums as $album) {
             $data[] = [
-                'id' => $album['id'],
-                'nama_album' => $album['nama_album'],
-                'deskripsi' => $album['deskripsi'] ?? '',
+                'id'            => $album['id'],
+                'nama_album'    => $album['nama_album'],
+                'deskripsi'     => $album['deskripsi'] ?? '',
                 'tanggal_waktu' => date('d M Y', strtotime($album['tanggal_waktu'])),
-                'thumbnail' => $album['thumbnail'] ? base_url($album['thumbnail']) : 'https://via.placeholder.com/600x360?text=Album',
+                'thumbnail'     => $album['thumbnail'] ? base_url($album['thumbnail']) : null,
             ];
         }
 
         return $this->response->setJSON([
-            'data' => $data,
-            'total' => $total,
-            'page' => $page,
-            'limit' => $limit,
-            'total_pages' => ceil($total / $limit),
-            'search' => $search,
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'limit'       => $limit,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
         ]);
+    }
+
+    private function applyGalleryFilters(GalleryAlbumModel $model, string $search, string $dateStart, string $dateEnd): GalleryAlbumModel
+    {
+        if ($dateStart !== '') {
+            $model->where('DATE(tanggal_waktu) >=', $dateStart);
+        }
+        if ($dateEnd !== '') {
+            $model->where('DATE(tanggal_waktu) <=', $dateEnd);
+        }
+        if ($search !== '') {
+            $model->groupStart()
+                ->like('nama_album', $search)
+                ->orLike('deskripsi', $search)
+                ->groupEnd();
+        }
+        return $model;
     }
 
     public function createGallery()
@@ -248,10 +238,32 @@ class ContentController extends ProtectedController
         ]);
     }
 
+
+
     public function storeGallery()
     {
         if ($redirect = $this->guard(['staf'])) {
             return $redirect;
+        }
+
+        $thumb = $this->request->getFile('thumbnail');
+        if ($thumb && $thumb->isValid()) {
+            $error = validate_image_upload($thumb);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Thumbnail tidak valid: maksimal 1MB dan format harus JPG/PNG.');
+            }
+        }
+
+        $files = $this->request->getFileMultiple('media');
+        if ($files) {
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $error = validate_image_upload($file);
+                    if ($error !== null) {
+                        return redirect()->back()->withInput()->with('error', 'Upload dibatalkan. Pastikan semua foto maksimal 1MB dan format JPG/PNG.');
+                    }
+                }
+            }
         }
 
         $albumModel = new GalleryAlbumModel();
@@ -262,13 +274,7 @@ class ContentController extends ProtectedController
             'created_by'   => $this->currentUser['id'],
         ];
 
-        $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
-            // Tolak format .GIF
-            $extension = $thumb->getClientExtension();
-            if (strtolower($extension) === 'gif') {
-                return redirect()->back()->with('error', 'Format file .GIF tidak diperbolehkan.');
-            }
 
             $path = FCPATH . 'uploads/gallery';
             $this->ensureUploadPath($path);
@@ -321,19 +327,33 @@ class ContentController extends ProtectedController
             return redirect()->back()->with('error', 'Album tidak ditemukan.');
         }
 
+        $thumb = $this->request->getFile('thumbnail');
+        if ($thumb && $thumb->isValid()) {
+            $error = validate_image_upload($thumb);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Thumbnail tidak valid: maksimal 1MB dan format harus JPG/PNG.');
+            }
+        }
+
+        $files = $this->request->getFileMultiple('media');
+        if ($files) {
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $error = validate_image_upload($file);
+                    if ($error !== null) {
+                        return redirect()->back()->withInput()->with('error', 'Upload dibatalkan. Pastikan semua foto maksimal 1MB dan format JPG/PNG.');
+                    }
+                }
+            }
+        }
+
         $data = [
             'nama_album'    => $this->request->getPost('nama_album'),
             'deskripsi'     => $this->request->getPost('deskripsi'),
             'tanggal_waktu' => $this->request->getPost('tanggal_waktu') ?: $album['tanggal_waktu'],
         ];
 
-        $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
-            // Tolak format .GIF
-            $extension = $thumb->getClientExtension();
-            if (strtolower($extension) === 'gif') {
-                return redirect()->back()->with('error', 'Format file .GIF tidak diperbolehkan.');
-            }
 
             $path = FCPATH . 'uploads/gallery';
             $this->ensureUploadPath($path);
@@ -424,12 +444,6 @@ class ContentController extends ProtectedController
                 continue;
             }
             
-            // Tolak format .GIF
-            $extension = $file->getClientExtension();
-            if (strtolower($extension) === 'gif') {
-                continue; // Skip file GIF
-            }
-            
             // Upload file sementara
             $tempName = $file->getRandomName();
             $file->move($path, $tempName);
@@ -517,55 +531,28 @@ class ContentController extends ProtectedController
     public function newsApi()
     {
         if ($redirect = $this->guard(['staf'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
         }
 
-        $newsModel = new NewsModel();
-        
-        $page = (int)($this->request->getGet('page') ?? 1);
-        $limit = (int)($this->request->getGet('limit') ?? 12);
-        $search = $this->request->getGet('search') ?? '';
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 12;
+        $search = trim($this->request->getPost('search') ?? '');
         $offset = ($page - 1) * $limit;
 
-        // Apply date filter
-        if (!empty($dateStart)) {
-            $newsModel->where('DATE(tanggal_waktu) >=', $dateStart);
-        }
-        if (!empty($dateEnd)) {
-            $newsModel->where('DATE(tanggal_waktu) <=', $dateEnd);
-        }
-
-        // Apply search filter
-        if (!empty($search)) {
-            $newsModel->groupStart()
-                ->like('judul', $search)
-                ->orLike('isi', $search)
-                ->groupEnd();
-        }
-
-        // Get total count with filters
-        $total = $newsModel->countAllResults(false);
-        
-        // Reset and apply filters again for data fetch
         $newsModel = new NewsModel();
-        
-        // Apply date filter again
-        if (!empty($dateStart)) {
-            $newsModel->where('DATE(tanggal_waktu) >=', $dateStart);
-        }
-        if (!empty($dateEnd)) {
-            $newsModel->where('DATE(tanggal_waktu) <=', $dateEnd);
-        }
-        
-        // Apply search filter again
-        if (!empty($search)) {
+
+        if ($search !== '') {
             $newsModel->groupStart()
                 ->like('judul', $search)
                 ->orLike('isi', $search)
                 ->groupEnd();
         }
+
+        $total = $newsModel->countAllResults(false);
 
         $news = $newsModel->orderBy('tanggal_waktu', 'DESC')
             ->findAll($limit, $offset);
@@ -573,21 +560,21 @@ class ContentController extends ProtectedController
         $data = [];
         foreach ($news as $item) {
             $data[] = [
-                'id' => $item['id'],
-                'judul' => $item['judul'],
-                'isi' => strip_tags($item['isi']),
+                'id'            => $item['id'],
+                'judul'         => $item['judul'],
+                'isi'           => strip_tags($item['isi']),
                 'tanggal_waktu' => date('d M Y', strtotime($item['tanggal_waktu'])),
-                'thumbnail' => $item['thumbnail'] ? base_url($item['thumbnail']) : 'https://via.placeholder.com/600x360?text=Berita',
+                'thumbnail'     => $item['thumbnail'] ? base_url($item['thumbnail']) : null,
             ];
         }
 
         return $this->response->setJSON([
-            'data' => $data,
-            'total' => $total,
-            'page' => $page,
-            'limit' => $limit,
-            'total_pages' => ceil($total / $limit),
-            'search' => $search,
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'limit'       => $limit,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
         ]);
     }
 
@@ -632,6 +619,28 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
+        // Validasi thumbnail
+        $thumb = $this->request->getFile('thumbnail');
+        if ($thumb && $thumb->isValid()) {
+            $error = validate_image_upload($thumb);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Thumbnail tidak valid: maksimal 1MB dan format harus JPG/PNG.');
+            }
+        }
+
+        // Validasi semua foto media
+        $files = $this->request->getFileMultiple('media');
+        if ($files) {
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $error = validate_image_upload($file);
+                    if ($error !== null) {
+                        return redirect()->back()->withInput()->with('error', 'Upload dibatalkan. Pastikan semua foto maksimal 1MB dan format JPG/PNG.');
+                    }
+                }
+            }
+        }
+
         $newsModel = new NewsModel();
         $data      = [
             'judul'         => $this->request->getPost('judul'),
@@ -640,13 +649,26 @@ class ContentController extends ProtectedController
             'created_by'    => $this->currentUser['id'],
         ];
 
-        $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
             $path = FCPATH . 'uploads/news';
             $this->ensureUploadPath($path);
-            $name = $thumb->getRandomName();
-            $thumb->move($path, $name);
-            $data['thumbnail'] = 'uploads/news/' . $name;
+
+            $tempName = $thumb->getRandomName();
+            $thumb->move($path, $tempName);
+            $tempPath = $path . '/' . $tempName;
+
+            $image    = \Config\Services::image();
+            $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+            $webpPath = $path . '/' . $webpName;
+
+            try {
+                $image->withFile($tempPath)->convert(IMAGETYPE_WEBP)->save($webpPath, 85);
+                if (file_exists($tempPath)) @unlink($tempPath);
+                $data['thumbnail'] = 'uploads/news/' . $webpName;
+            } catch (\Exception $e) {
+                if (file_exists($tempPath)) @unlink($tempPath);
+                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail. Pastikan file adalah gambar yang valid.');
+            }
         }
 
         $newsId = $newsModel->insert($data, true);
@@ -668,19 +690,60 @@ class ContentController extends ProtectedController
             return redirect()->back()->with('error', 'Berita tidak ditemukan.');
         }
 
+        // Validasi thumbnail
+        $thumb = $this->request->getFile('thumbnail');
+        if ($thumb && $thumb->isValid()) {
+            $error = validate_image_upload($thumb);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Thumbnail tidak valid: maksimal 1MB dan format harus JPG/PNG.');
+            }
+        }
+
+        // Validasi semua foto media
+        $files = $this->request->getFileMultiple('media');
+        if ($files) {
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $error = validate_image_upload($file);
+                    if ($error !== null) {
+                        return redirect()->back()->withInput()->with('error', 'Upload dibatalkan. Pastikan semua foto maksimal 1MB dan format JPG/PNG.');
+                    }
+                }
+            }
+        }
+
         $data = [
             'judul'         => $this->request->getPost('judul'),
             'tanggal_waktu' => $this->request->getPost('tanggal_waktu') ?: $news['tanggal_waktu'],
             'isi'           => $this->request->getPost('isi'),
         ];
 
-        $thumb = $this->request->getFile('thumbnail');
         if ($thumb && $thumb->isValid()) {
             $path = FCPATH . 'uploads/news';
             $this->ensureUploadPath($path);
-            $name = $thumb->getRandomName();
-            $thumb->move($path, $name);
-            $data['thumbnail'] = 'uploads/news/' . $name;
+
+            // Hapus thumbnail lama
+            if ($news['thumbnail']) {
+                $oldFile = FCPATH . ltrim($news['thumbnail'], '/');
+                if (is_file($oldFile)) @unlink($oldFile);
+            }
+
+            $tempName = $thumb->getRandomName();
+            $thumb->move($path, $tempName);
+            $tempPath = $path . '/' . $tempName;
+
+            $image    = \Config\Services::image();
+            $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+            $webpPath = $path . '/' . $webpName;
+
+            try {
+                $image->withFile($tempPath)->convert(IMAGETYPE_WEBP)->save($webpPath, 85);
+                if (file_exists($tempPath)) @unlink($tempPath);
+                $data['thumbnail'] = 'uploads/news/' . $webpName;
+            } catch (\Exception $e) {
+                if (file_exists($tempPath)) @unlink($tempPath);
+                return redirect()->back()->with('error', 'Gagal memproses gambar thumbnail. Pastikan file adalah gambar yang valid.');
+            }
         }
 
         $newsModel->update($id, $data);
@@ -1189,9 +1252,6 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
-        $pengumumanModel = new PengumumanModel();
-        $pengumuman = $pengumumanModel->orderBy('created_at', 'DESC')->findAll();
-
         return view('Staff/pengumuman/index', [
             'title' => 'Pengumuman'
         ]);
@@ -1200,49 +1260,50 @@ class ContentController extends ProtectedController
     public function pengumumanApi()
     {
         if ($redirect = $this->guard(['staf'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized']);
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
         }
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 12;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
 
         $pengumumanModel = new PengumumanModel();
-        
-        $page = $this->request->getGet('page') ?? 1;
-        $limit = $this->request->getGet('limit') ?? 12;
-        $search = $this->request->getGet('search') ?? '';
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
 
-        $builder = $pengumumanModel->builder();
-
-        if ($search) {
-            $builder->groupStart()
-                    ->like('judul', $search)
-                    ->orLike('isi', $search)
-                    ->groupEnd();
+        if ($search !== '') {
+            $pengumumanModel->groupStart()
+                ->like('judul', $search)
+                ->orLike('isi', $search)
+                ->groupEnd();
         }
 
-        if ($dateStart) {
-            $builder->where('DATE(created_at) >=', $dateStart);
-        }
+        $total = $pengumumanModel->countAllResults(false);
 
-        if ($dateEnd) {
-            $builder->where('DATE(created_at) <=', $dateEnd);
-        }
+        $pengumuman = $pengumumanModel->orderBy('created_at', 'DESC')
+            ->findAll($limit, $offset);
 
-        $total = $builder->countAllResults(false);
-        $pengumuman = $builder->orderBy('created_at', 'DESC')
-                            ->limit($limit, ($page - 1) * $limit)
-                            ->get()
-                            ->getResultArray();
-
-        foreach ($pengumuman as &$item) {
-            $item['tanggal_waktu'] = date('d M Y', strtotime($item['created_at']));
+        $data = [];
+        foreach ($pengumuman as $item) {
+            $data[] = [
+                'id'            => $item['id'],
+                'judul'         => $item['judul'],
+                'isi'           => strip_tags($item['isi'] ?? ''),
+                'tanggal_waktu' => date('d M Y', strtotime($item['created_at'])),
+                'thumbnail'     => !empty($item['thumbnail']) ? base_url($item['thumbnail']) : null,
+            ];
         }
 
         return $this->response->setJSON([
-            'data' => $pengumuman,
-            'total' => $total,
-            'total_pages' => ceil($total / $limit),
-            'current_page' => $page
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'limit'       => $limit,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
         ]);
     }
 
@@ -1263,36 +1324,49 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
+        // Validasi thumbnail
+        $thumbnail = $this->request->getFile('thumbnail');
+        if ($thumbnail && $thumbnail->isValid()) {
+            $error = validate_image_upload($thumbnail);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Thumbnail tidak valid: maksimal 1MB dan format harus JPG/PNG.');
+            }
+        }
+
+        // Validasi foto
+        $foto = $this->request->getFile('foto');
+        if ($foto && $foto->isValid()) {
+            $error = validate_image_upload($foto);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto tidak valid: maksimal 1MB dan format harus JPG/PNG.');
+            }
+        }
+
         $pengumumanModel = new PengumumanModel();
-        
         $data = [
             'judul' => $this->request->getPost('judul'),
             'isi'   => $this->request->getPost('isi'),
         ];
 
-        // Handle thumbnail upload
-        $thumbnail = $this->request->getFile('thumbnail');
+        // Proses thumbnail
         if ($thumbnail && $thumbnail->isValid()) {
-            $path = FCPATH . 'uploads/pengumuman';
-            $this->ensureUploadPath($path);
-            $newName = $thumbnail->getRandomName();
-            $thumbnail->move($path, $newName);
-            $data['thumbnail'] = 'uploads/pengumuman/' . $newName;
+            $data['thumbnail'] = $this->uploadToWebp($thumbnail, 'uploads/pengumuman');
+            if ($data['thumbnail'] === null) {
+                return redirect()->back()->with('error', 'Gagal memproses thumbnail. Pastikan file adalah gambar yang valid.');
+            }
         }
 
-        // Handle foto upload
-        $foto = $this->request->getFile('foto');
+        // Proses foto
         if ($foto && $foto->isValid()) {
-            $path = FCPATH . 'uploads/pengumuman';
-            $this->ensureUploadPath($path);
-            $newName = $foto->getRandomName();
-            $foto->move($path, $newName);
-            $data['foto'] = 'uploads/pengumuman/' . $newName;
+            $data['foto'] = $this->uploadToWebp($foto, 'uploads/pengumuman');
+            if ($data['foto'] === null) {
+                return redirect()->back()->with('error', 'Gagal memproses foto. Pastikan file adalah gambar yang valid.');
+            }
         }
 
         $pengumumanModel->save($data);
 
-        return redirect()->to('/staff/pengumuman')->with('message', 'Pengumuman berhasil ditambahkan');
+        return redirect()->to('/staff/pengumuman')->with('success', 'Pengumuman berhasil ditambahkan.');
     }
 
     public function editPengumuman($id)
@@ -1321,10 +1395,28 @@ class ContentController extends ProtectedController
         }
 
         $pengumumanModel = new PengumumanModel();
-        $pengumuman = $pengumumanModel->find($id);
+        $pengumuman      = $pengumumanModel->find($id);
 
         if (!$pengumuman) {
-            return redirect()->to('/staff/pengumuman')->with('error', 'Pengumuman tidak ditemukan');
+            return redirect()->to('/staff/pengumuman')->with('error', 'Pengumuman tidak ditemukan.');
+        }
+
+        // Validasi thumbnail
+        $thumbnail = $this->request->getFile('thumbnail');
+        if ($thumbnail && $thumbnail->isValid()) {
+            $error = validate_image_upload($thumbnail);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Thumbnail tidak valid: maksimal 1MB dan format harus JPG/PNG.');
+            }
+        }
+
+        // Validasi foto
+        $foto = $this->request->getFile('foto');
+        if ($foto && $foto->isValid()) {
+            $error = validate_image_upload($foto);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto tidak valid: maksimal 1MB dan format harus JPG/PNG.');
+            }
         }
 
         $data = [
@@ -1332,45 +1424,35 @@ class ContentController extends ProtectedController
             'isi'   => $this->request->getPost('isi'),
         ];
 
-        // Handle thumbnail upload
-        $thumbnail = $this->request->getFile('thumbnail');
+        // Proses thumbnail baru
         if ($thumbnail && $thumbnail->isValid()) {
-            // Delete old thumbnail
+            // Hapus file lama
             if (!empty($pengumuman['thumbnail'])) {
-                $oldFile = FCPATH . $pengumuman['thumbnail'];
-                if (file_exists($oldFile)) {
-                    @unlink($oldFile);
-                }
+                $oldFile = FCPATH . ltrim($pengumuman['thumbnail'], '/');
+                if (is_file($oldFile)) @unlink($oldFile);
             }
-
-            $path = FCPATH . 'uploads/pengumuman';
-            $this->ensureUploadPath($path);
-            $newName = $thumbnail->getRandomName();
-            $thumbnail->move($path, $newName);
-            $data['thumbnail'] = 'uploads/pengumuman/' . $newName;
+            $data['thumbnail'] = $this->uploadToWebp($thumbnail, 'uploads/pengumuman');
+            if ($data['thumbnail'] === null) {
+                return redirect()->back()->with('error', 'Gagal memproses thumbnail. Pastikan file adalah gambar yang valid.');
+            }
         }
 
-        // Handle foto upload
-        $foto = $this->request->getFile('foto');
+        // Proses foto baru
         if ($foto && $foto->isValid()) {
-            // Delete old foto
+            // Hapus file lama
             if (!empty($pengumuman['foto'])) {
-                $oldFile = FCPATH . $pengumuman['foto'];
-                if (file_exists($oldFile)) {
-                    @unlink($oldFile);
-                }
+                $oldFile = FCPATH . ltrim($pengumuman['foto'], '/');
+                if (is_file($oldFile)) @unlink($oldFile);
             }
-
-            $path = FCPATH . 'uploads/pengumuman';
-            $this->ensureUploadPath($path);
-            $newName = $foto->getRandomName();
-            $foto->move($path, $newName);
-            $data['foto'] = 'uploads/pengumuman/' . $newName;
+            $data['foto'] = $this->uploadToWebp($foto, 'uploads/pengumuman');
+            if ($data['foto'] === null) {
+                return redirect()->back()->with('error', 'Gagal memproses foto. Pastikan file adalah gambar yang valid.');
+            }
         }
 
         $pengumumanModel->update($id, $data);
 
-        return redirect()->to('/staff/pengumuman')->with('message', 'Pengumuman berhasil diperbarui');
+        return redirect()->to('/staff/pengumuman')->with('success', 'Pengumuman berhasil diperbarui.');
     }
 
     public function deletePengumuman($id)
@@ -1439,21 +1521,25 @@ class ContentController extends ProtectedController
     public function pengaduanApi()
     {
         if ($redirect = $this->guard(['staf'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized']);
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
+        }
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
         }
 
         $pengaduanModel = new PengaduanModel();
-        
-        $page = $this->request->getGet('page') ?? 1;
-        $limit = $this->request->getGet('limit') ?? 12;
-        $search = $this->request->getGet('search') ?? '';
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
-        $status = $this->request->getGet('status') ?? '';
+
+        $page      = (int)($this->request->getPost('page') ?: 1);
+        $limit     = (int)($this->request->getPost('length') ?: 10);
+        $search    = trim($this->request->getPost('search') ?? '');
+        $dateStart = trim($this->request->getPost('date_start') ?? '');
+        $dateEnd   = trim($this->request->getPost('date_end') ?? '');
+        $offset    = ($page - 1) * $limit;
 
         $builder = $pengaduanModel->builder();
 
-        if ($search) {
+        if ($search !== '') {
             $builder->groupStart()
                     ->like('nama', $search)
                     ->orLike('perihal', $search)
@@ -1461,33 +1547,30 @@ class ContentController extends ProtectedController
                     ->groupEnd();
         }
 
-        if ($dateStart) {
+        if ($dateStart !== '') {
             $builder->where('DATE(created_at) >=', $dateStart);
         }
 
-        if ($dateEnd) {
+        if ($dateEnd !== '') {
             $builder->where('DATE(created_at) <=', $dateEnd);
         }
 
-        if ($status) {
-            $builder->where('status', $status);
-        }
-
-        $total = $builder->countAllResults(false);
+        $total    = $builder->countAllResults(false);
         $pengaduan = $builder->orderBy('created_at', 'DESC')
-                            ->limit($limit, ($page - 1) * $limit)
-                            ->get()
-                            ->getResultArray();
+                             ->limit($limit, $offset)
+                             ->get()
+                             ->getResultArray();
 
         foreach ($pengaduan as &$item) {
-            $item['tanggal_waktu'] = date('d M Y', strtotime($item['created_at']));
+            $item['tanggal_waktu'] = date('d M Y H:i', strtotime($item['created_at']));
         }
 
         return $this->response->setJSON([
-            'data' => $pengaduan,
-            'total' => $total,
-            'total_pages' => ceil($total / $limit),
-            'current_page' => $page
+            'success'      => true,
+            'data'         => $pengaduan,
+            'total'        => $total,
+            'total_pages'  => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'current_page' => $page,
         ]);
     }
 

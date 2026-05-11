@@ -1,32 +1,25 @@
 <?= $this->extend('User/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
-        <h4><?= isset($letter) ? 'Edit Surat' : 'Buat Surat Baru' ?></h4>
-        <div class="text-muted small">Lengkapi detail surat yang akan dikirim ke staf desa.</div>
+        <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
+            <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
+            LAYANAN SURAT
+        </div>
+        <h2 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">
+            <?= isset($letter) ? 'Edit <span style="color: #15803d;">Surat</span>' : 'Buat <span style="color: #15803d;">Surat Baru</span>' ?>
+        </h2>
+        <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Lengkapi detail surat yang akan dikirim ke staf desa.</p>
     </div>
-    <a href="<?= base_url('/user/surat') ?>" class="page-header-icon">
-        <i class="bi bi-arrow-left"></i>
-    </a>
+    <div class="d-flex gap-2">
+        <a href="<?= base_url('/user/surat') ?>" class="btn btn-outline-success">
+            Kembali
+        </a>
+    </div>
 </div>
 
-<?php if (!isset($letter)): // Hanya tampilkan section export untuk mode create ?>
-<div class="page-header mb-4">
-    <div>
-        <h4>Hasilkan Berkas Surat</h4>
-        <div class="text-muted small">Dapatkan dokumen Word atau PDF yang sudah sesuai dengan tipe surat dan isi surat yang Anda buat.</div>
-    </div>
-    <div class="page-header-actions">
-        <button type="button" class="page-header-icon page-header-icon-add" id="btnExportWord" title="Hasilkan Word">
-            <i class="bi bi-file-earmark-word"></i>
-        </button>
-        <button type="button" class="page-header-icon page-header-icon-delete" id="btnExportPDF" title="Hasilkan PDF">
-            <i class="bi bi-file-earmark-pdf"></i>
-        </button>
-    </div>
-</div>
-<?php endif; ?>
+
 
 <div class="card">
     <div class="card-body">
@@ -53,153 +46,49 @@
                 <textarea class="form-control" name="isi_surat" rows="6" required><?= set_value('isi_surat', $letter['isi_surat'] ?? '') ?></textarea>
             </div>
             <div class="mb-3">
-                <label class="form-label">Lampiran (opsional, bisa lebih dari satu)</label>
-                <input type="file" class="form-control" name="attachments[]" multiple>
+                <label class="form-label">Lampiran <span class="text-muted small">(opsional — PDF, Word, JPG/PNG · maks. 1MB per file)</span></label>
+                <input type="file" class="form-control" name="attachments[]" id="letterAttachments" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <div id="attachmentPreviewList" class="mt-2 d-flex flex-column gap-2"></div>
             </div>
             <div class="mt-4">
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-<?= isset($letter) ? 'check-circle' : 'send' ?>"></i> <?= isset($letter) ? 'Update Surat' : 'Kirim Surat' ?>
+                <button class="btn btn-success" type="submit">
+                    <?= isset($letter) ? 'Update Surat' : 'Kirim Surat' ?>
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<?php if (!isset($letter)): // JavaScript hanya untuk mode create ?>
 <script>
 (function() {
-    // Bersihkan localStorage saat halaman dimuat/refresh
     localStorage.removeItem('draft_surat');
-    
-    // Simpan data ke localStorage saat user mengetik
-    const form = document.querySelector('form');
-    const judulInput = document.querySelector('input[name="judul_perihal"]');
-    const tipeSelect = document.querySelector('select[name="tipe_surat"]');
+
+    const judulInput  = document.querySelector('input[name="judul_perihal"]');
+    const tipeSelect  = document.querySelector('select[name="tipe_surat"]');
     const isiTextarea = document.querySelector('textarea[name="isi_surat"]');
-    
-    // Simpan ke localStorage saat ada perubahan
+    const form        = document.querySelector('form');
+
     function saveToLocalStorage() {
-        const data = {
-            judul_perihal: judulInput.value,
-            tipe_surat: tipeSelect.value,
-            isi_surat: isiTextarea.value
-        };
-        localStorage.setItem('draft_surat', JSON.stringify(data));
+        localStorage.setItem('draft_surat', JSON.stringify({
+            judul_perihal : judulInput.value,
+            tipe_surat    : tipeSelect.value,
+            isi_surat     : isiTextarea.value
+        }));
     }
-    
+
     judulInput.addEventListener('input', saveToLocalStorage);
     tipeSelect.addEventListener('change', saveToLocalStorage);
     isiTextarea.addEventListener('input', saveToLocalStorage);
-    
-    // Hapus draft saat form disubmit
+
     form.addEventListener('submit', function() {
         localStorage.removeItem('draft_surat');
     });
-    
-    // Ambil CSRF token dari form
-    function getCsrfToken() {
-        const csrfInput = document.querySelector('input[name="<?= csrf_token() ?>"]');
-        return csrfInput ? csrfInput.value : '';
-    }
-    
-    // Handle export Word
-    document.getElementById('btnExportWord').addEventListener('click', function() {
-        const tipeSurat = tipeSelect.value;
-        const isiSurat = isiTextarea.value;
-        
-        if (!tipeSurat) {
-            alert('Pilih jenis surat terlebih dahulu!');
-            return;
-        }
-        
-        if (!isiSurat.trim()) {
-            alert('Isi surat tidak boleh kosong!');
-            return;
-        }
-        
-        // Buat form sementara untuk POST
-        const formData = new FormData();
-        formData.append('tipe_surat', tipeSurat);
-        formData.append('isi_surat', isiSurat);
-        formData.append('<?= csrf_token() ?>', getCsrfToken());
-        
-        // Submit ke endpoint export Word
-        fetch('<?= base_url('/user/surat/preview/word') ?>', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.blob();
-            }
-            throw new Error('Export gagal');
-        })
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'Surat_' + tipeSurat.replace(/\s+/g, '_') + '.docx';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat export Word');
-        });
-    });
-    
-    // Handle export PDF
-    document.getElementById('btnExportPDF').addEventListener('click', function() {
-        const tipeSurat = tipeSelect.value;
-        const isiSurat = isiTextarea.value;
-        
-        if (!tipeSurat) {
-            alert('Pilih jenis surat terlebih dahulu!');
-            return;
-        }
-        
-        if (!isiSurat.trim()) {
-            alert('Isi surat tidak boleh kosong!');
-            return;
-        }
-        
-        // Buat form sementara untuk POST
-        const formData = new FormData();
-        formData.append('tipe_surat', tipeSurat);
-        formData.append('isi_surat', isiSurat);
-        formData.append('<?= csrf_token() ?>', getCsrfToken());
-        
-        // Submit ke endpoint export PDF
-        fetch('<?= base_url('/user/surat/preview/pdf') ?>', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.blob();
-            }
-            throw new Error('Export gagal');
-        })
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'Surat_' + tipeSurat.replace(/\s+/g, '_') + '.pdf';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat export PDF');
-        });
-    });
 })();
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof initLetterAttachmentUploader === 'function') {
+        initLetterAttachmentUploader('letterAttachments', 'attachmentPreviewList');
+    }
+});
 </script>
-<?php endif; ?>
 <?= $this->endSection() ?>
-
-

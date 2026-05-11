@@ -1,48 +1,64 @@
 <?= $this->extend('Staff/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+<style>
+.search-bar-container {
+    transition: all 0.2s ease;
+}
+.search-bar-container:focus-within {
+    border-color: #198754 !important;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+}
+.custom-pagination { text-align: center; }
+.pagination-wrapper {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+</style>
+
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
-        <h4>Surat Masuk</h4>
-        <div class="text-muted small">Kelola surat dari warga.</div>
+        <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
+            <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
+            LAYANAN SURAT
+        </div>
+        <h2 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">
+            Surat <span style="color: #15803d;">Masuk</span>
+        </h2>
+        <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Kelola surat dari warga.</p>
     </div>
-    <div class="page-header-icon">
-        <i class="bi bi-envelope"></i>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="d-flex align-items-center bg-white border px-3 search-bar-container" style="width: 260px; height: 38px; border-radius: 0.5rem;">
+            <i class="bi bi-search text-muted"></i>
+            <input type="text" id="searchInput" class="form-control border-0 shadow-none bg-transparent px-2 w-100" placeholder="Cari surat..." style="height: 100%;">
+            <button class="btn btn-link text-muted p-0 text-decoration-none shadow-none" type="button" id="clearSearchBtn" style="display: none;">
+                <i class="bi bi-x-circle-fill"></i>
+            </button>
+        </div>
     </div>
 </div>
 
 <!-- Template Section -->
 <div class="card mb-4">
     <div class="card-body">
-        <div class="mb-3 template-header">
-            <h4 class="template-title">Template Surat</h4>
-            <div class="text-muted small template-description">Download template surat untuk diisi manual</div>
-        </div>
-        <div class="row g-2 g-md-3 template-buttons">
+        <h5 class="card-title mb-4 fw-bold">Template Surat</h5>
+        <div class="row g-3">
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-usaha') ?>" class="btn btn-outline-primary w-100 template-btn">
-                    <i class="bi bi-download"></i> <span>KET USAHA</span>
-                </a>
+                <a href="<?= base_url('/staff/surat/template/keterangan-usaha') ?>" class="btn btn-success w-100">KET USAHA</a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-tidak-mampu') ?>" class="btn btn-outline-primary w-100 template-btn">
-                    <i class="bi bi-download"></i> <span>KET TIDAK MAMPU</span>
-                </a>
+                <a href="<?= base_url('/staff/surat/template/keterangan-tidak-mampu') ?>" class="btn btn-success w-100">KET TIDAK MAMPU</a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-belum-menikah') ?>" class="btn btn-outline-primary w-100 template-btn">
-                    <i class="bi bi-download"></i> <span>KET BELUM MENIKAH</span>
-                </a>
+                <a href="<?= base_url('/staff/surat/template/keterangan-belum-menikah') ?>" class="btn btn-success w-100">KET BELUM MENIKAH</a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-domisili') ?>" class="btn btn-outline-primary w-100 template-btn">
-                    <i class="bi bi-download"></i> <span>KET DOMISILI</span>
-                </a>
+                <a href="<?= base_url('/staff/surat/template/keterangan-domisili') ?>" class="btn btn-success w-100">KET DOMISILI</a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/undangan') ?>" class="btn btn-outline-primary w-100 template-btn">
-                    <i class="bi bi-download"></i> <span>UNDANGAN</span>
-                </a>
+                <a href="<?= base_url('/staff/surat/template/undangan') ?>" class="btn btn-success w-100">UNDANGAN</a>
             </div>
         </div>
     </div>
@@ -95,18 +111,7 @@
     </div>
 </div>
 
-<!-- Search Box -->
-<div class="mb-4">
-    <div class="letter-search-container">
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" id="searchInput" class="form-control" placeholder="Cari surat...">
-            <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" style="display: none;">
-                <i class="bi bi-x"></i>
-            </button>
-        </div>
-    </div>
-</div>
+
 
 <!-- Desktop Table View -->
 <div class="card desktop-table-view">
@@ -124,378 +129,282 @@
                     <th>Aksi</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody id="lettersTableBody">
+                    <tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-success spinner-border-sm"></div></td></tr>
                 </tbody>
             </table>
         </div>
+        <div id="desktopPagination" class="custom-pagination mt-3" style="display:none;"></div>
     </div>
 </div>
 
 <!-- Mobile/Tablet Card View -->
 <div class="mobile-card-view">
     <div id="lettersCardContainer"></div>
-    <div id="customPagination" class="custom-pagination"></div>
+    <div id="mobilePagination" class="custom-pagination"></div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-
 <script>
-let currentPage = 1;
-let itemsPerPage = 10;
-let totalRecords = 0;
-let totalPages = 1;
+document.addEventListener('DOMContentLoaded', function () {
+    let currentPage  = 1;
+    let totalPages   = 1;
+    let isLoading    = false;
+    let searchTimeout;
 
-// Initialize itemsPerPage from select
-$(document).ready(function() {
-    const lengthValue = parseInt($('#lengthSelect').val()) || 10;
-    itemsPerPage = lengthValue === -1 ? 10000 : lengthValue;
-});
+    const csrfHeaderName = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+    const getCsrfHash    = () => document.querySelector(`meta[name="${csrfHeaderName}"]`)?.content || '';
 
-function getStatusBadge(status) {
-    const statusMap = {
-        'Menunggu': { cls: 'bg-warning text-dark', label: 'Menunggu' },
-        'Dibaca':   { cls: 'bg-info text-white',   label: 'Dibaca'   },
-        'Diterima': { cls: 'bg-success',            label: 'Diterima' },
-        'Ditolak':  { cls: 'bg-danger',             label: 'Ditolak'  },
-    };
-    const s = statusMap[status] || { cls: 'bg-secondary', label: status };
-    return '<span class="badge ' + s.cls + '">' + s.label + '</span>';
-}
+    function escapeHtml(str) {
+        return (str || '').toString()
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
 
-function loadCards(page = 1) {
-    const container = $('#lettersCardContainer');
-    container.html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
-    
-    const lengthValue = parseInt($('#lengthSelect').val()) || 10;
-    const currentLength = lengthValue === -1 ? 10000 : lengthValue;
-    itemsPerPage = currentLength;
-    
-    const start = (page - 1) * itemsPerPage;
-    const dateStart = $('#filterDateStart').val();
-    const dateEnd = $('#filterDateEnd').val();
-    const status = $('#filterStatus').val();
-    const search = $('#searchInput').val().trim();
-    
-    $.ajax({
-        url: '<?= base_url('/staff/surat/api') ?>',
-        type: 'GET',
-        data: {
-            draw: page,
-            start: start,
-            length: itemsPerPage,
-                order: [{ column: 5, dir: 'desc' }],
-            date_start: dateStart,
-            date_end: dateEnd,
-                tipe_surat_filter: $('#filterTipeSurat').val(),
-            status_filter: status,
-            search_custom: search
-        },
-        success: function(response) {
-            container.empty();
-            
-            if (!response.data || response.data.length === 0) {
-                container.html('<div class="text-center py-5"><p class="text-muted">Tidak ada data surat</p></div>');
-                totalRecords = 0;
-                totalPages = 1;
-                renderPagination();
+    function getStatusBadge(status) {
+        const map = {
+            'Menunggu': 'bg-warning text-dark',
+            'Dibaca':   'bg-info text-white',
+            'Diterima': 'bg-success',
+            'Ditolak':  'bg-danger',
+        };
+        return `<span class="badge ${map[status] || 'bg-secondary'}">${escapeHtml(status)}</span>`;
+    }
+
+    function getLength() {
+        const val = parseInt(document.getElementById('lengthSelect').value) || 10;
+        return val === -1 ? 10000 : val;
+    }
+
+    function isDesktop() {
+        return window.innerWidth > 991;
+    }
+
+    function loadLetters(page = 1) {
+        if (isLoading) return;
+        isLoading = true;
+
+        const length = getLength();
+
+        // Show loading state
+        if (isDesktop()) {
+            document.getElementById('lettersTableBody').innerHTML =
+                `<tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-success spinner-border-sm"></div></td></tr>`;
+            document.getElementById('desktopPagination').style.display = 'none';
+        } else {
+            document.getElementById('lettersCardContainer').innerHTML =
+                `<div class="text-center py-5"><div class="spinner-border text-success" role="status"></div></div>`;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append('page', page);
+        formData.append('length', length);
+        formData.append('search', document.getElementById('searchInput').value.trim());
+        formData.append('date_start', document.getElementById('filterDateStart').value);
+        formData.append('date_end', document.getElementById('filterDateEnd').value);
+        formData.append('tipe_surat_filter', document.getElementById('filterTipeSurat').value);
+        formData.append('status_filter', document.getElementById('filterStatus').value);
+        formData.append(csrfHeaderName, getCsrfHash());
+
+        fetch('<?= base_url('/staff/surat/api') ?>', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                showError('Gagal memuat data surat.');
+                renderEmpty();
                 return;
             }
-            
-            totalRecords = response.recordsFiltered || response.recordsTotal || 0;
-            totalPages = Math.ceil(totalRecords / itemsPerPage);
+
             currentPage = page;
-            
-            response.data.forEach(function(letter) {
-                const card = `
-                    <div class="letter-card">
-                        <div class="letter-card-header">
-                            <h5 class="letter-card-title">${letter.judul_perihal}</h5>
-                            <div class="letter-card-badge">
-                                ${getStatusBadge(letter.status)}
-                            </div>
-                        </div>
-                        <div class="letter-card-body">
-                            <div class="letter-card-info">
-                                <div class="letter-card-item">
-                                    <i class="bi bi-hash"></i>
-                                    <span class="fw-bold">${letter.kode_unik || '-'}</span>
-                                </div>
-                                <div class="letter-card-item">
-                                    <i class="bi bi-file-text"></i>
-                                    <span>${letter.tipe_surat || '-'}</span>
-                                </div>
-                                <div class="letter-card-item">
-                                    <i class="bi bi-person"></i>
-                                    <span>${letter.sender_name}</span>
-                                </div>
-                                <div class="letter-card-item">
-                                    <i class="bi bi-clock"></i>
-                                    <span>${letter.sent_at}</span>
-                                </div>
-                            </div>
-                            <div class="letter-card-actions">
-                                <a href="<?= base_url('/staff/surat/') ?>${letter.id}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Detail
-                                </a>
-                                <a href="<?= base_url('/staff/surat/') ?>${letter.id}/hapus" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin menghapus surat ini? Semua balasan dan lampiran juga akan dihapus.')">
-                                    <i class="bi bi-trash"></i> Hapus
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.append(card);
-            });
-            
-            renderPagination();
-        },
-        error: function() {
-            container.html('<div class="text-center py-5"><p class="text-danger">Error loading data</p></div>');
-            console.error('Error loading letters data');
-        }
-    });
-}
+            totalPages  = data.total_pages || 1;
 
-function renderPagination() {
-    const pagination = $('#customPagination');
-    pagination.empty();
-    
-    if (totalPages <= 1) return;
-    
-    let paginationHTML = '<div class="pagination-wrapper">';
-    
-    // Previous button
-    if (currentPage > 1) {
-        paginationHTML += `<button class="pagination-btn" data-page="${currentPage - 1}">
-            <i class="bi bi-chevron-left"></i>
-        </button>`;
-    } else {
-        paginationHTML += `<button class="pagination-btn disabled" disabled>
-            <i class="bi bi-chevron-left"></i>
-        </button>`;
-    }
-    
-    // Page numbers (max 3 buttons)
-    let startPage = Math.max(1, currentPage - 1);
-    let endPage = Math.min(totalPages, startPage + 2);
-    
-    // Adjust if we're near the end
-    if (endPage - startPage < 2) {
-        startPage = Math.max(1, endPage - 2);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-        if (i === currentPage) {
-            paginationHTML += `<button class="pagination-btn active">${i}</button>`;
-        } else {
-            paginationHTML += `<button class="pagination-btn" data-page="${i}">${i}</button>`;
-        }
-    }
-    
-    // Next button
-    if (currentPage < totalPages) {
-        paginationHTML += `<button class="pagination-btn" data-page="${currentPage + 1}">
-            <i class="bi bi-chevron-right"></i>
-        </button>`;
-    } else {
-        paginationHTML += `<button class="pagination-btn disabled" disabled>
-            <i class="bi bi-chevron-right"></i>
-        </button>`;
-    }
-    
-    paginationHTML += '</div>';
-    pagination.html(paginationHTML);
-}
+            if (!data.data || data.data.length === 0) {
+                renderEmpty();
+                return;
+            }
 
-function goToPage(page) {
-    if (page < 1 || page > totalPages) return;
-    loadCards(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function checkViewMode() {
-    const width = $(window).width();
-    if (width <= 991) {
-        $('.desktop-table-view').hide();
-        $('.mobile-card-view').show();
-        if (currentPage === 1) {
-            loadCards(1);
-        }
-    } else {
-        $('.desktop-table-view').show();
-        $('.mobile-card-view').hide();
-    }
-}
-
-$(document).ready(function() {
-    // Initialize DataTable for desktop (server-side)
-    const dataTable = $('#lettersTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: '<?= base_url('/staff/surat/api') ?>',
-            type: 'GET',
-            dataSrc: 'data',
-            data: function(d) {
-                d.date_start = $('#filterDateStart').val();
-                d.date_end = $('#filterDateEnd').val();
-                d.tipe_surat_filter = $('#filterTipeSurat').val();
-                d.status_filter = $('#filterStatus').val();
-                d.search_custom = $('#searchInput').val().trim();
-            }
-        },
-        columns: [
-            { 
-                data: 'kode_unik',
-                className: 'small text-muted fw-bold'
-            },
-            { 
-                data: 'judul_perihal',
-                className: 'fw-semibold'
-            },
-            { 
-                data: 'tipe_surat'
-            },
-            { 
-                data: 'sender_name'
-            },
-            { 
-                data: 'status',
-                render: function(data) {
-                    return getStatusBadge(data);
-                }
-            },
-            { 
-                data: 'sent_at',
-                className: 'small text-muted'
-            },
-            { 
-                data: 'id',
-                orderable: false,
-                searchable: false,
-                render: function(data) {
-                    return '<div class="btn-group" role="group">' +
-                        '<a href="<?= base_url('/staff/surat/') ?>' + data + '" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Detail</a> ' +
-                        '<a href="<?= base_url('/staff/surat/') ?>' + data + '/hapus" class="btn btn-sm btn-outline-danger" onclick="return confirm(\'Yakin ingin menghapus surat ini? Semua balasan dan lampiran juga akan dihapus.\')">' +
-                        '<i class="bi bi-trash"></i> Hapus</a>' +
-                        '</div>';
-                }
-            }
-        ],
-        language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/id.json',
-            paginate: {
-                previous: '<i class="bi bi-chevron-left"></i>',
-                next: '<i class="bi bi-chevron-right"></i>'
-            }
-        },
-        dom: 'rt<"row"<"col-sm-12 col-md-12"p>>',
-        info: false,
-        searching: false,
-        order: [[5, 'desc']],
-        pageLength: 10
-    });
-    
-    // Check initial view mode
-    checkViewMode();
-    
-    // Handle window resize
-    $(window).resize(function() {
-        checkViewMode();
-    });
-    
-    // Search handler with debounce
-    let searchTimeout;
-    let currentSearch = '';
-    function performSearch() {
-        const search = $('#searchInput').val().trim();
-        currentSearch = search;
-        
-        if (search) {
-            $('#clearSearchBtn').show();
-            $('.letter-search-container .input-group').addClass('has-clear-btn');
-        } else {
-            $('#clearSearchBtn').hide();
-            $('.letter-search-container .input-group').removeClass('has-clear-btn');
-        }
-        
-        // Update DataTable search
-        if (typeof dataTable !== 'undefined') {
-            // Reset DataTable search and apply custom search via ajax.data
-            dataTable.ajax.reload();
-        }
-        
-        // Update mobile card view
-        if ($('.mobile-card-view').is(':visible')) {
-            currentPage = 1;
-            loadCards(1);
-        }
-    }
-    
-    // Auto search on input with debounce (500ms delay)
-    $('#searchInput').on('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            performSearch();
-        }, 500);
-    });
-    
-    // Clear search
-    $('#clearSearchBtn').on('click', function() {
-        $('#searchInput').val('');
-        $('#clearSearchBtn').hide();
-        $('.letter-search-container .input-group').removeClass('has-clear-btn');
-        performSearch();
-    });
-    
-    // Auto filter function
-    let filterTimeout;
-    function applyFilter() {
-        clearTimeout(filterTimeout);
-        filterTimeout = setTimeout(function() {
-            currentPage = 1;
-            if (typeof dataTable !== 'undefined') {
-                dataTable.ajax.reload();
-            }
-            if ($('.mobile-card-view').is(':visible')) {
-                loadCards(1);
-            }
-        }, 300);
-    }
-    
-    // Auto filter on change
-    $('#filterDateStart, #filterDateEnd, #filterTipeSurat, #filterStatus').on('change', function() {
-        applyFilter();
-    });
-    
-    // Length select handler
-    $('#lengthSelect').on('change', function() {
-        const length = parseInt($(this).val());
-        if (typeof dataTable !== 'undefined') {
-            if (length === -1) {
-                dataTable.page.len(10000).draw();
+            if (isDesktop()) {
+                renderTable(data.data);
             } else {
-                dataTable.page.len(length).draw();
+                renderCards(data.data);
             }
+
+            renderPagination();
+        })
+        .catch(() => showError('Terjadi kesalahan saat memuat data.'))
+        .finally(() => { isLoading = false; });
+    }
+
+    function renderEmpty() {
+        if (isDesktop()) {
+            document.getElementById('lettersTableBody').innerHTML =
+                `<tr><td colspan="7" class="text-center py-4 text-muted">Tidak ada data surat.</td></tr>`;
+            document.getElementById('desktopPagination').style.display = 'none';
+        } else {
+            document.getElementById('lettersCardContainer').innerHTML =
+                `<div class="text-center py-5"><p class="text-muted">Tidak ada data surat.</p></div>`;
+            document.getElementById('mobilePagination').innerHTML = '';
         }
-        if ($('.mobile-card-view').is(':visible')) {
-            currentPage = 1;
-            loadCards(1);
+    }
+
+    function renderTable(letters) {
+        const tbody = document.getElementById('lettersTableBody');
+        tbody.innerHTML = letters.map(letter => `
+            <tr>
+                <td class="small text-muted fw-bold">${escapeHtml(letter.kode_unik)}</td>
+                <td class="fw-semibold">${escapeHtml(letter.judul_perihal)}</td>
+                <td>${escapeHtml(letter.tipe_surat)}</td>
+                <td>${escapeHtml(letter.sender_name)}</td>
+                <td>${getStatusBadge(letter.status)}</td>
+                <td class="small text-muted">${escapeHtml(letter.sent_at)}</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a href="<?= base_url('/staff/surat/') ?>${letter.id}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> Detail
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-surat"
+                            data-id="${letter.id}" data-perihal="${escapeHtml(letter.judul_perihal)}">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        document.getElementById('desktopPagination').style.display = totalPages > 1 ? 'block' : 'none';
+        attachDeleteEvents();
+    }
+
+    function renderCards(letters) {
+        const container = document.getElementById('lettersCardContainer');
+        container.innerHTML = letters.map(letter => `
+            <div class="letter-card">
+                <div class="letter-card-header">
+                    <h5 class="letter-card-title">${escapeHtml(letter.judul_perihal)}</h5>
+                    <div class="letter-card-badge">${getStatusBadge(letter.status)}</div>
+                </div>
+                <div class="letter-card-body">
+                    <div class="letter-card-info">
+                        <div class="letter-card-item"><i class="bi bi-hash"></i><span class="fw-bold">${escapeHtml(letter.kode_unik)}</span></div>
+                        <div class="letter-card-item"><i class="bi bi-file-text"></i><span>${escapeHtml(letter.tipe_surat)}</span></div>
+                        <div class="letter-card-item"><i class="bi bi-person"></i><span>${escapeHtml(letter.sender_name)}</span></div>
+                        <div class="letter-card-item"><i class="bi bi-clock"></i><span>${escapeHtml(letter.sent_at)}</span></div>
+                    </div>
+                    <div class="letter-card-actions">
+                        <a href="<?= base_url('/staff/surat/') ?>${letter.id}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> Detail
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-surat"
+                            data-id="${letter.id}" data-perihal="${escapeHtml(letter.judul_perihal)}">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        attachDeleteEvents();
+    }
+
+    function attachDeleteEvents() {
+        document.querySelectorAll('.btn-hapus-surat').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id      = this.getAttribute('data-id');
+                const perihal = this.getAttribute('data-perihal');
+                showConfirm(
+                    `Hapus surat "${perihal}"? Semua balasan dan lampiran juga akan dihapus.`,
+                    'Hapus Surat', 'Ya, Hapus'
+                ).then(confirmed => {
+                    if (confirmed) window.location.href = `<?= base_url('/staff/surat/') ?>${id}/hapus`;
+                });
+            });
+        });
+    }
+
+    function renderPagination() {
+        const html = buildPaginationHTML(currentPage, totalPages);
+        if (isDesktop()) {
+            document.getElementById('desktopPagination').innerHTML = html;
+        } else {
+            document.getElementById('mobilePagination').innerHTML = html;
         }
-    });
-    
-    // Pagination click handler using event delegation
-    $(document).on('click', '.pagination-btn:not(.disabled):not(.active)', function() {
-        const page = parseInt($(this).data('page'));
+    }
+
+    function buildPaginationHTML(current, total) {
+        if (total <= 1) return '';
+        let html = '<div class="pagination-wrapper">';
+        html += current > 1
+            ? `<button class="pagination-btn" data-page="${current - 1}"><i class="bi bi-chevron-left"></i></button>`
+            : `<button class="pagination-btn disabled" disabled><i class="bi bi-chevron-left"></i></button>`;
+
+        let start = Math.max(1, current - 1);
+        let end   = Math.min(total, start + 2);
+        if (end - start < 2) start = Math.max(1, end - 2);
+
+        for (let i = start; i <= end; i++) {
+            html += i === current
+                ? `<button class="pagination-btn active">${i}</button>`
+                : `<button class="pagination-btn" data-page="${i}">${i}</button>`;
+        }
+
+        html += current < total
+            ? `<button class="pagination-btn" data-page="${current + 1}"><i class="bi bi-chevron-right"></i></button>`
+            : `<button class="pagination-btn disabled" disabled><i class="bi bi-chevron-right"></i></button>`;
+
+        return html + '</div>';
+    }
+
+    function checkViewMode() {
+        const desktop = isDesktop();
+        document.querySelector('.desktop-table-view').style.display = desktop ? '' : 'none';
+        document.querySelector('.mobile-card-view').style.display   = desktop ? 'none' : '';
+    }
+
+    // Event: pagination click (event delegation)
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.pagination-btn:not(.disabled):not(.active)');
+        if (!btn) return;
+        const page = parseInt(btn.getAttribute('data-page'));
         if (page && page !== currentPage) {
-            goToPage(page);
+            loadLetters(page);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     });
+
+    // Event: search
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const val = this.value.trim();
+        document.getElementById('clearSearchBtn').style.display = val ? 'inline-block' : 'none';
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => loadLetters(1), 500);
+    });
+
+    document.getElementById('clearSearchBtn').addEventListener('click', function () {
+        document.getElementById('searchInput').value = '';
+        this.style.display = 'none';
+        loadLetters(1);
+    });
+
+    // Event: filters
+    ['filterDateStart', 'filterDateEnd', 'filterTipeSurat', 'filterStatus'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => loadLetters(1));
+    });
+
+    // Event: length (items per page)
+    document.getElementById('lengthSelect').addEventListener('change', () => loadLetters(1));
+
+    // Event: resize
+    window.addEventListener('resize', function () {
+        checkViewMode();
+        loadLetters(currentPage);
+    });
+
+    // Init
+    checkViewMode();
+    loadLetters(1);
 });
 </script>
 <?= $this->endSection() ?>
-
-

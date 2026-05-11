@@ -114,8 +114,14 @@ class LandingController extends BaseController
         ];
 
         // Handle foto upload
+        helper('upload');
         $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid()) {
+        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
+            $error = validate_image_upload($foto);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto tidak valid: ' . $error);
+            }
+
             $path = FCPATH . 'uploads/pengaduan';
             if (!is_dir($path)) {
                 mkdir($path, 0755, true);

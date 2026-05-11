@@ -1,66 +1,74 @@
 <?= $this->extend('Staff/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
-        <h4>Detail Pengaduan</h4>
-        <div class="text-muted small">Detail pengaduan dari masyarakat.</div>
+        <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
+            <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
+            LAYANAN DESA
+        </div>
+        <h2 class="fw-bold text-dark mb-0" style="font-size: 2.2rem; letter-spacing: -0.5px;">
+            Detail <span style="color: #15803d;">Pengaduan</span>
+        </h2>
     </div>
-    <div class="page-header-actions d-flex gap-2">
-        <form action="<?= base_url('/staff/pengaduan/' . $pengaduan['id']) ?>" method="post" onsubmit="return confirm('Hapus pengaduan ini?')" class="d-inline">
-            <?= csrf_field() ?>
-            <input type="hidden" name="_method" value="DELETE">
-            <button type="submit" class="page-header-icon page-header-icon-delete border-0" title="Hapus Pengaduan">
-                <i class="bi bi-trash"></i>
-            </button>
-        </form>
-        <a href="<?= base_url('/staff/pengaduan') ?>" class="page-header-icon" title="Kembali">
-            <i class="bi bi-arrow-left"></i>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn btn-danger" onclick="hapusPengaduan(<?= $pengaduan['id'] ?>)">
+            Hapus
+        </button>
+        <a href="<?= base_url('/staff/pengaduan') ?>" class="btn btn-outline-success">
+            Kembali
         </a>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">Informasi Pengaduan</h5>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-4 fw-bold">Informasi Pengaduan</h5>
+        
+        <div class="row gy-3 mb-4">
+            <div class="col-md-6">
+                <div class="small text-muted mb-1">Tanggal</div>
+                <div class="fw-semibold text-dark"><?= date('d F Y, H:i', strtotime($pengaduan['created_at'])) ?> WIB</div>
             </div>
-            <div class="card-body">
-                <table class="table table-borderless">
-                    <tr>
-                        <th width="30%">Tanggal</th>
-                        <td><?= date('d F Y, H:i', strtotime($pengaduan['created_at'])) ?> WIB</td>
-                    </tr>
-                    <tr>
-                        <th>Nama</th>
-                        <td><?= esc($pengaduan['nama']) ?></td>
-                    </tr>
-                    <tr>
-                        <th>Kontak</th>
-                        <td><?= esc($pengaduan['kontak']) ?></td>
-                    </tr>
-                    <tr>
-                        <th>Perihal</th>
-                        <td><strong><?= esc($pengaduan['perihal']) ?></strong></td>
-                    </tr>
-                </table>
-                
-                <hr>
-                
-                <div class="mb-3">
-                    <h6>Isi Pengaduan:</h6>
-                    <p class="text-justify"><?= nl2br(esc($pengaduan['isi'])) ?></p>
-                </div>
-
-                <?php if (!empty($pengaduan['foto'])): ?>
-                    <div class="mb-3">
-                        <h6>Foto Pendukung:</h6>
-                        <img src="<?= base_url($pengaduan['foto']) ?>" alt="Foto Pengaduan" class="img-fluid rounded" style="max-height: 400px; width: auto;">
-                    </div>
-                <?php endif; ?>
+            <div class="col-md-6">
+                <div class="small text-muted mb-1">Nama</div>
+                <div class="fw-semibold text-dark"><?= esc($pengaduan['nama']) ?></div>
+            </div>
+            <div class="col-md-6">
+                <div class="small text-muted mb-1">Kontak</div>
+                <div class="fw-semibold text-dark"><?= esc($pengaduan['kontak']) ?></div>
+            </div>
+            <div class="col-md-6">
+                <div class="small text-muted mb-1">Perihal</div>
+                <div class="fw-semibold text-dark"><?= esc($pengaduan['perihal']) ?></div>
             </div>
         </div>
+
+        <div class="small text-muted mb-2">Isi Pengaduan</div>
+        <div class="text-dark p-3 bg-light rounded border border-light"><?= nl2br(esc($pengaduan['isi'])) ?></div>
+
+        <?php if (!empty($pengaduan['foto'])): ?>
+            <div class="mt-4">
+                <div class="small text-muted mb-2 fw-semibold">Foto Pendukung:</div>
+                <a href="<?= base_url($pengaduan['foto']) ?>" target="_blank" title="Klik untuk memperbesar">
+                    <img src="<?= base_url($pengaduan['foto']) ?>" alt="Foto Pengaduan" class="img-thumbnail" style="width: 250px; height: 250px; object-fit: cover; cursor: pointer;">
+                </a>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
+
+<script>
+function hapusPengaduan(id) {
+    showConfirm(
+        'Hapus pengaduan ini? Tindakan ini tidak dapat dibatalkan.',
+        'Hapus Pengaduan', 
+        'Ya, Hapus'
+    ).then(confirmed => {
+        if (confirmed) {
+            window.location.href = `<?= base_url('/staff/pengaduan/') ?>${id}/hapus`;
+        }
+    });
+}
+</script>
 <?= $this->endSection() ?>

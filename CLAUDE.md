@@ -240,6 +240,58 @@ Web Desa Bontomarannu/
 
 ---
 
+## 8.1 AJAX Pattern (Standard)
+
+Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Referensi implementasi: `Staff/NotificationController::data()` dan `Staff/ContentController::galleryApi()`.
+
+```
+# Route
+- Gunakan POST, bukan GET, untuk semua AJAX data endpoint
+- Contoh: $routes->post('fitur/api', 'Staff\Controller::method');
+
+# Controller
+- Selalu validasi: if (!$this->request->isAJAX()) → return 400
+- Baca params via getPost(), bukan getGet()
+- Selalu sertakan 'success' => true/false di JSON response
+- Guard role sebelum proses data
+
+# View / JavaScript
+- Gunakan Fetch API native — JANGAN tambah jQuery hanya untuk AJAX
+- Selalu sertakan CSRF token di setiap request:
+    const csrfHeaderName = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+    const getCsrfHash    = () => document.querySelector(`meta[name="${csrfHeaderName}"]`)?.content || '';
+    formData.append(csrfHeaderName, getCsrfHash());
+- Selalu sertakan header: { 'X-Requested-With': 'XMLHttpRequest' }
+- Gunakan showError() bukan alert(), showConfirm() bukan confirm()
+- Gunakan escapeHtml() untuk semua data dari server sebelum di-render ke DOM
+
+# Pola Fetch POST lengkap
+    const formData = new URLSearchParams();
+    formData.append('page', page);
+    formData.append(csrfHeaderName, getCsrfHash());
+
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(data => { if (data.success) { ... } })
+    .catch(() => showError('Terjadi kesalahan.'))
+    .finally(() => { /* hide loading */ });
+
+# Implementasi yang sudah menggunakan pola ini
+- Staff Notifikasi   → POST /staff/notifikasi/data
+- Staff Gallery      → POST /staff/galeri/api       (limit: 12 fixed)
+- Staff Berita       → POST /staff/berita/api       (limit: 12 fixed)
+- Staff Pengumuman   → POST /staff/pengumuman/api   (limit: 12 fixed)
+- Staff Surat        → POST /staff/surat/api        (limit: dari filter Tampilkan)
+- Staff Pengaduan    → POST /staff/pengaduan/api    (limit: dari filter Tampilkan)
+- User Surat         → POST /user/surat/api         (limit: dari filter Tampilkan)
+```
+
+---
+
 ## 9. Database & Model Rules
 
 ```
@@ -399,6 +451,129 @@ Web Desa Bontomarannu/
 
 ---
 
+## 13.1 File Upload Validation Helper
+
+Validasi upload file menggunakan **dua komponen reusable** — satu untuk backend (PHP), satu untuk frontend (JS). Keduanya harus selalu digunakan bersama. Ada dua jenis fungsi validasi sesuai konteks penggunaannya.
+
+### Backend (PHP)
+
+```
+# File
+- app/Helpers/upload_helper.php
+
+# Fungsi 1 — Gambar (Galeri, Foto Profil, Thumbnail)
+- validate_image_upload(UploadedFile $file, int $maxBytes = 1048576): ?string
+  → Return null jika valid
+  → Return string pesan error jika tidak valid
+  → Aturan: ext jpg/jpeg/png, MIME image/jpeg|image/png, ≤1MB, magic bytes
+
+# Fungsi 2 — Lampiran Surat (PDF, Word, Gambar)
+- validate_letter_attachment(UploadedFile $file, int $maxBytes = 1048576): ?string
+  → Return null jika valid
+  → Return string pesan error jika tidak valid
+  → Aturan: ext pdf/doc/docx/jpg/jpeg/png, MIME sesuai ekstensi, ≤1MB
+  → Tidak ada magic bytes (dokumen lebih kompleks), MIME server-side sudah cukup
+
+# Load di Controller
+- Tambahkan di method yang relevan: helper('upload');
+
+# Contoh — validate_image_upload
+    $thumb = $this->request->getFile('thumbnail');
+    if ($thumb && $thumb->isValid()) {
+        $error = validate_image_upload($thumb);
+        if ($error !== null) {
+            return redirect()->back()->with('error', 'Thumbnail: ' . $error);
+        }
+    }
+
+# Contoh — validate_letter_attachment (loop multi-file)
+    helper('upload');
+    foreach ($files as $file) {
+        if (!$file->isValid() || $file->hasMoved()) continue;
+        $error = validate_letter_attachment($file);
+        if ($error !== null) {
+            // skip file ini, catat ke $errors[]
+            $errors[] = $file->getClientName() . ': ' . $error;
+            continue;
+        }
+        // proses upload ...
+    }
+    if (!empty($errors)) {
+        session()->setFlashdata('attachment_errors', $errors);
+    }
+```
+
+### Frontend (JavaScript)
+
+```
+# File
+- public/assets/js/components/upload_validator.js
+- Di-load global via Staff/layout.php DAN User/layout.php
+
+# Fungsi Global — Gambar
+- validateImageFile(file: File): boolean
+  → Validasi satu file gambar (ext, MIME, ukuran)
+
+- initMediaUploader(inputId: string, previewId: string): void
+  → Setup multi-file picker gambar akumulatif dengan preview visual 16:9
+  → File invalid di-skip, tiap preview punya tombol hapus
+
+# Fungsi Global — Lampiran Surat
+- validateLetterAttachment(file: File): { ok: boolean, error: string|null }
+  → Validasi satu file lampiran surat (ext, MIME, ukuran)
+  → Ekstensi: pdf, doc, docx, jpg, jpeg, png | Maks: 1MB
+
+- initLetterAttachmentUploader(inputId: string, previewId: string): void
+  → Setup multi-file picker lampiran surat dengan validasi frontend
+  → Tampilkan list file (ikon tipe + nama dipotong) + tombol hapus per file
+  → File invalid di-skip dengan pesan error via showError()
+  → Cek duplikat otomatis
+
+# Contoh Penggunaan (di view)
+    // Uploader gambar (galeri)
+    initMediaUploader('mediaInput', 'mediaPreview');
+
+    // Uploader lampiran surat
+    initLetterAttachmentUploader('letterAttachments', 'attachmentPreviewList');
+
+# View yang sudah menggunakan
+- Staff/gallery/create.php     → initMediaUploader('mediaInput', 'mediaPreview')
+- Staff/gallery/edit.php       → initMediaUploader('mediaInput', 'mediaPreview')
+- User/letters/form.php        → initLetterAttachmentUploader('letterAttachments', 'attachmentPreviewList')
+- Staff/letters/detail.php     → initLetterAttachmentUploader('replyAttachments', 'attachmentPreviewList')
+```
+
+### Controller yang sudah menggunakan upload_helper.php
+
+```
+# validate_image_upload
+- Staff\ContentController  → storeGallery(), updateGallery()
+- Staff\ContentController  → storeNews(), updateNews()
+- Staff\ContentController  → storePengumuman(), updatePengumuman()
+
+# validate_letter_attachment
+- User\LetterController    → handleAttachments()      (lampiran surat baru dari user)
+- Staff\LetterController   → handleReplyAttachments() (lampiran balasan dari staff)
+```
+
+### Shared Helper: `uploadToWebp()` di ProtectedController
+
+Method `protected function uploadToWebp(UploadedFile $file, string $subPath, int $quality = 85): ?string`
+tersedia di **semua controller** (via inheritance dari `ProtectedController`).
+Melakukan: upload sementara → konversi WebP → hapus file temp → return path relatif.
+Return `null` jika konversi gagal.
+
+```php
+// Contoh penggunaan
+$path = $this->uploadToWebp($file, 'uploads/pengumuman'); // → 'uploads/pengumuman/abc.webp'
+if ($path === null) {
+    return redirect()->back()->with('error', 'Gagal memproses gambar.');
+}
+$data['thumbnail'] = $path;
+```
+
+---
+
 ## 14. Git Rules
 
 Commit after every meaningful change. This ensures you can always compare before/after and rollback if needed.
@@ -456,7 +631,7 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] Staff letter Word generation from letter data
 - [x] Staff village profile management (visi, misi, population stats, contact, location)
 - [x] Staff geographic data management
-- [x] Staff gallery CRUD (album + multi-photo/video)
+- [x] Staff gallery CRUD (album + multi-photo/video) — AJAX listing via POST /staff/galeri/api
 - [x] Staff news CRUD (multi-photo)
 - [x] Staff village apparatus CRUD (perangkat desa)
 - [x] Staff inventory CRUD (inventaris desa)
@@ -470,6 +645,8 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] Admin profile management
 - [x] Async email queue system (EmailQueue + EmailService + EmailQueueProcessor)
 - [x] File upload security hardening (8-layer validation, WebP conversion for profile photos)
+- [x] Reusable image upload validation helper (app/Helpers/upload_helper.php — validate_image_upload())
+- [x] Gallery photo upload validation: max 1MB, JPG/JPEG/PNG only, frontend + backend
 
 # In Progress — DO NOT modify without confirmation
 - [ ] (none currently identified — confirm with user before adding here)

@@ -26,6 +26,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= base_url('assets/js/components/sweetalert.js') ?>"></script>
 <?= $this->include('Components/FlashMessage') ?>
+<script src="<?= base_url('assets/js/components/upload_validator.js') ?>"></script>
 <script src="<?= base_url('assets/js/user/main.js') ?>"></script>
 </body>
 </html>

@@ -1,154 +1,183 @@
 <?= $this->extend('Staff/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
-        <h4>Edit Album</h4>
-        <div class="text-muted small">Perbarui informasi album.</div>
+        <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
+            <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
+            MANAJEMEN
+        </div>
+        <h2 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">
+            Edit <span style="color: #15803d;">Album</span>
+        </h2>
+        <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Perbarui informasi album dan media.</p>
     </div>
-    <div class="page-header-actions">
-        <a href="<?= base_url('/staff/galeri/' . $album['id'] . '/hapus') ?>" class="page-header-icon page-header-icon-delete" onclick="return confirm('Hapus album ini?')" title="Hapus Album">
-            <i class="bi bi-trash"></i>
-        </a>
-        <a href="<?= base_url('/staff/galeri') ?>" class="page-header-icon">
-            <i class="bi bi-arrow-left"></i>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-danger" id="btnHapusAlbum" title="Hapus Album">
+            Hapus
+        </button>
+        <a href="<?= base_url('/staff/galeri') ?>" class="btn btn-outline-success">
+            Kembali
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/galeri/' . $album['id']) ?>">
-            <?= csrf_field() ?>
+<form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/galeri/' . $album['id']) ?>">
+    <?= csrf_field() ?>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4 fw-bold">Informasi Dasar</h5>
             <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Nama Album</label>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Nama Album</label>
                     <input type="text" class="form-control" name="nama_album" value="<?= esc($album['nama_album']) ?>" required>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Tanggal & Waktu</label>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Tanggal & Waktu</label>
                     <input type="datetime-local" class="form-control" name="tanggal_waktu" value="<?= date('Y-m-d\TH:i', strtotime($album['tanggal_waktu'])) ?>">
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Thumbnail (opsional)</label>
-                    <input type="file" class="form-control" id="thumbnailInput" name="thumbnail" accept="image/jpeg,image/jpg,image/png,image/webp">
+                <div class="col-12">
+                    <label class="form-label fw-medium">Deskripsi</label>
+                    <textarea class="form-control" name="deskripsi" rows="3"><?= esc($album['deskripsi'] ?? '') ?></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4 fw-bold">Media</h5>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium">Thumbnail (opsional)</label>
+                    <input type="file" class="form-control" id="thumbnailInput" name="thumbnail" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
                     <div id="thumbnailPreview" class="mt-2">
                         <?php if (!empty($album['thumbnail'])): ?>
-                            <img src="<?= base_url($album['thumbnail']) ?>" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                            <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                                <div class="card border shadow-sm overflow-hidden mb-0">
+                                    <img src="<?= base_url($album['thumbnail']) ?>" class="w-100 bg-light" style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="thumbnail">
+                                </div>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Deskripsi</label>
-                    <textarea class="form-control" name="deskripsi" rows="2"><?= esc($album['deskripsi'] ?? '') ?></textarea>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Tambah Foto</label>
-                    <input type="file" class="form-control" id="mediaInput" name="media[]" multiple accept="image/jpeg,image/jpg,image/png,image/webp">
+                    <label class="form-label fw-medium">Tambah Foto</label>
+                    <input type="file" class="form-control" id="mediaInput" name="media[]" multiple accept=".jpg,.jpeg,.png,image/jpeg,image/png">
                     <div id="mediaPreview" class="row g-2 mt-2"></div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Link Video</label>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Link Video YouTube</label>
                     <div id="video-list"></div>
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="add-video">Tambah Link</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="add-video">
+                        <i class="bi bi-plus"></i> Tambah Link
+                    </button>
                 </div>
             </div>
-            <div class="mt-4">
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-check-circle"></i> Update
-                </button>
-            </div>
-        </form>
+        </div>
+    </div>
 
-        <?php if (!empty($media)): ?>
-            <div class="mt-4">
-                <div class="fw-semibold mb-2">Media Saat Ini</div>
-                <div class="row g-2">
-                    <?php foreach ($media as $m): ?>
-                        <div class="col-md-3">
-                            <div class="border rounded p-2 text-center position-relative" style="overflow: visible;">
-                                <a href="<?= base_url('/staff/galeri/media/' . $m['id'] . '/hapus') ?>" class="btn btn-sm btn-danger position-absolute" style="top: 4px; right: 4px; z-index: 1000; width: 28px; height: 28px; padding: 0; line-height: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="return confirm('Hapus media ini?')">×</a>
-                                <?php if ($m['media_type'] === 'foto'): ?>
-                                    <img src="<?= base_url($m['media_path']) ?>" class="img-fluid rounded" style="max-width: 100%; max-height: 150px; object-fit: cover;" alt="media">
-                                <?php else: ?>
-                                    <div class="ratio ratio-16x9 mb-2 position-relative" style="z-index: 1; pointer-events: none;">
-                                        <iframe src="<?= esc($m['embed_url'] ?? $m['media_path']) ?>" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="pointer-events: auto;"></iframe>
-                                    </div>
-                                    <div class="small text-muted text-truncate"><?= esc($m['media_path']) ?></div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+    <div class="mt-4 mb-4">
+        <button class="btn btn-success" type="submit">
+            Update Album
+        </button>
+    </div>
+</form>
+
+<?php if (!empty($media)): ?>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-4 fw-bold">Media Saat Ini</h5>
+        <div class="row g-3">
+            <?php foreach ($media as $m): ?>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="card border shadow-sm position-relative overflow-hidden mb-0">
+                        <button type="button" class="btn btn-danger position-absolute btn-hapus-media" data-url="<?= base_url('/staff/galeri/media/' . $m['id'] . '/hapus') ?>" style="top: 6px; right: 6px; z-index: 1000; width: 26px; height: 26px; padding: 0; line-height: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" title="Hapus Media">
+                            <i class="bi bi-trash" style="font-size: 14px;"></i>
+                        </button>
+                        <?php if ($m['media_type'] === 'foto'): ?>
+                            <img src="<?= base_url($m['media_path']) ?>" class="w-100 bg-light" style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="media">
+                        <?php else: ?>
+                            <iframe src="<?= esc($m['embed_url'] ?? $m['media_path']) ?>" class="w-100 bg-light" style="aspect-ratio: 16/9; border: 0; display: block;" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
-        <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
     </div>
 </div>
+<?php endif; ?>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Preview Thumbnail
         const thumbnailInput = document.getElementById('thumbnailInput');
         const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const originalThumbnailHtml = thumbnailPreview.innerHTML;
         
         thumbnailInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                if (!validateImageFile(file)) {
+                    thumbnailInput.value = '';
+                    showError('Format tidak didukung atau ukuran melebihi 1MB (Hanya JPG/PNG).');
+                    thumbnailPreview.innerHTML = originalThumbnailHtml;
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    thumbnailPreview.innerHTML = '<img src="' + e.target.result + '" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: cover;">';
+                    thumbnailPreview.innerHTML = `
+                        <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                            <div class="card border shadow-sm overflow-hidden mb-0">
+                                <img src="${e.target.result}" class="w-100 bg-light" style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="thumbnail">
+                            </div>
+                        </div>
+                    `;
                 };
                 reader.readAsDataURL(file);
             } else {
-                // Kembalikan ke thumbnail lama jika ada
-                const oldThumbnail = thumbnailPreview.querySelector('img');
-                if (oldThumbnail) {
-                    thumbnailPreview.innerHTML = oldThumbnail.outerHTML;
-                }
+                thumbnailPreview.innerHTML = originalThumbnailHtml;
             }
         });
 
-        // Preview Media Foto
-        const mediaInput = document.getElementById('mediaInput');
-        const mediaPreview = document.getElementById('mediaPreview');
-        
-        mediaInput.addEventListener('change', function(e) {
-            mediaPreview.innerHTML = '';
-            const files = e.target.files;
-            
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const col = document.createElement('div');
-                        col.className = 'col-md-3';
-                        col.innerHTML = `
-                            <div class="border rounded p-2 text-center">
-                                <img src="${e.target.result}" class="img-fluid rounded" style="max-width: 100%; max-height: 150px; object-fit: cover;" alt="preview">
-                            </div>
-                        `;
-                        mediaPreview.appendChild(col);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
-        });
+        // Preview Media Foto — dikelola oleh upload_validator.js
+        initMediaUploader('mediaInput', 'mediaPreview');
 
         // Video Links
         const list = document.getElementById('video-list');
         const addBtn = document.getElementById('add-video');
         const addField = (value = '') => {
             const group = document.createElement('div');
-            group.className = 'input-group mb-2 video-item';
+            group.className = 'd-flex gap-2 mb-2 video-item';
             group.innerHTML = `
                 <input type="text" class="form-control" name="video_links[]" placeholder="https://youtube.com/..." value="${value}">
-                <button type="button" class="btn btn-outline-danger">Hapus</button>
+                <button type="button" class="btn btn-danger px-3" title="Hapus"><i class="bi bi-trash"></i></button>
             `;
             group.querySelector('button').addEventListener('click', () => group.remove());
             list.appendChild(group);
         };
         addBtn.addEventListener('click', () => addField(''));
         addField('');
+
+        // Hapus album via SweetAlert
+        const btnHapusAlbum = document.getElementById('btnHapusAlbum');
+        if (btnHapusAlbum) {
+            btnHapusAlbum.addEventListener('click', function () {
+                showConfirm('Album beserta semua media di dalamnya akan dihapus permanen.', 'Hapus Album?', 'Ya, Hapus', 'Batal').then(confirmed => {
+                    if (confirmed) window.location.href = '<?= base_url('/staff/galeri/' . $album['id'] . '/hapus') ?>';
+                });
+            });
+        }
+
+        // Hapus media via SweetAlert
+        document.querySelectorAll('.btn-hapus-media').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const url = this.getAttribute('data-url');
+                showConfirm('Media ini akan dihapus permanen dari album.', 'Hapus Media?', 'Ya, Hapus', 'Batal').then(confirmed => {
+                    if (confirmed) window.location.href = url;
+                });
+            });
+        });
     });
 </script>
 <?= $this->endSection() ?>

@@ -18,111 +18,93 @@ class LetterController extends ProtectedController
             return $redirect;
         }
 
-        $letterModel = new LetterModel();
-        $letters     = $letterModel->where('user_id', $this->currentUser['id'])
-            ->orderBy('created_at', 'DESC')
-            ->findAll();
-
-        return view('User/letters/index', ['letters' => $letters]);
+        return view('User/letters/index');
     }
 
     public function api()
     {
         if ($redirect = $this->guard(['user'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized'])->setStatusCode(401);
         }
 
-        $letterModel = new LetterModel();
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Bad Request'])->setStatusCode(400);
+        }
+
         $db = \Config\Database::connect();
-        
-        // Get DataTables parameters
-        $draw = $this->request->getGet('draw') ?? 1;
-        $start = $this->request->getGet('start') ?? 0;
-        $length = $this->request->getGet('length') ?? 10;
-        $search = $this->request->getGet('search')['value'] ?? '';
-        $searchCustom = $this->request->getGet('search_custom') ?? '';
-        $orderColumn = $this->request->getGet('order')[0]['column'] ?? 3;
-        $orderDir = $this->request->getGet('order')[0]['dir'] ?? 'desc';
-        
-        // Get filter parameters
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
-        $tipeSuratFilter = $this->request->getGet('tipe_surat_filter') ?? '';
-        $statusFilter = $this->request->getGet('status_filter') ?? '';
-        
-        // Use search_custom if provided, otherwise use default search
-        $searchValue = !empty($searchCustom) ? $searchCustom : $search;
-        
-        // Column mapping
-        $columns = ['kode_unik', 'judul_perihal', 'tipe_surat', 'status', 'sent_at'];
-        $orderBy = $columns[$orderColumn] ?? 'sent_at';
-        
-        // Build base query
+
+        // Baca params via POST
+        $page   = max(1, (int) ($this->request->getPost('page') ?? 1));
+        $length = (int) ($this->request->getPost('length') ?? 10);
+        if ($length < 1) $length = 10;
+        $start  = ($page - 1) * $length;
+
+        $search          = trim($this->request->getPost('search') ?? '');
+        $dateStart       = $this->request->getPost('date_start') ?? '';
+        $dateEnd         = $this->request->getPost('date_end') ?? '';
+        $tipeSuratFilter = $this->request->getPost('tipe_surat_filter') ?? '';
+        $statusFilter    = $this->request->getPost('status_filter') ?? '';
+
+        // Build base query — hanya surat milik user yang login
         $builder = $db->table('letters')
             ->where('user_id', $this->currentUser['id']);
-        
-        // Get total records
-        $recordsTotal = $builder->countAllResults(false);
-        
-        // Apply date filter
+
+        // Total sebelum filter
+        $recordsTotal = (clone $builder)->countAllResults(false);
+
+        // Apply filter
         if (!empty($dateStart)) {
             $builder->where('DATE(sent_at) >=', $dateStart);
         }
         if (!empty($dateEnd)) {
             $builder->where('DATE(sent_at) <=', $dateEnd);
         }
-        
-        // Apply tipe surat filter
         if (!empty($tipeSuratFilter)) {
             $builder->where('tipe_surat', $tipeSuratFilter);
         }
-        
-        // Apply status filter
         if (!empty($statusFilter)) {
             $builder->where('status', $statusFilter);
         }
-        
-        // Apply search filter
-        if (!empty($searchValue)) {
+        if (!empty($search)) {
             $builder->groupStart()
-                ->like('kode_unik', $searchValue)
-                ->orLike('judul_perihal', $searchValue)
-                ->orLike('tipe_surat', $searchValue)
-                ->orLike('status', $searchValue)
+                ->like('kode_unik', $search)
+                ->orLike('judul_perihal', $search)
+                ->orLike('tipe_surat', $search)
+                ->orLike('status', $search)
                 ->groupEnd();
         }
-        
-        // Get filtered count
-        $recordsFiltered = $builder->countAllResults(false);
-        
-        // Apply ordering
-        $builder->orderBy($orderBy, strtoupper($orderDir));
-        
-        // Apply pagination
-        $builder->limit($length, $start);
-        
+
+        // Total setelah filter
+        $recordsFiltered = (clone $builder)->countAllResults(false);
+
+        // Ordering & pagination
+        $builder->orderBy('sent_at', 'DESC')
+                ->limit($length, $start);
+
         $letters = $builder->get()->getResultArray();
-        
-        // Format data
+
         $data = [];
         foreach ($letters as $letter) {
             $data[] = [
-                'id' => $letter['id'],
-                'kode_unik' => $letter['kode_unik'] ?? '-',
+                'id'            => $letter['id'],
+                'kode_unik'     => $letter['kode_unik'] ?? '-',
                 'judul_perihal' => $letter['judul_perihal'],
-                'tipe_surat' => $letter['tipe_surat'],
-                'status' => $letter['status'],
-                'sent_at' => date('d M Y H:i', strtotime($letter['sent_at'])),
+                'tipe_surat'    => $letter['tipe_surat'],
+                'status'        => $letter['status'],
+                'sent_at'       => date('d M Y H:i', strtotime($letter['sent_at'])),
             ];
         }
 
         return $this->response->setJSON([
-            'draw' => intval($draw),
-            'recordsTotal' => $recordsTotal,
+            'success'         => true,
+            'data'            => $data,
+            'recordsTotal'    => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'page'            => $page,
+            'total_pages'     => $length > 0 ? (int) ceil($recordsFiltered / $length) : 1,
         ]);
     }
+
 
     public function create()
     {
@@ -138,6 +120,8 @@ class LetterController extends ProtectedController
         if ($redirect = $this->guard(['user'])) {
             return $redirect;
         }
+
+        helper('upload');
 
         // Validasi jenis surat
         $allowedTypes = [
@@ -370,6 +354,7 @@ class LetterController extends ProtectedController
 
     private function handleAttachments(int $letterId): void
     {
+        helper('upload');
         $files = $this->request->getFileMultiple('attachments');
         if (!$files) {
             return;
@@ -378,9 +363,16 @@ class LetterController extends ProtectedController
         $uploadPath      = FCPATH . 'uploads/letters';
         $attachmentModel = new LetterAttachmentModel();
         $this->ensureUploadPath($uploadPath);
+        $errors = [];
 
         foreach ($files as $file) {
-            if (!$file->isValid()) {
+            if (!$file->isValid() || $file->hasMoved()) {
+                continue;
+            }
+
+            $error = validate_letter_attachment($file);
+            if ($error !== null) {
+                $errors[] = $file->getClientName() . ': ' . $error;
                 continue;
             }
 
@@ -394,6 +386,10 @@ class LetterController extends ProtectedController
                 'mime_type'     => $file->getClientMimeType(),
                 'file_size'     => $file->getSize(),
             ]);
+        }
+
+        if (!empty($errors)) {
+            session()->setFlashdata('attachment_errors', $errors);
         }
     }
 

@@ -46,17 +46,13 @@ $routes->group('user', static function ($routes) {
     $routes->post('profil/ubah-password', 'User\ProfileController::changePassword');
 
     $routes->get('surat', 'User\LetterController::index');
-    $routes->get('surat/api', 'User\LetterController::api');
+    $routes->post('surat/api', 'User\LetterController::api');
     $routes->get('surat/buat', 'User\LetterController::create');
     $routes->post('surat', 'User\LetterController::store');
     $routes->get('surat/(:num)', 'User\LetterController::show/$1');
     $routes->get('surat/(:num)/edit', 'User\LetterController::edit/$1');
     $routes->post('surat/(:num)', 'User\LetterController::update/$1');
     $routes->get('surat/(:num)/hapus', 'User\LetterController::delete/$1');
-    $routes->get('surat/(:num)/word', 'User\PdfWordController::generateWord/$1');
-    $routes->get('surat/(:num)/pdf', 'User\PdfWordController::generatePDF/$1');
-    $routes->post('surat/preview/word', 'User\PdfWordController::previewWord');
-    $routes->post('surat/preview/pdf', 'User\PdfWordController::previewPDF');
 
     $routes->get('pengaduan', 'User\PengaduanController::index');
     $routes->post('pengaduan', 'User\PengaduanController::store');
@@ -83,7 +79,7 @@ $routes->group('staff', static function ($routes) {
     $routes->post('profil/ubah-password', 'Staff\ProfileController::changePassword');
 
     $routes->get('surat', 'Staff\LetterController::index');
-    $routes->get('surat/api', 'Staff\LetterController::api');
+    $routes->post('surat/api', 'Staff\LetterController::api');
     $routes->get('surat/(:num)', 'Staff\LetterController::show/$1');
     $routes->get('surat/(:num)/hapus', 'Staff\LetterController::delete/$1');
     $routes->post('surat/(:num)/balas', 'Staff\LetterController::reply/$1');
@@ -109,21 +105,22 @@ $routes->group('staff', static function ($routes) {
 
     $routes->get('pengumuman', 'Staff\ContentController::pengumuman');
     $routes->get('pengumuman/tambah', 'Staff\ContentController::createPengumuman');
-    $routes->get('pengumuman/api', 'Staff\ContentController::pengumumanApi');
+    $routes->post('pengumuman/api', 'Staff\ContentController::pengumumanApi');
     $routes->post('pengumuman', 'Staff\ContentController::storePengumuman');
     $routes->get('pengumuman/(:num)/edit', 'Staff\ContentController::editPengumuman/$1');
     $routes->put('pengumuman/(:num)', 'Staff\ContentController::updatePengumuman/$1');
     $routes->post('pengumuman/(:num)', 'Staff\ContentController::updatePengumuman/$1');
     $routes->delete('pengumuman/(:num)', 'Staff\ContentController::deletePengumuman/$1');
+    $routes->get('pengumuman/(:num)/hapus', 'Staff\ContentController::deletePengumuman/$1');
 
     $routes->get('pengaduan', 'Staff\ContentController::pengaduan');
-    $routes->get('pengaduan/api', 'Staff\ContentController::pengaduanApi');
+    $routes->post('pengaduan/api', 'Staff\ContentController::pengaduanApi');
     $routes->get('pengaduan/(:num)', 'Staff\ContentController::detailPengaduan/$1');
-    $routes->delete('pengaduan/(:num)', 'Staff\ContentController::deletePengaduan/$1');
-    
+    $routes->get('pengaduan/(:num)/hapus', 'Staff\ContentController::deletePengaduan/$1');
+
     // Perangkat Desa Routes
     $routes->get('galeri', 'Staff\ContentController::gallery');
-    $routes->get('galeri/api', 'Staff\ContentController::galleryApi');
+    $routes->post('galeri/api', 'Staff\ContentController::galleryApi');
     $routes->get('galeri/tambah', 'Staff\ContentController::createGallery');
     $routes->get('galeri/(:num)/edit', 'Staff\ContentController::editGallery/$1');
     $routes->post('galeri', 'Staff\ContentController::storeGallery');
@@ -132,7 +129,7 @@ $routes->group('staff', static function ($routes) {
     $routes->get('galeri/media/(:num)/hapus', 'Staff\ContentController::deleteGalleryMedia/$1');
 
     $routes->get('berita', 'Staff\ContentController::news');
-    $routes->get('berita/api', 'Staff\ContentController::newsApi');
+    $routes->post('berita/api', 'Staff\ContentController::newsApi');
     $routes->get('berita/tambah', 'Staff\ContentController::createNews');
     $routes->get('berita/(:num)/edit', 'Staff\ContentController::editNews/$1');
     $routes->post('berita', 'Staff\ContentController::storeNews');

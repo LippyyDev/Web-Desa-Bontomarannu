@@ -1,182 +1,250 @@
 <?= $this->extend('Staff/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+
+<!-- Page Header -->
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
-        <h4>Edit Berita</h4>
-        <div class="text-muted small">Perbarui konten berita.</div>
+        <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
+            <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
+            MANAJEMEN
+        </div>
+        <h2 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">
+            Edit <span style="color: #15803d;">Berita</span>
+        </h2>
+        <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Perbarui konten berita.</p>
     </div>
-    <div class="page-header-actions">
-        <a href="<?= base_url('/staff/berita/' . $item['id'] . '/hapus') ?>" class="page-header-icon page-header-icon-delete" onclick="return confirm('Hapus berita ini?')" title="Hapus Berita">
-            <i class="bi bi-trash"></i>
-        </a>
-        <a href="<?= base_url('/staff/berita') ?>" class="page-header-icon">
-            <i class="bi bi-arrow-left"></i>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-danger" id="btnHapusBerita">
+            Hapus
+        </button>
+        <a href="<?= base_url('/staff/berita') ?>" class="btn btn-outline-success">
+            Kembali
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/berita/' . $item['id']) ?>">
-            <?= csrf_field() ?>
+<form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/berita/' . $item['id']) ?>">
+    <?= csrf_field() ?>
+
+    <!-- Informasi Dasar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4 fw-bold">Informasi Dasar</h5>
             <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Judul</label>
+                <div class="col-md-8">
+                    <label class="form-label fw-medium">Judul Berita</label>
                     <input type="text" class="form-control" name="judul" value="<?= esc($item['judul']) ?>" required>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Tanggal</label>
-                    <input type="datetime-local" class="form-control" name="tanggal_waktu" value="<?= date('Y-m-d\TH:i', strtotime($item['tanggal_waktu'])) ?>">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Thumbnail (opsional)</label>
-                    <input type="file" class="form-control" name="thumbnail">
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Tanggal &amp; Waktu</label>
+                    <input type="datetime-local" class="form-control" name="tanggal_waktu"
+                        value="<?= date('Y-m-d\TH:i', strtotime($item['tanggal_waktu'])) ?>">
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Isi Berita</label>
+                    <label class="form-label fw-medium">Isi Berita</label>
                     <div class="quill-wrapper">
                         <div id="editor"></div>
                     </div>
                     <textarea name="isi" style="display: none;"><?= esc($item['isi']) ?></textarea>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Tambah Foto</label>
-                    <input type="file" class="form-control" name="media[]" multiple>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Link Video</label>
-                    <div id="video-list"></div>
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="add-video">Tambah Link</button>
-                </div>
             </div>
-            <div class="mt-4">
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-check-circle"></i> Update
-                </button>
-            </div>
-        </form>
+        </div>
+    </div>
 
-        <?php if (!empty($media)): ?>
-            <div class="mt-4">
-                <div class="fw-semibold mb-2">Media Saat Ini</div>
-                <div class="row g-2">
-                    <?php foreach ($media as $m): ?>
-                        <div class="col-md-3">
-                            <div class="border rounded p-2 text-center position-relative">
-                                <a href="<?= base_url('/staff/berita/media/' . $m['id'] . '/hapus') ?>" class="btn-close position-absolute top-0 end-0 m-1 bg-white" onclick="return confirm('Hapus media ini?')"></a>
-                                <?php if (isset($m['media_type']) && $m['media_type'] === 'video_link' && isset($m['embed_url'])): ?>
-                                    <div class="ratio ratio-16x9">
-                                        <iframe src="<?= esc($m['embed_url']) ?>" allowfullscreen></iframe>
-                                    </div>
-                                <?php else: ?>
-                                    <img src="<?= base_url($m['media_path']) ?>" class="img-fluid rounded" alt="media">
-                                <?php endif; ?>
+    <!-- Media -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4 fw-bold">Media</h5>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium">Thumbnail <span class="text-muted fw-normal">(opsional — kosongkan jika tidak ingin mengganti)</span></label>
+                    <input type="file" class="form-control" id="thumbnailInput" name="thumbnail" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                    <div class="form-text">Format JPG/PNG, maksimal 1MB.</div>
+                    <div id="thumbnailPreview" class="mt-2">
+                        <?php if (!empty($item['thumbnail'])): ?>
+                            <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                                <div class="card border shadow-sm overflow-hidden mb-0">
+                                    <img src="<?= base_url($item['thumbnail']) ?>" class="w-100 bg-light"
+                                        style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="thumbnail">
+                                </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Tambah Foto <span class="text-muted fw-normal">(opsional, bisa pilih beberapa)</span></label>
+                    <input type="file" class="form-control" id="mediaInput" name="media[]" multiple accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                    <div class="form-text">Format JPG/PNG, maksimal 1MB per foto.</div>
+                    <div id="mediaPreview" class="row g-2 mt-2"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Link Video YouTube <span class="text-muted fw-normal">(opsional)</span></label>
+                    <div id="video-list"></div>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="add-video">
+                        <i class="bi bi-plus"></i> Tambah Link
+                    </button>
                 </div>
             </div>
-        <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="mt-4 mb-4">
+        <button class="btn btn-success" type="submit">
+            Update Berita
+        </button>
+    </div>
+</form>
+
+<?php if (!empty($media)): ?>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-4 fw-bold">Media Saat Ini</h5>
+        <div class="row g-3">
+            <?php foreach ($media as $m): ?>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="card border shadow-sm position-relative overflow-hidden mb-0">
+                        <button type="button"
+                            class="btn btn-danger position-absolute btn-hapus-media"
+                            data-url="<?= base_url('/staff/berita/media/' . $m['id'] . '/hapus') ?>"
+                            style="top: 6px; right: 6px; z-index: 1000; width: 26px; height: 26px; padding: 0; line-height: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+                            title="Hapus Media">
+                            <i class="bi bi-trash" style="font-size: 14px;"></i>
+                        </button>
+                        <?php if (isset($m['media_type']) && $m['media_type'] === 'video_link' && isset($m['embed_url'])): ?>
+                            <iframe src="<?= esc($m['embed_url']) ?>"
+                                class="w-100 bg-light"
+                                style="aspect-ratio: 16/9; border: 0; display: block;"
+                                allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                            </iframe>
+                        <?php else: ?>
+                            <img src="<?= base_url($m['media_path']) ?>" class="w-100 bg-light"
+                                style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="media">
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
 </div>
+<?php endif; ?>
+
 <!-- Quill Editor CSS -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <style>
-    .quill-wrapper {
-        margin-bottom: 1rem;
-    }
-    .quill-wrapper #editor {
-        min-height: 300px;
-        max-height: 500px;
-        overflow-y: auto;
-    }
-    .quill-wrapper .ql-container {
-        border-bottom-left-radius: 0.375rem;
-        border-bottom-right-radius: 0.375rem;
-        border: 1px solid #ced4da;
-    }
-    .quill-wrapper .ql-toolbar {
-        border-top-left-radius: 0.375rem;
-        border-top-right-radius: 0.375rem;
-        border: 1px solid #ced4da;
-        border-bottom: none;
-    }
-    .quill-wrapper .ql-container.ql-snow {
-        border: 1px solid #ced4da;
-    }
-    .quill-wrapper .ql-toolbar.ql-snow {
-        border: 1px solid #ced4da;
-        border-bottom: none;
-    }
+    .quill-wrapper { margin-bottom: 0; }
+    .quill-wrapper #editor { min-height: 280px; max-height: 500px; overflow-y: auto; }
+    .quill-wrapper .ql-container.ql-snow { border: 1px solid #ced4da; border-bottom-left-radius: 0.375rem; border-bottom-right-radius: 0.375rem; }
+    .quill-wrapper .ql-toolbar.ql-snow { border: 1px solid #ced4da; border-bottom: none; border-top-left-radius: 0.375rem; border-top-right-radius: 0.375rem; }
 </style>
 <!-- Quill Editor JS -->
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Quill Editor
-        const quill = new Quill('#editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'script': 'sub'}, { 'script': 'super' }],
-                    [{ 'indent': '-1'}, { 'indent': '+1' }],
-                    [{ 'direction': 'rtl' }],
-                    [{ 'size': ['small', false, 'large', 'huge'] }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    [{ 'font': [] }],
-                    [{ 'align': [] }],
-                    ['clean'],
-                    ['link', 'image', 'video']
-                ]
-            }
-        });
-
-        // Load existing content into Quill
-        const textarea = document.querySelector('textarea[name="isi"]');
-        if (textarea.value) {
-            quill.root.innerHTML = textarea.value;
+document.addEventListener('DOMContentLoaded', function () {
+    // ── Quill Editor ──────────────────────────────────────────
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'font': [] }],
+                [{ 'align': [] }],
+                ['clean'], ['link', 'image', 'video']
+            ]
         }
-
-        // Sync Quill content to textarea before form submit
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            // Get Quill content and clean it
-            let content = quill.root.innerHTML;
-            
-            // Check if content is empty (only whitespace or empty tags)
-            const textContent = quill.getText().trim();
-            if (!textContent) {
-                e.preventDefault();
-                alert('Isi Berita tidak boleh kosong!');
-                return false;
-            }
-            
-            // Set content to textarea
-            textarea.value = content;
-        });
-
-        // Video links functionality
-        const list = document.getElementById('video-list');
-        const addBtn = document.getElementById('add-video');
-        const addField = (value = '') => {
-            const group = document.createElement('div');
-            group.className = 'input-group mb-2 video-item';
-            group.innerHTML = `
-                <input type="text" class="form-control" name="video_links[]" placeholder="https://youtube.com/..." value="${value}">
-                <button type="button" class="btn btn-outline-danger">Hapus</button>
-            `;
-            group.querySelector('button').addEventListener('click', () => group.remove());
-            list.appendChild(group);
-        };
-        addBtn.addEventListener('click', () => addField(''));
-        addField('');
     });
+
+    // Load konten yang sudah ada ke editor
+    const textarea = document.querySelector('textarea[name="isi"]');
+    if (textarea.value) {
+        quill.root.innerHTML = textarea.value;
+    }
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function (e) {
+        if (!quill.getText().trim()) {
+            e.preventDefault();
+            showError('Isi Berita tidak boleh kosong!');
+            return;
+        }
+        textarea.value = quill.root.innerHTML;
+    });
+
+    // ── Thumbnail Preview ──────────────────────────────────────
+    const thumbnailInput        = document.getElementById('thumbnailInput');
+    const thumbnailPreview      = document.getElementById('thumbnailPreview');
+    const originalThumbnailHtml = thumbnailPreview.innerHTML;
+
+    thumbnailInput.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) { thumbnailPreview.innerHTML = originalThumbnailHtml; return; }
+
+        if (!validateImageFile(file)) {
+            thumbnailInput.value       = '';
+            thumbnailPreview.innerHTML = originalThumbnailHtml;
+            showError('Format tidak didukung atau ukuran melebihi 1MB (Hanya JPG/PNG).');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            thumbnailPreview.innerHTML = `
+                <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                    <div class="card border shadow-sm overflow-hidden mb-0">
+                        <img src="${e.target.result}" class="w-100 bg-light"
+                            style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="thumbnail">
+                    </div>
+                </div>`;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // ── Multi-foto Preview — via upload_validator.js ───────────
+    initMediaUploader('mediaInput', 'mediaPreview');
+
+    // ── Video Links ────────────────────────────────────────────
+    const list   = document.getElementById('video-list');
+    const addBtn = document.getElementById('add-video');
+
+    const addField = (value = '') => {
+        const group = document.createElement('div');
+        group.className = 'd-flex gap-2 mb-2 video-item';
+        group.innerHTML = `
+            <input type="text" class="form-control" name="video_links[]" placeholder="https://youtube.com/..." value="${value}">
+            <button type="button" class="btn btn-danger px-3" title="Hapus"><i class="bi bi-trash"></i></button>
+        `;
+        group.querySelector('button').addEventListener('click', () => group.remove());
+        list.appendChild(group);
+    };
+
+    addBtn.addEventListener('click', () => addField(''));
+    addField('');
+
+    // ── Hapus Berita via SweetAlert ────────────────────────────
+    const btnHapusBerita = document.getElementById('btnHapusBerita');
+    if (btnHapusBerita) {
+        btnHapusBerita.addEventListener('click', function () {
+            showConfirm('Berita beserta semua media di dalamnya akan dihapus permanen.', 'Hapus Berita?', 'Ya, Hapus', 'Batal').then(confirmed => {
+                if (confirmed) window.location.href = '<?= base_url('/staff/berita/' . $item['id'] . '/hapus') ?>';
+            });
+        });
+    }
+
+    // ── Hapus Media via SweetAlert ─────────────────────────────
+    document.querySelectorAll('.btn-hapus-media').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const url = this.getAttribute('data-url');
+            showConfirm('Media ini akan dihapus permanen dari berita.', 'Hapus Media?', 'Ya, Hapus', 'Batal').then(confirmed => {
+                if (confirmed) window.location.href = url;
+            });
+        });
+    });
+});
 </script>
 <?= $this->endSection() ?>
-
-

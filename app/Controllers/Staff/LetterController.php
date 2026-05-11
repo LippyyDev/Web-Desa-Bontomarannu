@@ -19,136 +19,97 @@ class LetterController extends ProtectedController
             return $redirect;
         }
 
-        $letterModel = new LetterModel();
-        $userModel = new UserModel();
-        $profileModel = new UserProfileModel();
-        
-        $letters = $letterModel->orderBy('created_at', 'DESC')->findAll();
-        
-        // Ambil data user dan profile untuk setiap surat
-        foreach ($letters as &$letter) {
-            $user = $userModel->find($letter['user_id']);
-            $profile = $profileModel->find($letter['user_id']);
-            
-            // Gunakan nama_lengkap jika ada, jika tidak gunakan username
-            $letter['sender_name'] = ($profile && !empty($profile['nama_lengkap'])) 
-                ? $profile['nama_lengkap'] 
-                : ($user['username'] ?? 'Unknown');
-        }
-
-        return view('Staff/letters/index', ['letters' => $letters]);
+        return view('Staff/letters/index');
     }
 
     public function api()
     {
         if ($redirect = $this->guard(['staf'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized'])->setStatusCode(401);
         }
 
-        $letterModel = new LetterModel();
-        $userModel = new UserModel();
-        $profileModel = new UserProfileModel();
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Bad Request'])->setStatusCode(400);
+        }
+
         $db = \Config\Database::connect();
-        
-        // Get DataTables parameters
-        $draw = $this->request->getGet('draw') ?? 1;
-        $start = $this->request->getGet('start') ?? 0;
-        $length = $this->request->getGet('length') ?? 10;
-        $search = $this->request->getGet('search')['value'] ?? '';
-        $searchCustom = $this->request->getGet('search_custom') ?? '';
-        $orderColumn = $this->request->getGet('order')[0]['column'] ?? 3;
-        $orderDir = $this->request->getGet('order')[0]['dir'] ?? 'desc';
-        
-        // Get filter parameters
-        $dateStart = $this->request->getGet('date_start') ?? '';
-        $dateEnd = $this->request->getGet('date_end') ?? '';
-        $tipeSuratFilter = $this->request->getGet('tipe_surat_filter') ?? '';
-        $statusFilter = $this->request->getGet('status_filter') ?? '';
-        
-        // Use search_custom if provided, otherwise use default search
-        $searchValue = !empty($searchCustom) ? $searchCustom : $search;
-        
-        // Column mapping
-        $columns = ['kode_unik', 'judul_perihal', 'tipe_surat', 'sender_name', 'status', 'sent_at'];
-        $orderBy = $columns[$orderColumn] ?? 'sent_at';
-        
-        // Get total records
-        $recordsTotal = $letterModel->countAllResults(false);
-        
+
+        // Baca params via POST
+        $page   = max(1, (int) ($this->request->getPost('page') ?? 1));
+        $length = (int) ($this->request->getPost('length') ?? 10);
+        if ($length < 1) $length = 10;
+        $start  = ($page - 1) * $length;
+
+        $search          = trim($this->request->getPost('search') ?? '');
+        $dateStart       = $this->request->getPost('date_start') ?? '';
+        $dateEnd         = $this->request->getPost('date_end') ?? '';
+        $tipeSuratFilter = $this->request->getPost('tipe_surat_filter') ?? '';
+        $statusFilter    = $this->request->getPost('status_filter') ?? '';
+
         // Build base query with join
         $builder = $db->table('letters l')
-            ->select('l.*, 
-                COALESCE(up.nama_lengkap, u.username, "Unknown") as sender_name')
+            ->select('l.*, COALESCE(up.nama_lengkap, u.username, "Unknown") as sender_name')
             ->join('users u', 'u.id = l.user_id', 'left')
             ->join('user_profiles up', 'up.user_id = l.user_id', 'left');
-        
-        // Apply date filter
+
+        // Total sebelum filter
+        $recordsTotal = (clone $builder)->countAllResults(false);
+
+        // Apply filter
         if (!empty($dateStart)) {
             $builder->where('DATE(l.sent_at) >=', $dateStart);
         }
         if (!empty($dateEnd)) {
             $builder->where('DATE(l.sent_at) <=', $dateEnd);
         }
-        
-        // Apply tipe surat filter
         if (!empty($tipeSuratFilter)) {
             $builder->where('l.tipe_surat', $tipeSuratFilter);
         }
-        
-        // Apply status filter
         if (!empty($statusFilter)) {
             $builder->where('l.status', $statusFilter);
         }
-        
-        // Apply search filter
-        if (!empty($searchValue)) {
+        if (!empty($search)) {
             $builder->groupStart()
-                ->like('l.kode_unik', $searchValue)
-                ->orLike('l.judul_perihal', $searchValue)
-                ->orLike('l.status', $searchValue)
-                ->orLike('up.nama_lengkap', $searchValue)
-                ->orLike('u.username', $searchValue)
+                ->like('l.kode_unik', $search)
+                ->orLike('l.judul_perihal', $search)
+                ->orLike('l.status', $search)
+                ->orLike('up.nama_lengkap', $search)
+                ->orLike('u.username', $search)
                 ->groupEnd();
         }
-        
-        // Get filtered count
-        $recordsFiltered = $builder->countAllResults(false);
-        
-        // Apply ordering
-        if ($orderBy === 'sender_name') {
-            $builder->orderBy('COALESCE(up.nama_lengkap, u.username, "Unknown")', strtoupper($orderDir));
-        } elseif ($orderBy === 'kode_unik') {
-            $builder->orderBy('l.kode_unik', strtoupper($orderDir));
-        } else {
-            $builder->orderBy('l.' . $orderBy, strtoupper($orderDir));
-        }
-        
-        // Apply pagination
-        $builder->limit($length, $start);
-        
+
+        // Total setelah filter
+        $recordsFiltered = (clone $builder)->countAllResults(false);
+
+        // Ordering & pagination
+        $builder->orderBy('l.sent_at', 'DESC')
+                ->limit($length, $start);
+
         $letters = $builder->get()->getResultArray();
-        
-        // Format data
+
         $data = [];
         foreach ($letters as $letter) {
             $data[] = [
-                'id'           => $letter['id'],
-                'kode_unik'    => $letter['kode_unik'] ?? '-',
-                'judul_perihal'=> $letter['judul_perihal'],
-                'tipe_surat'   => $letter['tipe_surat'] ?? '-',
-                'sender_name'  => $letter['sender_name'],
-                'status'       => $letter['status'],
-                'sent_at'      => date('d M Y H:i', strtotime($letter['sent_at'])),
+                'id'            => $letter['id'],
+                'kode_unik'     => $letter['kode_unik'] ?? '-',
+                'judul_perihal' => $letter['judul_perihal'],
+                'tipe_surat'    => $letter['tipe_surat'] ?? '-',
+                'sender_name'   => $letter['sender_name'],
+                'status'        => $letter['status'],
+                'sent_at'       => date('d M Y H:i', strtotime($letter['sent_at'])),
             ];
         }
 
         return $this->response->setJSON([
-            'draw'            => intval($draw),
-            'recordsTotal'    => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data'            => $data,
+            'success'          => true,
+            'data'             => $data,
+            'recordsTotal'     => $recordsTotal,
+            'recordsFiltered'  => $recordsFiltered,
+            'page'             => $page,
+            'total_pages'      => $length > 0 ? (int) ceil($recordsFiltered / $length) : 1,
         ]);
     }
+
 
     public function show($id)
     {
@@ -572,6 +533,7 @@ class LetterController extends ProtectedController
 
     private function handleReplyAttachments(int $replyId): void
     {
+        helper('upload');
         $files = $this->request->getFileMultiple('reply_attachments');
         if (!$files) {
             return;
@@ -580,9 +542,16 @@ class LetterController extends ProtectedController
         $uploadPath       = FCPATH . 'uploads/replies';
         $replyAttachModel = new ReplyAttachmentModel();
         $this->ensureUploadPath($uploadPath);
+        $errors = [];
 
         foreach ($files as $file) {
-            if (!$file->isValid()) {
+            if (!$file->isValid() || $file->hasMoved()) {
+                continue;
+            }
+
+            $error = validate_letter_attachment($file);
+            if ($error !== null) {
+                $errors[] = $file->getClientName() . ': ' . $error;
                 continue;
             }
 
@@ -596,6 +565,10 @@ class LetterController extends ProtectedController
                 'mime_type'     => $file->getClientMimeType(),
                 'file_size'     => $file->getSize(),
             ]);
+        }
+
+        if (!empty($errors)) {
+            session()->setFlashdata('attachment_errors', $errors);
         }
     }
 }

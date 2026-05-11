@@ -25,6 +25,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= base_url('assets/js/components/sweetalert.js') ?>"></script>
+<script src="<?= base_url('assets/js/components/upload_validator.js') ?>"></script>
 <?= $this->include('Components/FlashMessage') ?>
 <script src="<?= base_url('assets/js/staff/main.js') ?>"></script>
 </body>

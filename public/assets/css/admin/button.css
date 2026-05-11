@@ -76,3 +76,68 @@
   font-size: 0.875rem;
   border-radius: 6px;
 }
+
+/* ============================================================
+   Action Buttons (Table & Cards) - Icon Only, Solid Colors
+   ============================================================ */
+
+/* Pisahkan btn-group agar menjadi tombol-tombol individual yang rapi */
+.table .btn-group,
+.letter-card-actions .btn-group {
+  gap: 6px;
+}
+.table .btn-group > .btn,
+.letter-card-actions .btn-group > .btn {
+  border-radius: 6px !important;
+}
+
+/* Sembunyikan teks dan jadikan icon only */
+.table .btn,
+.letter-card-actions .btn {
+  font-size: 0 !important;
+  padding: 0.4rem 0.65rem !important;
+  gap: 0 !important;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+.table .btn i,
+.letter-card-actions .btn i {
+  font-size: 1.05rem !important;
+}
+
+/* Detail (Hijau) */
+.table .btn:has(.bi-eye),
+.letter-card-actions .btn:has(.bi-eye) {
+  background-color: #10b981 !important;
+  color: white !important;
+}
+.table .btn:has(.bi-eye):hover,
+.letter-card-actions .btn:has(.bi-eye):hover {
+  background-color: #059669 !important;
+  transform: translateY(-1px);
+}
+
+/* Edit (Biru Indigo) */
+.table .btn:has(.bi-pencil),
+.letter-card-actions .btn:has(.bi-pencil) {
+  background-color: #6366f1 !important;
+  color: white !important;
+}
+.table .btn:has(.bi-pencil):hover,
+.letter-card-actions .btn:has(.bi-pencil):hover {
+  background-color: #4f46e5 !important;
+  transform: translateY(-1px);
+}
+
+/* Hapus (Merah) */
+.table .btn:has(.bi-trash),
+.letter-card-actions .btn:has(.bi-trash) {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+.table .btn:has(.bi-trash):hover,
+.letter-card-actions .btn:has(.bi-trash):hover {
+  background-color: #dc2626 !important;
+  transform: translateY(-1px);
+}
