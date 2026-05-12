@@ -14,7 +14,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="<?= base_url('/staff/perangkat-desa') ?>" class="btn btn-outline-success">
-            <i class="bi bi-arrow-left me-1"></i> Kembali
+            Kembali
         </a>
     </div>
 </div>
@@ -40,7 +40,7 @@
                 <div>
                     <input type="file" id="fotoInput" name="foto" accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display: none;">
                     <label for="fotoInput" class="btn btn-outline-success mb-0">
-                        <i class="bi bi-camera me-1"></i> Pilih Foto
+                        Pilih Foto
                     </label>
                 </div>
             </div>
@@ -75,7 +75,7 @@
 
     <div class="mt-4 mb-4">
         <button class="btn btn-success" type="submit" id="btnSimpan">
-            <i class="bi bi-check-circle me-1"></i> Simpan Perangkat
+            Simpan Perangkat
         </button>
     </div>
 </form>

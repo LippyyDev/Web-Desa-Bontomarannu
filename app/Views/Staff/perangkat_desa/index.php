@@ -205,7 +205,7 @@
             </button>
         </div>
         <a href="<?= base_url('/staff/perangkat-desa/tambah') ?>" class="btn btn-success">
-            <i class="bi bi-person-plus me-1"></i> Tambah
+            Tambah
         </a>
     </div>
 </div>
@@ -295,14 +295,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                 </div>
                                 <div class="perangkat-footer">
                                     <a href="<?= base_url('/staff/perangkat-desa/') ?>${item.id}/edit" class="perangkat-action perangkat-action-edit stretched-link">
-                                        <i class="bi bi-pencil-square"></i> Edit
+                                        Edit
                                     </a>
                                     <button type="button"
                                         class="perangkat-action perangkat-action-delete btn-hapus-perangkat"
                                         data-id="${item.id}"
                                         data-nama="${escapeHtml(item.nama)}"
                                         style="position: relative; z-index: 2; border: none; cursor: pointer;">
-                                        <i class="bi bi-trash3"></i> Hapus
+                                        Hapus
                                     </button>
                                 </div>
                             </div>

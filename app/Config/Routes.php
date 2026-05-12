@@ -101,13 +101,12 @@ $routes->group('staff', static function ($routes) {
     $routes->post('geografi', 'Staff\ContentController::updateGeografis');
     
     $routes->get('inventaris', 'Staff\ContentController::inventaris');
-    $routes->get('inventaris/tambah', 'Staff\ContentController::createInventaris');
-    $routes->get('inventaris/api', 'Staff\ContentController::inventarisApi');
+    $routes->post('inventaris/api', 'Staff\ContentController::inventarisApi');
     $routes->get('inventaris/tambah', 'Staff\ContentController::createInventaris');
     $routes->get('inventaris/(:num)/edit', 'Staff\ContentController::editInventaris/$1');
     $routes->post('inventaris', 'Staff\ContentController::storeInventaris');
     $routes->post('inventaris/(:num)', 'Staff\ContentController::updateInventaris/$1');
-    $routes->delete('inventaris/(:num)', 'Staff\ContentController::deleteInventaris/$1');
+    $routes->get('inventaris/(:num)/hapus', 'Staff\ContentController::deleteInventaris/$1');
 
     $routes->get('pengumuman', 'Staff\ContentController::pengumuman');
     $routes->get('pengumuman/tambah', 'Staff\ContentController::createPengumuman');

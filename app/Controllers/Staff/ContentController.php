@@ -105,31 +105,51 @@ class ContentController extends ProtectedController
         }
 
         $mapsUrl = $this->request->getPost('maps_embed_url');
-        // Extract URL from iframe tag if user pasted full HTML
+        // Ekstrak URL dari iframe tag jika user paste HTML penuh
         if ($mapsUrl && preg_match('/src=["\']([^"\']+)["\']/', $mapsUrl, $matches)) {
             $mapsUrl = $matches[1];
         }
-        // Clean any remaining HTML tags
-        $mapsUrl = strip_tags($mapsUrl);
-        $mapsUrl = trim($mapsUrl);
+        // Bersihkan HTML tag dan whitespace
+        $mapsUrl = trim(strip_tags($mapsUrl ?? ''));
+
+        // Validasi backend: hanya izinkan URL Google Maps yang valid
+        if ($mapsUrl !== '') {
+            $mapsPatterns = [
+                '/maps\.app\.goo\.gl/i',
+                '/goo\.gl\/maps/i',
+                '/google\.com\/maps/i',
+                '/maps\.google\.com/i',
+            ];
+            $isValid = false;
+            foreach ($mapsPatterns as $pattern) {
+                if (preg_match($pattern, $mapsUrl)) {
+                    $isValid = true;
+                    break;
+                }
+            }
+            if (!$isValid) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Link Google Maps tidak valid. Gunakan link dari Google Maps (maps.app.goo.gl, google.com/maps, dsb.).');
+            }
+        }
 
         $geografiModel = new GeografiDesaModel();
         $geografi = $geografiModel->first();
-        
+
         $geografiData = [
             'luas_wilayah'      => $this->request->getPost('luas_wilayah'),
             'batas_wilayah'     => $this->request->getPost('batas_wilayah'),
             'kondisi_geografis' => $this->request->getPost('kondisi_geografis'),
             'maps_embed_url'    => $mapsUrl,
         ];
-        
+
         if ($geografi) {
             $geografiModel->update($geografi['id'], $geografiData);
         } else {
             $geografiModel->save($geografiData);
         }
 
-        return redirect()->to('/staff/geografis')->with('message', 'Data geografis berhasil diperbarui');
+        return redirect()->to('/staff/geografi')->with('message', 'Data geografis berhasil diperbarui.');
     }
 
     public function gallery()
@@ -1078,12 +1098,64 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
-        $inventarisModel = new InventarisDesaModel();
-        $inventaris = $inventarisModel->orderBy('created_at', 'DESC')->findAll();
-
         return view('Staff/inventaris/index', [
             'title' => 'Inventaris Aset Desa',
-            'inventaris' => $inventaris
+        ]);
+    }
+
+    public function inventarisApi()
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
+        }
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $length = (int)($this->request->getPost('length') ?: 10);
+        $search = trim($this->request->getPost('search') ?? '');
+        $jenis  = trim($this->request->getPost('jenis_filter') ?? '');
+        $status = trim($this->request->getPost('status_filter') ?? '');
+        $offset = ($page - 1) * $length;
+
+        $model = new InventarisDesaModel();
+
+        if ($search !== '') {
+            $model->groupStart()
+                ->like('nama_barang', $search)
+                ->orLike('jenis', $search)
+                ->groupEnd();
+        }
+        if ($jenis !== '') {
+            $model->where('jenis', $jenis);
+        }
+        if ($status !== '') {
+            $model->where('status', $status);
+        }
+
+        $total = $model->countAllResults(false);
+        $list  = $model->orderBy('created_at', 'DESC')->findAll($length, $offset);
+
+        $data = [];
+        foreach ($list as $item) {
+            $data[] = [
+                'id'          => $item['id'],
+                'nama_barang' => $item['nama_barang'],
+                'jenis'       => $item['jenis'],
+                'total'       => $item['total'],
+                'status'      => $item['status'],
+                'foto_url'    => !empty($item['foto']) ? base_url($item['foto']) : null,
+                'created_at'  => date('d M Y', strtotime($item['created_at'])),
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $length > 0 ? (int)ceil($total / $length) : 1,
+            'page'        => $page,
         ]);
     }
 
@@ -1098,36 +1170,7 @@ class ContentController extends ProtectedController
         ]);
     }
 
-    public function storeInventaris()
-    {
-        if ($redirect = $this->guard(['staf'])) {
-            return $redirect;
-        }
-
-        $inventarisModel = new InventarisDesaModel();
-        
-        $data = [
-            'nama_barang' => $this->request->getPost('nama_barang'),
-            'jenis'       => $this->request->getPost('jenis'),
-            'total'       => $this->request->getPost('total'),
-            'status'      => $this->request->getPost('status'),
-        ];
-
-        $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid()) {
-            $path = FCPATH . 'uploads/inventaris';
-            $this->ensureUploadPath($path);
-            $name = $foto->getRandomName();
-            $foto->move($path, $name);
-            $data['foto'] = 'uploads/inventaris/' . $name;
-        }
-
-        $inventarisModel->insert($data);
-
-        return redirect()->to('/staff/inventaris')->with('message', 'Data inventaris berhasil ditambahkan');
-    }
-
-    public function updateInventaris($id)
+    public function editInventaris($id)
     {
         if ($redirect = $this->guard(['staf'])) {
             return $redirect;
@@ -1137,9 +1180,24 @@ class ContentController extends ProtectedController
         $item = $inventarisModel->find($id);
 
         if (!$item) {
-            return redirect()->to('/staff/inventaris')->with('error', 'Data tidak ditemukan');
+            return redirect()->to('/staff/inventaris')->with('error', 'Data tidak ditemukan.');
         }
-        
+
+        return view('Staff/inventaris/edit', [
+            'title' => 'Edit Inventaris',
+            'item'  => $item,
+        ]);
+    }
+
+    public function storeInventaris()
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $redirect;
+        }
+
+        helper('upload');
+        $inventarisModel = new InventarisDesaModel();
+
         $data = [
             'nama_barang' => $this->request->getPost('nama_barang'),
             'jenis'       => $this->request->getPost('jenis'),
@@ -1148,26 +1206,64 @@ class ContentController extends ProtectedController
         ];
 
         $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid()) {
-            $path = FCPATH . 'uploads/inventaris';
-            $this->ensureUploadPath($path);
-            
-            // Delete old photo
-            if (!empty($item['foto'])) {
-                $oldFile = FCPATH . $item['foto'];
-                if (file_exists($oldFile)) {
-                    @unlink($oldFile);
-                }
+        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
+            $imgError = validate_image_upload($foto);
+            if ($imgError !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto: ' . $imgError);
             }
+            $fotoPath = $this->uploadToWebp($foto, 'uploads/inventaris');
+            if ($fotoPath === null) {
+                return redirect()->back()->withInput()->with('error', 'Gagal memproses foto.');
+            }
+            $data['foto'] = $fotoPath;
+        }
 
-            $name = $foto->getRandomName();
-            $foto->move($path, $name);
-            $data['foto'] = 'uploads/inventaris/' . $name;
+        $inventarisModel->insert($data);
+
+        return redirect()->to('/staff/inventaris')->with('message', 'Data inventaris berhasil ditambahkan.');
+    }
+
+    public function updateInventaris($id)
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $redirect;
+        }
+
+        helper('upload');
+        $inventarisModel = new InventarisDesaModel();
+        $item = $inventarisModel->find($id);
+
+        if (!$item) {
+            return redirect()->to('/staff/inventaris')->with('error', 'Data tidak ditemukan.');
+        }
+
+        $data = [
+            'nama_barang' => $this->request->getPost('nama_barang'),
+            'jenis'       => $this->request->getPost('jenis'),
+            'total'       => $this->request->getPost('total'),
+            'status'      => $this->request->getPost('status'),
+        ];
+
+        $foto = $this->request->getFile('foto');
+        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
+            $imgError = validate_image_upload($foto);
+            if ($imgError !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto: ' . $imgError);
+            }
+            if (!empty($item['foto'])) {
+                $oldFile = FCPATH . ltrim($item['foto'], '/');
+                if (is_file($oldFile)) @unlink($oldFile);
+            }
+            $fotoPath = $this->uploadToWebp($foto, 'uploads/inventaris');
+            if ($fotoPath === null) {
+                return redirect()->back()->withInput()->with('error', 'Gagal memproses foto.');
+            }
+            $data['foto'] = $fotoPath;
         }
 
         $inventarisModel->update($id, $data);
 
-        return redirect()->to('/staff/inventaris')->with('message', 'Data inventaris berhasil diperbarui');
+        return redirect()->to('/staff/inventaris/' . $id . '/edit')->with('message', 'Data inventaris berhasil diperbarui.');
     }
 
     public function deleteInventaris($id)
