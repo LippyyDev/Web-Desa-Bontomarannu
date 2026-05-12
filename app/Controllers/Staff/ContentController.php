@@ -892,31 +892,21 @@ class ContentController extends ProtectedController
     public function perangkatDesaApi()
     {
         if ($redirect = $this->guard(['staf'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
         }
 
-        $model = new PerangkatDesaModel();
-        
-        $page = (int)($this->request->getGet('page') ?? 1);
-        $limit = (int)($this->request->getGet('limit') ?? 12);
-        $search = $this->request->getGet('search') ?? '';
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 12;
+        $search = trim($this->request->getPost('search') ?? '');
         $offset = ($page - 1) * $limit;
 
-        // Apply search filter
-        if (!empty($search)) {
-            $model->groupStart()
-                ->like('nama', $search)
-                ->orLike('jabatan', $search)
-                ->orLike('kontak', $search)
-                ->groupEnd();
-        }
-
-        // Get total count with search
-        $total = $model->countAllResults(false);
-        
-        // Reset and apply search again for data fetch
         $model = new PerangkatDesaModel();
-        if (!empty($search)) {
+
+        if ($search !== '') {
             $model->groupStart()
                 ->like('nama', $search)
                 ->orLike('jabatan', $search)
@@ -924,21 +914,28 @@ class ContentController extends ProtectedController
                 ->groupEnd();
         }
 
-        $data = $model->orderBy('id', 'DESC')
+        $total = $model->countAllResults(false);
+
+        $list = $model->orderBy('id', 'DESC')
             ->findAll($limit, $offset);
 
-        // Format data
-        foreach ($data as &$item) {
-            $item['foto_url'] = $item['foto'] ? base_url($item['foto']) : base_url('assets/img/guest.webp');
+        $data = [];
+        foreach ($list as $item) {
+            $data[] = [
+                'id'      => $item['id'],
+                'nama'    => $item['nama'],
+                'jabatan' => $item['jabatan'],
+                'kontak'  => $item['kontak'] ?? '',
+                'foto_url' => $item['foto'] ? base_url($item['foto']) : base_url('assets/img/guest.webp'),
+            ];
         }
 
-        $totalPages = ceil($total / $limit);
-
         return $this->response->setJSON([
-            'data' => $data,
-            'total' => $total,
-            'total_pages' => $totalPages,
-            'current_page' => $page,
+            'success'      => true,
+            'data'         => $data,
+            'total'        => $total,
+            'total_pages'  => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'         => $page,
         ]);
     }
 
@@ -975,53 +972,28 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
+        helper('upload');
+
         $model = new PerangkatDesaModel();
-        
+
         $data = [
-            'nama' => $this->request->getPost('nama'),
+            'nama'    => $this->request->getPost('nama'),
             'jabatan' => $this->request->getPost('jabatan'),
-            'kontak' => $this->request->getPost('kontak'),
+            'kontak'  => $this->request->getPost('kontak'),
         ];
 
         $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid()) {
-            // Tolak format .GIF
-            $extension = $foto->getClientExtension();
-            if (strtolower($extension) === 'gif') {
-                return redirect()->back()->with('error', 'Format file .GIF tidak diperbolehkan.');
+        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
+            $imgError = validate_image_upload($foto);
+            if ($imgError !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto: ' . $imgError);
             }
 
-            $path = FCPATH . 'uploads/perangkat_desa';
-            $this->ensureUploadPath($path);
-            
-            // Upload file sementara
-            $tempName = $foto->getRandomName();
-            $foto->move($path, $tempName);
-            $tempPath = $path . '/' . $tempName;
-            
-            // Convert ke WebP
-            $image = \Config\Services::image();
-            $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
-            $webpPath = $path . '/' . $webpName;
-            
-            try {
-                $image->withFile($tempPath)
-                    ->convert(IMAGETYPE_WEBP)
-                    ->save($webpPath, 85); // Quality 85
-                
-                // Hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                
-                $data['foto'] = 'uploads/perangkat_desa/' . $webpName;
-            } catch (\Exception $e) {
-                // Jika konversi gagal, hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                return redirect()->back()->with('error', 'Gagal memproses gambar. Pastikan file adalah gambar yang valid.');
+            $fotoPath = $this->uploadToWebp($foto, 'uploads/perangkat_desa');
+            if ($fotoPath === null) {
+                return redirect()->back()->withInput()->with('error', 'Gagal memproses foto. Pastikan file adalah gambar yang valid.');
             }
+            $data['foto'] = $fotoPath;
         }
 
         $model->insert($data);
@@ -1035,66 +1007,41 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
+        helper('upload');
+
         $model = new PerangkatDesaModel();
-        $item = $model->find($id);
+        $item  = $model->find($id);
 
         if (!$item) {
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
 
         $data = [
-            'nama' => $this->request->getPost('nama'),
+            'nama'    => $this->request->getPost('nama'),
             'jabatan' => $this->request->getPost('jabatan'),
-            'kontak' => $this->request->getPost('kontak'),
+            'kontak'  => $this->request->getPost('kontak'),
         ];
 
         $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid()) {
-            // Tolak format .GIF
-            $extension = $foto->getClientExtension();
-            if (strtolower($extension) === 'gif') {
-                return redirect()->back()->with('error', 'Format file .GIF tidak diperbolehkan.');
+        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
+            $imgError = validate_image_upload($foto);
+            if ($imgError !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto: ' . $imgError);
             }
 
-            // Hapus foto lama jika ada
-            if ($item['foto']) {
+            // Hapus foto lama
+            if (!empty($item['foto'])) {
                 $oldFile = FCPATH . ltrim($item['foto'], '/');
                 if (is_file($oldFile)) {
                     @unlink($oldFile);
                 }
             }
 
-            $path = FCPATH . 'uploads/perangkat_desa';
-            $this->ensureUploadPath($path);
-            
-            // Upload file sementara
-            $tempName = $foto->getRandomName();
-            $foto->move($path, $tempName);
-            $tempPath = $path . '/' . $tempName;
-            
-            // Convert ke WebP
-            $image = \Config\Services::image();
-            $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
-            $webpPath = $path . '/' . $webpName;
-            
-            try {
-                $image->withFile($tempPath)
-                    ->convert(IMAGETYPE_WEBP)
-                    ->save($webpPath, 85); // Quality 85
-                
-                // Hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                
-                $data['foto'] = 'uploads/perangkat_desa/' . $webpName;
-            } catch (\Exception $e) {
-                // Jika konversi gagal, hapus file sementara
-                if (file_exists($tempPath)) {
-                    @unlink($tempPath);
-                }
-                return redirect()->back()->with('error', 'Gagal memproses gambar. Pastikan file adalah gambar yang valid.');
+            $fotoPath = $this->uploadToWebp($foto, 'uploads/perangkat_desa');
+            if ($fotoPath === null) {
+                return redirect()->back()->withInput()->with('error', 'Gagal memproses foto. Pastikan file adalah gambar yang valid.');
             }
+            $data['foto'] = $fotoPath;
         }
 
         $model->update($id, $data);

@@ -33,9 +33,7 @@
     </div>
 </div>
 
-<div class="alert alert-info mb-4 border-0 shadow-sm">
-    <i class="bi bi-info-circle me-2"></i> <strong>Cara kerja:</strong> Setelah Anda mengisi dan mengirimkan form ini, perangkat desa akan meninjau toko Anda. Jika disetujui, toko akan tampil di halaman publik UMKM. Anda akan mendapat notifikasi.
-</div>
+
 
 <form method="POST" action="<?= base_url('/user/umkm') ?>" enctype="multipart/form-data" id="umkmForm">
     <?= csrf_field() ?>
@@ -58,8 +56,8 @@
                     <h5 class="card-title mb-4 fw-bold">Foto Toko</h5>
                     <div class="row g-3">
                         <div class="col-12">
-                            <input type="file" name="foto_toko" id="fotoTokoInput" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png" onchange="previewFotoToko(this)">
-                            <div class="form-text text-muted mt-1">Opsional · Maks. 1MB · JPG/PNG · Rasio 16:9 disarankan</div>
+                            <input type="file" name="foto_toko" id="fotoTokoInput" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png" onchange="previewFotoToko(this)" required>
+                            <div class="form-text text-muted mt-1">Wajib · Maks. 1MB · JPG/PNG · Rasio 16:9 disarankan</div>
                             <div id="fotoTokoPreviewContainer" class="mt-2" style="display:none;">
                                 <div class="col-6 col-sm-4 col-md-3 col-xl-2">
                                     <div class="card border shadow-sm overflow-hidden mb-0">
@@ -78,24 +76,24 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-medium">Nama Toko <span class="text-danger">*</span></label>
-                            <input type="text" name="nama_toko" class="form-control" placeholder="Nama toko UMKM" required>
+                            <input type="text" name="nama_toko" id="inputNamaToko" class="form-control" placeholder="Nama toko UMKM" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Nomor Kontak (WhatsApp/HP)</label>
-                            <input type="text" name="kontak" class="form-control" placeholder="08xxxxxxxx">
+                            <label class="form-label fw-medium">Nomor Kontak (WhatsApp/HP) <span class="text-danger">*</span></label>
+                            <input type="text" name="kontak" id="inputKontak" class="form-control" placeholder="08xxxxxxxx" required>
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-medium">Deskripsi Toko</label>
-                            <textarea name="deskripsi" class="form-control" rows="4" placeholder="Ceritakan tentang toko Anda..."></textarea>
+                            <label class="form-label fw-medium">Deskripsi Toko <span class="text-danger">*</span></label>
+                            <textarea name="deskripsi" id="inputDeskripsi" class="form-control" rows="4" placeholder="Ceritakan tentang toko Anda..." required></textarea>
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-medium">Alamat</label>
-                            <textarea name="alamat" class="form-control" rows="2" placeholder="Alamat lengkap toko"></textarea>
+                            <label class="form-label fw-medium">Alamat <span class="text-danger">*</span></label>
+                            <textarea name="alamat" id="inputAlamat" class="form-control" rows="2" placeholder="Alamat lengkap toko" required></textarea>
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-medium">Link Embedded Google Maps</label>
-                            <textarea name="maps_embed_url" class="form-control" rows="2" placeholder="Paste link embed atau kode iframe dari Google Maps..."></textarea>
-                            <div class="form-text mt-1 text-muted">Buka Google Maps → Bagikan → Sematkan peta → Copy kode iframe atau linknya.</div>
+                            <label class="form-label fw-medium">Link Google Maps</label>
+                            <input type="text" name="maps_embed_url" id="inputMaps" class="form-control" placeholder="https://maps.app.goo.gl/...">
+                            <div class="form-text text-muted">Opsional · Tempel link dari Google Maps. Buka Google Maps → klik lokasi → Bagikan → Salin link.</div>
                         </div>
                     </div>
                 </div>
@@ -104,22 +102,20 @@
             <!-- E-Commerce -->
             <div class="card mb-4 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title mb-4 fw-bold">Link E-Commerce (opsional)</h5>
+                    <h5 class="card-title mb-4 fw-bold">Link E-Commerce</h5>
                     <div id="ecommerceContainer">
-                        <div class="ecommerce-row row g-2 mb-2">
-                            <div class="col-md-4"><input type="text" name="ecommerce_platform[]" class="form-control" placeholder="Shopee / Tokopedia / dll"></div>
-                            <div class="col-md-7"><input type="url" name="ecommerce_url[]" class="form-control" placeholder="https://..."></div>
-                            <div class="col-md-1 d-flex align-items-center"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></div>
+                        <div class="ecommerce-row d-flex gap-2 mb-2">
+                            <input type="text" name="ecommerce_platform[]" class="form-control w-25" placeholder="Shopee / dll">
+                            <input type="url" name="ecommerce_url[]" class="form-control w-100" placeholder="https://...">
+                            <button type="button" class="btn btn-danger px-3" onclick="removeRow(this)" title="Hapus"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-outline-success btn-sm mt-1" onclick="addEcommerce()">
-                        <i class="bi bi-plus"></i> Tambah Link
-                    </button>
+                    <button type="button" class="btn btn-link text-success text-decoration-none p-0 mt-2 fw-medium" style="font-size: 0.9rem;" onclick="addEcommerce()">+ Tambah Link</button>
                 </div>
             </div>
 
             <div class="mt-4 mb-4">
-                <button type="button" class="btn btn-success" onclick="document.getElementById('tambah-produk-tab').click()">
+                <button type="button" class="btn btn-success" onclick="lanjutKeProduk()">
                     Lanjut ke Tambah Produk
                 </button>
             </div>
@@ -136,7 +132,7 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                                     <h6 class="fw-bold text-success mb-0">Produk 1</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeProduk(this)"><i class="bi bi-trash"></i></button>
+                                    <button type="button" class="btn btn-danger px-3" onclick="removeProduk(this)" title="Hapus Produk"><i class="bi bi-trash"></i></button>
                                 </div>
                                 <div class="row g-3">
                                     <div class="col-md-6">
@@ -153,7 +149,8 @@
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label fw-medium small">Foto Produk (bisa pilih banyak)</label>
-                                        <input type="file" name="produk_gambar_0[]" class="form-control" multiple accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                                        <input type="file" id="produk_gambar_0" name="produk_gambar_0[]" class="form-control" multiple accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                                        <div id="preview_gambar_0" class="row g-2 mt-2"></div>
                                     </div>
                                 </div>
                             </div>
@@ -177,31 +174,76 @@
 <script>
 let produkCount = 1;
 
+// ── Validasi Google Maps URL (frontend) ───────────────────────────────────────
+const MAPS_PATTERNS = [
+    /maps\.app\.goo\.gl/i,
+    /goo\.gl\/maps/i,
+    /google\.com\/maps/i,
+    /maps\.google\.com/i,
+];
+function isValidGoogleMapsUrl(val) {
+    if (!val || val.trim() === '') return true; // opsional
+    return MAPS_PATTERNS.some(p => p.test(val));
+}
+
 function previewFotoToko(input) {
     const container = document.getElementById('fotoTokoPreviewContainer');
-    const preview = document.getElementById('fotoTokoPreview');
-    
+    const preview   = document.getElementById('fotoTokoPreview');
+
     if (input.files && input.files[0]) {
+        const file = input.files[0];
+        // Validasi via helper global dari upload_validator.js
+        if (typeof validateImageFile === 'function' && !validateImageFile(file)) {
+            showError('Foto toko tidak valid. Gunakan JPG/PNG, maks. 1MB.');
+            input.value = '';
+            container.style.display = 'none';
+            preview.src = '';
+            return;
+        }
         const reader = new FileReader();
         reader.onload = e => {
             preview.src = e.target.result;
             container.style.display = 'block';
         };
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(file);
     } else {
         container.style.display = 'none';
         preview.src = '';
     }
 }
 
+function lanjutKeProduk() {
+    // Validasi tab Informasi Toko sebelum lanjut
+    const fotoInput  = document.getElementById('fotoTokoInput');
+    const namaToko   = document.getElementById('inputNamaToko').value.trim();
+    const kontak     = document.getElementById('inputKontak').value.trim();
+    const deskripsi  = document.getElementById('inputDeskripsi').value.trim();
+    const alamat     = document.getElementById('inputAlamat').value.trim();
+    const mapsVal    = document.getElementById('inputMaps').value.trim();
+
+    if (!fotoInput.files || !fotoInput.files[0]) {
+        showError('Foto toko wajib diupload.');
+        return;
+    }
+    if (!namaToko) { showError('Nama toko wajib diisi.'); return; }
+    if (!kontak)   { showError('Nomor kontak wajib diisi.'); return; }
+    if (!deskripsi){ showError('Deskripsi toko wajib diisi.'); return; }
+    if (!alamat)   { showError('Alamat toko wajib diisi.'); return; }
+    if (!isValidGoogleMapsUrl(mapsVal)) {
+        showError('Link Google Maps tidak valid. Gunakan link dari Google Maps (maps.app.goo.gl, google.com/maps, dsb.).');
+        return;
+    }
+    document.getElementById('tambah-produk-tab').click();
+}
+
 function addEcommerce() {
     const container = document.getElementById('ecommerceContainer');
     const div = document.createElement('div');
-    div.className = 'ecommerce-row row g-2 mb-2';
+    div.className = 'ecommerce-row d-flex gap-2 mb-2';
     div.innerHTML = `
-        <div class="col-md-4"><input type="text" name="ecommerce_platform[]" class="form-control" placeholder="Shopee / Tokopedia / dll"></div>
-        <div class="col-md-7"><input type="url" name="ecommerce_url[]" class="form-control" placeholder="https://..."></div>
-        <div class="col-md-1 d-flex align-items-center"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></div>
+        <input type="text" name="ecommerce_platform[]" class="form-control w-25" placeholder="Shopee / dll">
+        <input type="url" name="ecommerce_url[]" class="form-control w-100" placeholder="https://...">
+        <button type="button" class="btn btn-danger px-3" onclick="removeRow(this)" title="Hapus"><i class="bi bi-trash"></i></button>
     `;
     container.appendChild(div);
 }
@@ -219,12 +261,12 @@ function addProduk() {
         <div class="card-body">
             <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                 <h6 class="fw-bold text-success mb-0">Produk ${produkCount}</h6>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeProduk(this)"><i class="bi bi-trash"></i></button>
+                <button type="button" class="btn btn-danger px-3" onclick="removeProduk(this)" title="Hapus Produk"><i class="bi bi-trash"></i></button>
             </div>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-medium small">Nama Produk <span class="text-danger">*</span></label>
-                    <input type="text" name="produk_nama[]" class="form-control" placeholder="Nama produk">
+                    <input type="text" name="produk_nama[]" class="form-control produk-nama" placeholder="Nama produk">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-medium small">Harga (Rp)</label>
@@ -236,14 +278,50 @@ function addProduk() {
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-medium small">Foto Produk (bisa pilih banyak)</label>
-                    <input type="file" name="produk_gambar_${idx}[]" class="form-control" multiple accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                    <input type="file" id="produk_gambar_${idx}" name="produk_gambar_${idx}[]" class="form-control" multiple accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                    <div id="preview_gambar_${idx}" class="row g-2 mt-2"></div>
                 </div>
             </div>
         </div>
     `;
     container.appendChild(div);
+    if (typeof initMediaUploader === 'function') {
+        initMediaUploader(`produk_gambar_${idx}`, `preview_gambar_${idx}`);
+    }
 }
 
 function removeProduk(btn) { btn.closest('.produk-item').remove(); }
+
+// ── Validasi submit form ──────────────────────────────────────────────────────
+document.getElementById('umkmForm').addEventListener('submit', function(e) {
+    // Cek foto toko
+    const fotoInput = document.getElementById('fotoTokoInput');
+    if (!fotoInput.files || !fotoInput.files[0]) {
+        e.preventDefault();
+        showError('Foto toko wajib diupload.');
+        return;
+    }
+    // Cek Google Maps URL
+    const mapsVal = document.getElementById('inputMaps').value.trim();
+    if (!isValidGoogleMapsUrl(mapsVal)) {
+        e.preventDefault();
+        showError('Link Google Maps tidak valid. Gunakan link dari Google Maps (maps.app.goo.gl, google.com/maps, dsb.).');
+        return;
+    }
+    // Cek minimal 1 produk dengan nama tidak kosong
+    const namaProdukInputs = document.querySelectorAll('input[name="produk_nama[]"]');
+    const hasProduk = Array.from(namaProdukInputs).some(inp => inp.value.trim() !== '');
+    if (!hasProduk) {
+        e.preventDefault();
+        showError('Minimal 1 produk harus didaftarkan. Isi nama produk di tab Tambah Produk.');
+        return;
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof initMediaUploader === 'function') {
+        initMediaUploader('produk_gambar_0', 'preview_gambar_0');
+    }
+});
 </script>
 <?= $this->endSection() ?>

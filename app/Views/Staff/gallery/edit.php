@@ -70,8 +70,8 @@
                 <div class="col-12">
                     <label class="form-label fw-medium">Link Video YouTube</label>
                     <div id="video-list"></div>
-                    <button type="button" class="btn btn-outline-primary btn-sm mt-1" id="add-video">
-                        <i class="bi bi-plus"></i> Tambah Link
+                    <button type="button" class="btn btn-link text-success text-decoration-none p-0 mt-2 fw-medium" style="font-size: 0.9rem;" id="add-video">
+                        + Tambah Link
                     </button>
                 </div>
             </div>

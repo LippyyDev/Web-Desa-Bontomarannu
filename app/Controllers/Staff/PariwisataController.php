@@ -89,11 +89,15 @@ class PariwisataController extends ProtectedController
 
         $pariwisataModel = new PariwisataModel();
 
-        $mapsUrl = $this->request->getPost('maps_embed_url');
-        if ($mapsUrl && preg_match('/src=["\']([^"\']+)["\']/', $mapsUrl, $matches)) {
-            $mapsUrl = $matches[1];
+        helper('upload');
+
+        // ── Validasi Google Maps URL (opsional, jika diisi harus valid) ───────
+        $mapsRaw   = $this->request->getPost('maps_embed_url');
+        $mapsError = validate_maps_url($mapsRaw);
+        if ($mapsError !== null) {
+            return redirect()->back()->withInput()->with('error', $mapsError);
         }
-        $mapsUrl = strip_tags(trim((string) $mapsUrl));
+        $mapsUrl = $this->parseMapsUrl($mapsRaw);
 
         $data = [
             'nama_tempat'    => $this->request->getPost('nama_tempat'),
@@ -182,11 +186,15 @@ class PariwisataController extends ProtectedController
             return redirect()->to('/staff/pariwisata')->with('error', 'Data tidak ditemukan.');
         }
 
-        $mapsUrl = $this->request->getPost('maps_embed_url');
-        if ($mapsUrl && preg_match('/src=["\']([^"\']+)["\']/', $mapsUrl, $matches)) {
-            $mapsUrl = $matches[1];
+        helper('upload');
+
+        // ── Validasi Google Maps URL (opsional) ───────────────────────────────
+        $mapsRaw   = $this->request->getPost('maps_embed_url');
+        $mapsError = validate_maps_url($mapsRaw);
+        if ($mapsError !== null) {
+            return redirect()->back()->withInput()->with('error', $mapsError);
         }
-        $mapsUrl = strip_tags(trim((string) $mapsUrl));
+        $mapsUrl = $this->parseMapsUrl($mapsRaw);
 
         $data = [
             'nama_tempat'    => $this->request->getPost('nama_tempat'),
@@ -281,6 +289,70 @@ class PariwisataController extends ProtectedController
     }
 
     // ─── Private Helpers ────────────────────────────────────────────────────
+
+    /**
+     * Resolve dan konversi URL Google Maps ke format embed.
+     * Mendukung: link share pendek (maps.app.goo.gl), URL panjang, dan kode iframe.
+     */
+    private function parseMapsUrl(?string $raw): string
+    {
+        if (!$raw) {
+            return '';
+        }
+
+        $raw = strip_tags(trim($raw));
+
+        // Jika user paste kode iframe, ekstrak src-nya
+        if (preg_match('/src=["\']([^"\']+)["\']/', $raw, $m)) {
+            $raw = $m[1];
+        }
+
+        // Jika sudah berupa embed URL, kembalikan langsung
+        if (str_contains($raw, '/maps/embed') || str_contains($raw, 'output=embed')) {
+            return $raw;
+        }
+
+        // Resolve URL pendek (maps.app.goo.gl atau goo.gl/maps)
+        if (preg_match('/maps\.app\.goo\.gl|goo\.gl\/maps/i', $raw)) {
+            $ch = curl_init($raw);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS      => 5,
+                CURLOPT_TIMEOUT        => 6,
+                CURLOPT_NOBODY         => true,
+                CURLOPT_USERAGENT      => 'Mozilla/5.0',
+            ]);
+            curl_exec($ch);
+            $resolved = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+            curl_close($ch);
+            if ($resolved) {
+                $raw = $resolved;
+            }
+        }
+
+        // Ekstrak koordinat dari URL Google Maps
+        if (preg_match('/@(-?\d+\.\d+),(-?\d+\.\d+)/', $raw, $coords)) {
+            $lat = $coords[1];
+            $lng = $coords[2];
+            return "https://maps.google.com/maps?q={$lat},{$lng}&z=15&output=embed";
+        }
+
+        // Coba ekstrak q= dari URL search Google Maps
+        if (preg_match('/\/maps\/search\/([^@?&\/]+)/i', $raw, $sq)) {
+            $q = urlencode(urldecode($sq[1]));
+            return "https://maps.google.com/maps?q={$q}&output=embed";
+        }
+
+        // Coba ekstrak place name dari URL Google Maps
+        if (preg_match('/\/maps\/place\/([^@?&\/]+)/i', $raw, $pl)) {
+            $q = urlencode(urldecode($pl[1]));
+            return "https://maps.google.com/maps?q={$q}&output=embed";
+        }
+
+        // Fallback: kembalikan URL apa adanya
+        return $raw;
+    }
 
     /**
      * Proses upload gambar: validasi & konversi ke WebP.

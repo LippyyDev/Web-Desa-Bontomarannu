@@ -57,12 +57,7 @@
     font-size: .8rem; color: #64748b;
 }
 .umkm-meta-item i { color: #94a3b8; flex-shrink: 0; }
-.umkm-notice {
-    padding: .5rem .75rem;
-    border-radius: 8px;
-    font-size: .78rem;
-    margin-bottom: .85rem;
-}
+
 .umkm-footer {
     padding-top: .85rem; border-top: 1px solid #f1f5f9;
     display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto;
@@ -244,15 +239,6 @@ document.addEventListener('DOMContentLoaded', function () {
                        onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'umkm-placeholder\\'><i class=\\'bi bi-shop\\'></i><span>Foto Toko</span></div>'">`
                 : `<div class="umkm-placeholder"><i class="bi bi-shop"></i><span>Belum ada foto</span></div>`;
 
-            let noticeHtml = '';
-            if (item.status === 'pending') {
-                noticeHtml = `<div class="umkm-notice bg-warning bg-opacity-10 text-warning-emphasis">
-                    <i class="bi bi-clock"></i> Sedang ditinjau oleh staff.</div>`;
-            } else if (item.status === 'rejected' && item.alasan_tolak) {
-                noticeHtml = `<div class="umkm-notice bg-danger bg-opacity-10 text-danger">
-                    <i class="bi bi-info-circle"></i> ${escapeHtml(item.alasan_tolak)}</div>`;
-            }
-
             const actionBtns = `
                 <a href="${baseUmkm}${item.id}" class="ua ua-detail"><i class="bi bi-eye"></i> Detail</a>
                 <a href="${baseUmkm}${item.id}/edit" class="ua ua-edit"><i class="bi bi-pencil"></i> Edit</a>
@@ -273,7 +259,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             <div class="umkm-meta-item"><i class="bi bi-geo-alt"></i><span>${escapeHtml(item.alamat || '-')}</span></div>
                             <div class="umkm-meta-item"><i class="bi bi-calendar3"></i><span>${escapeHtml(item.didaftarkan)}</span></div>
                         </div>
-                        ${noticeHtml}
                         <div class="umkm-footer">${actionBtns}</div>
                     </div>
                 </div>

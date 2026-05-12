@@ -183,53 +183,7 @@
     Belum ada data UMKM.
 </div>
 
-<!-- Modal Approve -->
-<div class="modal fade" id="approveModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Setujui UMKM</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="approveForm" method="POST">
-                <?= csrf_field() ?>
-                <div class="modal-body">
-                    <p>Apakah Anda yakin ingin menyetujui toko <strong id="approveName"></strong>? Toko akan langsung tampil di halaman publik.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success">Setujui</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<!-- Modal Reject -->
-<div class="modal fade" id="rejectModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Tolak UMKM</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="rejectForm" method="POST">
-                <?= csrf_field() ?>
-                <div class="modal-body">
-                    <p>Tolak toko <strong id="rejectName"></strong>?</p>
-                    <div class="mb-3">
-                        <label class="form-label fw-medium">Alasan Penolakan <span class="text-danger">*</span></label>
-                        <textarea name="alasan" class="form-control" rows="3" placeholder="Jelaskan alasan penolakan..." required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Tolak</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -316,18 +270,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 : `<div class="umkm-placeholder"><i class="bi bi-shop"></i><span>Belum ada foto</span></div>`;
 
             let actionBtns = `
-                <a href="${baseUmkm}${item.id}" class="ua ua-detail"><i class="bi bi-eye"></i> Detail</a>
-                <a href="${baseUmkm}${item.id}/edit" class="ua ua-edit"><i class="bi bi-pencil"></i> Edit</a>`;
-
-            if (item.status === 'pending') {
+                <a href="${baseUmkm}${item.id}" class="ua ua-detail"><i class="bi bi-eye"></i> Detail</a>`;
+            
+            if (item.status === 'approved') {
                 actionBtns += `
-                <button type="button" class="ua ua-approve btn-approve"
-                    data-id="${item.id}" data-nama="${escapeHtml(item.nama_toko)}">
-                    <i class="bi bi-check-circle"></i> Setujui</button>
-                <button type="button" class="ua ua-reject btn-reject"
-                    data-id="${item.id}" data-nama="${escapeHtml(item.nama_toko)}">
-                    <i class="bi bi-x-circle"></i> Tolak</button>`;
+                <a href="${baseUmkm}${item.id}/edit" class="ua ua-edit"><i class="bi bi-pencil"></i> Edit</a>`;
             }
+            
             actionBtns += `
                 <a href="${baseUmkm}${item.id}/hapus" class="ua ua-delete btn-hapus-umkm"
                     data-nama="${escapeHtml(item.nama_toko)}">
@@ -364,20 +313,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const nama = this.dataset.nama;
                 showConfirm(`Hapus UMKM "${nama}"?`, 'Hapus UMKM', 'Ya, Hapus')
                     .then(ok => { if (ok) window.location.href = href; });
-            });
-        });
-        document.querySelectorAll('.btn-approve').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('approveName').textContent = this.dataset.nama;
-                document.getElementById('approveForm').action = baseUmkm + this.dataset.id + '/approve';
-                new bootstrap.Modal(document.getElementById('approveModal')).show();
-            });
-        });
-        document.querySelectorAll('.btn-reject').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('rejectName').textContent = this.dataset.nama;
-                document.getElementById('rejectForm').action = baseUmkm + this.dataset.id + '/reject';
-                new bootstrap.Modal(document.getElementById('rejectModal')).show();
             });
         });
     }

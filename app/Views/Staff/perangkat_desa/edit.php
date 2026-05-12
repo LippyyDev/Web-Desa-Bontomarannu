@@ -1,77 +1,144 @@
 <?= $this->extend('Staff/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
-        <h4>Edit Perangkat Desa</h4>
-    <div class="text-muted small">Ubah data perangkat desa.</div>
+        <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
+            <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
+            MANAJEMEN DESA
+        </div>
+        <h2 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">
+            Edit <span style="color: #15803d;">Perangkat Desa</span>
+        </h2>
+        <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Perbarui data anggota perangkat desa.</p>
     </div>
-    <div class="page-header-actions">
-        <a href="<?= base_url('/staff/perangkat-desa/' . $item['id'] . '/hapus') ?>" class="page-header-icon page-header-icon-delete" onclick="return confirm('Hapus data ini?')" title="Hapus Perangkat Desa">
-            <i class="bi bi-trash"></i>
-        </a>
-        <a href="<?= base_url('/staff/perangkat-desa') ?>" class="page-header-icon">
-            <i class="bi bi-arrow-left"></i>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-danger" id="btnHapus">
+            <i class="bi bi-trash me-1"></i> Hapus
+        </button>
+        <a href="<?= base_url('/staff/perangkat-desa') ?>" class="btn btn-outline-success">
+            <i class="bi bi-arrow-left me-1"></i> Kembali
         </a>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/perangkat-desa/' . $item['id']) ?>">
-            <?= csrf_field() ?>
-            <div class="text-center mb-4">
-                <div class="profile-photo-container d-inline-block">
-                    <input type="file" id="fotoInput" name="foto" accept="image/jpeg,image/jpg,image/png,image/webp" style="display: none;">
-                    <label for="fotoInput" class="profile-photo-wrapper">
-                        <img id="photoPreview" src="<?= !empty($item['foto']) ? base_url($item['foto']) : base_url('assets/img/guest.webp') ?>" class="profile-photo" alt="Foto Profil">
-                        <div class="profile-photo-overlay">
-                            <i class="bi bi-camera"></i>
-                            <span>Ganti Foto</span>
-                        </div>
+<form method="post" enctype="multipart/form-data" action="<?= base_url('/staff/perangkat-desa/' . $item['id']) ?>" id="perangkatForm">
+    <?= csrf_field() ?>
+
+    <!-- FOTO CARD -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3">
+                <div class="d-flex flex-column flex-sm-row align-items-center text-center text-sm-start gap-3 gap-sm-4">
+                    <img id="fotoPreview"
+                         src="<?= !empty($item['foto']) ? base_url($item['foto']) : base_url('assets/img/guest.webp') ?>"
+                         class="rounded-circle object-fit-cover border"
+                         style="width: 90px; height: 90px;"
+                         alt="Foto Perangkat">
+                    <div>
+                        <h5 class="fw-bold mb-1" id="namaPreview"><?= esc($item['nama']) ?></h5>
+                        <div class="text-muted small" id="jabatanPreview"><?= esc($item['jabatan']) ?></div>
+                    </div>
+                </div>
+                <div>
+                    <input type="file" id="fotoInput" name="foto" accept=".jpg,.jpeg,.png,image/jpeg,image/png" style="display: none;">
+                    <label for="fotoInput" class="btn btn-outline-success mb-0">
+                        <i class="bi bi-camera me-1"></i> Ganti Foto
                     </label>
                 </div>
             </div>
+            <div id="fotoError" class="invalid-feedback d-block mt-2"></div>
+            <div class="form-text text-muted mt-2">Opsional · Maks. 1MB · JPG/PNG · Biarkan kosong jika tidak ingin mengubah foto.</div>
+        </div>
+    </div>
+
+    <!-- DATA CARD -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4 fw-bold">Informasi Perangkat</h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">Nama <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="nama" value="<?= old('nama', esc($item['nama'])) ?>" required>
+                    <label class="form-label fw-medium">Nama Lengkap <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="nama" id="inputNama"
+                           value="<?= old('nama', esc($item['nama'])) ?>" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Jabatan <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="jabatan" value="<?= old('jabatan', esc($item['jabatan'])) ?>" required>
+                    <label class="form-label fw-medium">Jabatan <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="jabatan" id="inputJabatan"
+                           value="<?= old('jabatan', esc($item['jabatan'])) ?>" required>
                 </div>
-                <div class="col-md-12">
-                    <label class="form-label">Kontak</label>
-                    <input type="text" class="form-control" name="kontak" value="<?= old('kontak', esc($item['kontak'])) ?>" placeholder="Nomor telepon atau email">
+                <div class="col-12">
+                    <label class="form-label fw-medium">Kontak</label>
+                    <input type="text" class="form-control" name="kontak"
+                           value="<?= old('kontak', esc($item['kontak'])) ?>"
+                           placeholder="Nomor telepon atau email">
                 </div>
             </div>
-            <div class="mt-4">
-                <button class="btn btn-primary" type="submit">
-                    <i class="bi bi-check-circle"></i> Simpan Perubahan
-                </button>
-                <a href="<?= base_url('/staff/perangkat-desa') ?>" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle"></i> Batal
-                </a>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
+
+    <div class="mt-4 mb-4">
+        <button class="btn btn-success" type="submit">
+            <i class="bi bi-check-circle me-1"></i> Simpan Perubahan
+        </button>
+    </div>
+</form>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const fotoInput = document.getElementById('fotoInput');
-    const photoPreview = document.getElementById('photoPreview');
-    
-    fotoInput.addEventListener('change', function(e) {
+document.addEventListener('DOMContentLoaded', function () {
+    const fotoInput    = document.getElementById('fotoInput');
+    const fotoPreview  = document.getElementById('fotoPreview');
+    const fotoError    = document.getElementById('fotoError');
+    const origSrc      = fotoPreview.src;
+    const namaPreview  = document.getElementById('namaPreview');
+    const jabatanPrev  = document.getElementById('jabatanPreview');
+    const inputNama    = document.getElementById('inputNama');
+    const inputJabatan = document.getElementById('inputJabatan');
+
+    // Live preview nama & jabatan di card foto
+    inputNama.addEventListener('input', function () {
+        namaPreview.textContent = this.value.trim() || '—';
+    });
+    inputJabatan.addEventListener('input', function () {
+        jabatanPrev.textContent = this.value.trim() || '—';
+    });
+
+    // Preview & validasi foto
+    fotoInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                photoPreview.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+        fotoError.textContent = '';
+
+        if (!file) {
+            fotoPreview.src = origSrc;
+            return;
         }
+
+        // Gunakan validateImageFile dari upload_validator.js jika tersedia
+        if (typeof validateImageFile === 'function' && !validateImageFile(file)) {
+            fotoError.textContent = 'Format tidak didukung atau ukuran melebihi 1MB (Hanya JPG/PNG).';
+            fotoInput.value = '';
+            fotoPreview.src = origSrc;
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            fotoPreview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Konfirmasi hapus via SweetAlert
+    document.getElementById('btnHapus').addEventListener('click', function () {
+        showConfirm(
+            'Hapus data "<?= esc($item['nama'], 'js') ?>"? Tindakan ini tidak dapat dibatalkan.',
+            'Hapus Perangkat Desa',
+            'Ya, Hapus'
+        ).then(confirmed => {
+            if (confirmed) {
+                window.location.href = '<?= base_url('/staff/perangkat-desa/' . $item['id'] . '/hapus') ?>';
+            }
+        });
     });
 });
 </script>

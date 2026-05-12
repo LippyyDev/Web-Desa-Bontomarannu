@@ -232,7 +232,10 @@ document.addEventListener('DOMContentLoaded', function () {
     let isLoading     = false;
     let currentSearch = '';
     let totalPages    = 1;
-    let limit         = 12;
+    const limit       = 12;
+
+    const csrfHeaderName = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+    const getCsrfHash    = () => document.querySelector(`meta[name="${csrfHeaderName}"]`)?.content || '';
 
     const perangkatContainer = document.getElementById('perangkatContainer');
     const loadingIndicator   = document.getElementById('loadingIndicator');
@@ -257,19 +260,20 @@ document.addEventListener('DOMContentLoaded', function () {
         customPagination.style.display = 'none';
         emptyMessage.style.display     = 'none';
 
-        const params = new URLSearchParams({
-            page: page,
-            limit: limit,
-            search: search
-        });
+        const formData = new URLSearchParams();
+        formData.append('page', page);
+        formData.append('limit', limit);
+        formData.append('search', search);
+        formData.append(csrfHeaderName, getCsrfHash());
 
-        fetch('<?= base_url('/staff/perangkat-desa/api') ?>?' + params.toString(), {
-            method: 'GET',
+        fetch('<?= base_url('/staff/perangkat-desa/api') ?>', {
+            method: 'POST',
+            body: formData,
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(res => res.json())
         .then(response => {
-            if (response.data && response.data.length > 0) {
+            if (response.success && response.data && response.data.length > 0) {
                 let html = '';
                 response.data.forEach(function (item) {
                     const imgHtml = item.foto_url
@@ -324,10 +328,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 customPagination.style.display = 'none';
             }
         })
-        .catch(() => {
-            if(typeof showError === 'function') showError('Terjadi kesalahan saat memuat data.');
-            else alert('Terjadi kesalahan saat memuat data.');
-        })
+        .catch(() => showError('Terjadi kesalahan saat memuat data.'))
         .finally(() => {
             isLoading = false;
             loadingIndicator.style.display = 'none';

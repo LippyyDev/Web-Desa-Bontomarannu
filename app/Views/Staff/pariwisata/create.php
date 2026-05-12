@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<form method="POST" action="<?= base_url('/staff/pariwisata') ?>" enctype="multipart/form-data">
+<form method="POST" action="<?= base_url('/staff/pariwisata') ?>" enctype="multipart/form-data" id="pariwisataForm">
     <?= csrf_field() ?>
 
     <div class="card mb-4">
@@ -39,9 +39,9 @@
                     <textarea name="deskripsi" class="form-control" rows="5" placeholder="Ceritakan tentang tempat wisata ini..."></textarea>
                 </div>
                 <div class="col-12">
-                    <label class="form-label fw-medium">Link Embedded Google Maps</label>
-                    <textarea name="maps_embed_url" class="form-control" rows="3" placeholder="Paste link embed dari Google Maps atau kode iframe lengkapnya..."></textarea>
-                    <div class="form-text mt-1 text-muted">Bisa paste link biasa maupun seluruh kode iframe dari Google Maps.</div>
+                    <label class="form-label fw-medium">Link Google Maps</label>
+                    <input type="text" name="maps_embed_url" id="inputMaps" class="form-control" placeholder="https://maps.app.goo.gl/...">
+                    <div class="form-text text-muted">Opsional · Tempel link dari Google Maps. Buka Google Maps → klik lokasi → Bagikan → Salin link.</div>
                 </div>
             </div>
         </div>
@@ -73,6 +73,18 @@
 </form>
 
 <script>
+// ── Validasi Google Maps URL (frontend) ───────────────────────────────────────
+const MAPS_PATTERNS = [
+    /maps\.app\.goo\.gl/i,
+    /goo\.gl\/maps/i,
+    /google\.com\/maps/i,
+    /maps\.google\.com/i,
+];
+function isValidGoogleMapsUrl(val) {
+    if (!val || val.trim() === '') return true; // opsional
+    return MAPS_PATTERNS.some(p => p.test(val));
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // Preview Thumbnail
     const thumbnailInput = document.getElementById('thumbnailInput');
@@ -107,6 +119,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof initMediaUploader === 'function') {
         initMediaUploader('mediaInput', 'mediaPreview');
     }
+
+    // Validasi Maps URL saat submit
+    document.getElementById('pariwisataForm').addEventListener('submit', function(e) {
+        const mapsVal = document.getElementById('inputMaps').value.trim();
+        if (!isValidGoogleMapsUrl(mapsVal)) {
+            e.preventDefault();
+            showError('Link Google Maps tidak valid. Gunakan link dari Google Maps (maps.app.goo.gl, google.com/maps, dsb.).');
+        }
+    });
 });
 </script>
 <?= $this->endSection() ?>

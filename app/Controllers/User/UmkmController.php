@@ -86,6 +86,55 @@ class UmkmController extends ProtectedController
         ]);
     }
 
+    /**
+     * AJAX endpoint: daftar produk UMKM milik user untuk infinite scroll di tab edit.
+     */
+    public function produkApi($umkmId)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
+        }
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $umkmModel   = new UmkmModel();
+        $produkModel = new UmkmProdukModel();
+        $gambarModel = new UmkmProdukGambarModel();
+
+        // Pastikan UMKM ini milik user yang login
+        $umkm = $umkmModel->where('user_id', $this->currentUser['id'])->find($umkmId);
+        if (!$umkm) {
+            return $this->response->setJSON(['success' => false, 'error' => 'UMKM tidak ditemukan'])->setStatusCode(404);
+        }
+
+        $limit  = 8;
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $offset = ($page - 1) * $limit;
+
+        $total = $produkModel->where('umkm_id', $umkmId)->countAllResults();
+        $list  = $produkModel->where('umkm_id', $umkmId)
+                             ->orderBy('created_at', 'ASC')
+                             ->limit($limit, $offset)
+                             ->findAll();
+
+        foreach ($list as &$p) {
+            $gambar = $gambarModel->where('produk_id', $p['id'])->findAll();
+            $p['gambar_path'] = !empty($gambar) ? $gambar[0]['gambar_path'] : null;
+            $p['harga_fmt']   = $p['harga'] ? 'Rp ' . number_format((float)$p['harga'], 0, ',', '.') : null;
+        }
+        unset($p);
+
+        return $this->response->setJSON([
+            'success'  => true,
+            'data'     => $list,
+            'total'    => $total,
+            'page'     => $page,
+            'has_more' => ($offset + $limit) < $total,
+        ]);
+    }
+
     public function create()
     {
         if ($redirect = $this->guard(['user'])) {
@@ -104,35 +153,75 @@ class UmkmController extends ProtectedController
         }
 
         helper('upload');
-        $mapsUrl = $this->parseMapsUrl($this->request->getPost('maps_embed_url'));
+
+        // ── Validasi field wajib ──────────────────────────────────────────────
+        $namaToko  = trim($this->request->getPost('nama_toko') ?? '');
+        $deskripsi = trim($this->request->getPost('deskripsi') ?? '');
+        $alamat    = trim($this->request->getPost('alamat') ?? '');
+        $kontak    = trim($this->request->getPost('kontak') ?? '');
+
+        if ($namaToko === '') {
+            return redirect()->back()->withInput()->with('error', 'Nama toko wajib diisi.');
+        }
+        if ($deskripsi === '') {
+            return redirect()->back()->withInput()->with('error', 'Deskripsi toko wajib diisi.');
+        }
+        if ($alamat === '') {
+            return redirect()->back()->withInput()->with('error', 'Alamat toko wajib diisi.');
+        }
+        if ($kontak === '') {
+            return redirect()->back()->withInput()->with('error', 'Nomor kontak wajib diisi.');
+        }
+
+        // ── Validasi Google Maps URL (opsional, jika diisi harus valid) ───────
+        $mapsRaw   = $this->request->getPost('maps_embed_url');
+        $mapsError = validate_maps_url($mapsRaw);
+        if ($mapsError !== null) {
+            return redirect()->back()->withInput()->with('error', $mapsError);
+        }
+        $mapsUrl = $this->parseMapsUrl($mapsRaw);
+
+        // ── Validasi minimal 1 produk ─────────────────────────────────────────
+        $namaProdukList = (array)($this->request->getPost('produk_nama') ?? []);
+        $hasProduk = false;
+        foreach ($namaProdukList as $np) {
+            if (trim($np) !== '') {
+                $hasProduk = true;
+                break;
+            }
+        }
+        if (!$hasProduk) {
+            return redirect()->back()->withInput()->with('error', 'Minimal 1 produk harus didaftarkan saat membuat toko.');
+        }
+
+        // ── Validasi foto toko (wajib saat create) ────────────────────────────
+        $fotoToko = $this->request->getFile('foto_toko');
+        if (!$fotoToko || !$fotoToko->isValid() || $fotoToko->hasMoved()) {
+            return redirect()->back()->withInput()->with('error', 'Foto toko wajib diupload.');
+        }
+        $fotoError = validate_image_upload($fotoToko);
+        if ($fotoError !== null) {
+            return redirect()->back()->withInput()->with('error', 'Foto Toko: ' . $fotoError);
+        }
+        $fotoPath = $this->uploadToWebp($fotoToko, 'uploads/umkm/toko');
+        if ($fotoPath === null) {
+            return redirect()->back()->withInput()->with('error', 'Gagal memproses foto toko.');
+        }
 
         $umkmModel = new UmkmModel();
         $data = [
             'user_id'        => $this->currentUser['id'],
-            'nama_toko'      => $this->request->getPost('nama_toko'),
-            'deskripsi'      => $this->request->getPost('deskripsi'),
-            'alamat'         => $this->request->getPost('alamat'),
+            'nama_toko'      => $namaToko,
+            'deskripsi'      => $deskripsi,
+            'alamat'         => $alamat,
             'maps_embed_url' => $mapsUrl,
-            'kontak'         => $this->request->getPost('kontak'),
+            'kontak'         => $kontak,
+            'foto_toko'      => $fotoPath,
             'status'         => 'pending',
             'created_by'     => $this->currentUser['id'],
             'created_at'     => date('Y-m-d H:i:s'),
             'updated_at'     => date('Y-m-d H:i:s'),
         ];
-
-        // Handle foto toko
-        $fotoToko = $this->request->getFile('foto_toko');
-        if ($fotoToko && $fotoToko->isValid() && !$fotoToko->hasMoved()) {
-            $error = validate_image_upload($fotoToko);
-            if ($error !== null) {
-                return redirect()->back()->withInput()->with('error', 'Foto Toko: ' . $error);
-            }
-            $path = $this->uploadToWebp($fotoToko, 'uploads/umkm/toko');
-            if ($path === null) {
-                return redirect()->back()->withInput()->with('error', 'Gagal memproses foto toko.');
-            }
-            $data['foto_toko'] = $path;
-        }
 
         $umkmId = $umkmModel->insert($data, true);
 
@@ -172,14 +261,20 @@ class UmkmController extends ProtectedController
         }
 
         $umkmModel = new UmkmModel();
+        $ecomModel = new UmkmEcommerceModel();
+
         $umkm = $umkmModel->where('user_id', $this->currentUser['id'])->find($id);
         if (!$umkm) {
             return redirect()->to('/user/umkm')->with('error', 'UMKM tidak ditemukan.');
         }
 
-        // User bisa edit toko yang approved, pending, atau rejected
-        $data = $this->loadUmkmData($id);
-        return view('User/umkm/edit', array_merge($data, ['title' => 'Edit Toko']));
+        $ecommerce = $ecomModel->where('umkm_id', $id)->findAll();
+
+        return view('User/umkm/edit', [
+            'title'     => 'Edit Toko',
+            'umkm'      => $umkm,
+            'ecommerce' => $ecommerce,
+        ]);
     }
 
     public function update($id)
@@ -195,14 +290,39 @@ class UmkmController extends ProtectedController
             return redirect()->to('/user/umkm')->with('error', 'UMKM tidak ditemukan.');
         }
 
-        $mapsUrl = $this->parseMapsUrl($this->request->getPost('maps_embed_url'));
+        // ── Validasi field wajib ──────────────────────────────────────────────
+        $namaToko  = trim($this->request->getPost('nama_toko') ?? '');
+        $deskripsi = trim($this->request->getPost('deskripsi') ?? '');
+        $alamat    = trim($this->request->getPost('alamat') ?? '');
+        $kontak    = trim($this->request->getPost('kontak') ?? '');
+
+        if ($namaToko === '') {
+            return redirect()->back()->withInput()->with('error', 'Nama toko wajib diisi.');
+        }
+        if ($deskripsi === '') {
+            return redirect()->back()->withInput()->with('error', 'Deskripsi toko wajib diisi.');
+        }
+        if ($alamat === '') {
+            return redirect()->back()->withInput()->with('error', 'Alamat toko wajib diisi.');
+        }
+        if ($kontak === '') {
+            return redirect()->back()->withInput()->with('error', 'Nomor kontak wajib diisi.');
+        }
+
+        // ── Validasi Google Maps URL (opsional) ───────────────────────────────
+        $mapsRaw   = $this->request->getPost('maps_embed_url');
+        $mapsError = validate_maps_url($mapsRaw);
+        if ($mapsError !== null) {
+            return redirect()->back()->withInput()->with('error', $mapsError);
+        }
+        $mapsUrl = $this->parseMapsUrl($mapsRaw);
 
         $updateData = [
-            'nama_toko'      => $this->request->getPost('nama_toko'),
-            'deskripsi'      => $this->request->getPost('deskripsi'),
-            'alamat'         => $this->request->getPost('alamat'),
+            'nama_toko'      => $namaToko,
+            'deskripsi'      => $deskripsi,
+            'alamat'         => $alamat,
             'maps_embed_url' => $mapsUrl,
-            'kontak'         => $this->request->getPost('kontak'),
+            'kontak'         => $kontak,
             'updated_at'     => date('Y-m-d H:i:s'),
         ];
 
@@ -373,18 +493,23 @@ class UmkmController extends ProtectedController
             'updated_at'  => date('Y-m-d H:i:s'),
         ]);
 
-        // Upload gambar baru jika ada
+        // Upload gambar baru — validasi via validate_image_upload() + uploadToWebp()
+        helper('upload');
         $gambarFiles = $this->request->getFileMultiple('gambar_baru');
         if ($gambarFiles) {
             foreach ($gambarFiles as $file) {
                 if (!$file->isValid() || $file->hasMoved()) {
                     continue;
                 }
-                $result = $this->processImageUpload($file, 'uploads/umkm');
-                if ($result['success']) {
+                $imgError = validate_image_upload($file);
+                if ($imgError !== null) {
+                    continue; // skip file tidak valid
+                }
+                $path = $this->uploadToWebp($file, 'uploads/umkm');
+                if ($path !== null) {
                     $gambarModel->insert([
                         'produk_id'   => $produkId,
-                        'gambar_path' => $result['path'],
+                        'gambar_path' => $path,
                         'created_at'  => date('Y-m-d H:i:s'),
                     ]);
                 }
@@ -508,10 +633,59 @@ class UmkmController extends ProtectedController
         if (!$raw) {
             return '';
         }
-        if (preg_match('/src=["\']([^"\']+)["\']/', $raw, $matches)) {
-            $raw = $matches[1];
+
+        $raw = strip_tags(trim($raw));
+
+        // Jika user paste kode iframe, ekstrak src-nya
+        if (preg_match('/src=["\']([^"\']+)["\']/', $raw, $m)) {
+            $raw = $m[1];
         }
-        return strip_tags(trim($raw));
+
+        // Jika sudah berupa embed URL, kembalikan langsung
+        if (str_contains($raw, '/maps/embed') || str_contains($raw, 'output=embed')) {
+            return $raw;
+        }
+
+        // Resolve URL pendek (maps.app.goo.gl atau goo.gl/maps)
+        if (preg_match('/maps\.app\.goo\.gl|goo\.gl\/maps/i', $raw)) {
+            $ch = curl_init($raw);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS      => 5,
+                CURLOPT_TIMEOUT        => 6,
+                CURLOPT_NOBODY         => true,
+                CURLOPT_USERAGENT      => 'Mozilla/5.0',
+            ]);
+            curl_exec($ch);
+            $resolved = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+            curl_close($ch);
+            if ($resolved) {
+                $raw = $resolved;
+            }
+        }
+
+        // Ekstrak koordinat dari URL Google Maps
+        if (preg_match('/@(-?\d+\.\d+),(-?\d+\.\d+)/', $raw, $coords)) {
+            $lat = $coords[1];
+            $lng = $coords[2];
+            return "https://maps.google.com/maps?q={$lat},{$lng}&z=15&output=embed";
+        }
+
+        // Coba ekstrak q= dari URL search Google Maps
+        if (preg_match('/\/maps\/search\/([^@?&\/]+)/i', $raw, $sq)) {
+            $q = urlencode(urldecode($sq[1]));
+            return "https://maps.google.com/maps?q={$q}&output=embed";
+        }
+
+        // Coba ekstrak place name dari URL Google Maps
+        if (preg_match('/\/maps\/place\/([^@?&\/]+)/i', $raw, $pl)) {
+            $q = urlencode(urldecode($pl[1]));
+            return "https://maps.google.com/maps?q={$q}&output=embed";
+        }
+
+        // Fallback: kembalikan URL apa adanya
+        return $raw;
     }
 
     private function saveEcommerce(int $umkmId): void
@@ -540,6 +714,7 @@ class UmkmController extends ProtectedController
 
     private function saveProduk(int $umkmId): ?string
     {
+        helper('upload');
         $produkModel = new UmkmProdukModel();
         $gambarModel = new UmkmProdukGambarModel();
 
@@ -568,17 +743,22 @@ class UmkmController extends ProtectedController
                 'updated_at'  => date('Y-m-d H:i:s'),
             ], true);
 
+            // Upload gambar produk — validasi via validate_image_upload() + uploadToWebp()
             $gambarFiles = $this->request->getFileMultiple("produk_gambar_{$i}");
             if ($gambarFiles) {
                 foreach ($gambarFiles as $file) {
-                    if (!$file->isValid()) {
+                    if (!$file->isValid() || $file->hasMoved()) {
                         continue;
                     }
-                    $result = $this->processImageUpload($file, 'uploads/umkm');
-                    if ($result['success']) {
+                    $imgError = validate_image_upload($file);
+                    if ($imgError !== null) {
+                        continue; // skip file tidak valid
+                    }
+                    $path = $this->uploadToWebp($file, 'uploads/umkm');
+                    if ($path !== null) {
                         $gambarModel->insert([
                             'produk_id'   => $produkId,
-                            'gambar_path' => $result['path'],
+                            'gambar_path' => $path,
                             'created_at'  => date('Y-m-d H:i:s'),
                         ]);
                     }
@@ -587,42 +767,6 @@ class UmkmController extends ProtectedController
         }
 
         return null;
-    }
-
-    private function processImageUpload($file, string $folder): array
-    {
-        $ext = strtolower($file->getClientExtension());
-        if ($ext === 'gif') {
-            return ['success' => false, 'message' => 'Format .GIF tidak diperbolehkan.'];
-        }
-
-        $path = FCPATH . $folder;
-        $this->ensureUploadPath($path);
-
-        $tempName = $file->getRandomName();
-        $file->move($path, $tempName);
-        $tempPath = $path . '/' . $tempName;
-
-        $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
-        $webpPath = $path . '/' . $webpName;
-
-        try {
-            \Config\Services::image()
-                ->withFile($tempPath)
-                ->convert(IMAGETYPE_WEBP)
-                ->save($webpPath, 85);
-
-            if (file_exists($tempPath)) {
-                @unlink($tempPath);
-            }
-
-            return ['success' => true, 'path' => $folder . '/' . $webpName];
-        } catch (\Exception $e) {
-            if (file_exists($tempPath)) {
-                @unlink($tempPath);
-            }
-            return ['success' => false, 'message' => 'Gagal memproses gambar.'];
-        }
     }
 
     private function notifyStaff(int $umkmId, string $namaToko): void

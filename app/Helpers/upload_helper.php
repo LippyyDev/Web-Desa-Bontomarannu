@@ -122,3 +122,44 @@ if (!function_exists('validate_letter_attachment')) {
         return null;
     }
 }
+
+if (!function_exists('validate_maps_url')) {
+    /**
+     * Validasi URL Google Maps yang diinput pengguna.
+     *
+     * Field ini bersifat OPSIONAL. Jika kosong, return null (valid).
+     * Jika diisi, harus mengandung salah satu pola domain Google Maps.
+     *
+     * Pola yang diterima:
+     *   - maps.app.goo.gl/...     (link share pendek)
+     *   - goo.gl/maps/...         (link share lama)
+     *   - google.com/maps/...     (URL lengkap)
+     *   - maps.google.com/...     (URL embed/lama)
+     *
+     * @param string|null $url Input dari form
+     * @return string|null  null jika valid (atau kosong), string pesan error jika tidak valid
+     */
+    function validate_maps_url(?string $url): ?string
+    {
+        if (!$url || trim($url) === '') {
+            return null; // opsional — kosong = valid
+        }
+
+        $url = trim($url);
+
+        $validPatterns = [
+            'maps.app.goo.gl',
+            'goo.gl/maps',
+            'google.com/maps',
+            'maps.google.com',
+        ];
+
+        foreach ($validPatterns as $pattern) {
+            if (stripos($url, $pattern) !== false) {
+                return null; // valid
+            }
+        }
+
+        return 'Link Google Maps tidak valid. Gunakan link dari Google Maps (maps.app.goo.gl, google.com/maps, dsb.).';
+    }
+}

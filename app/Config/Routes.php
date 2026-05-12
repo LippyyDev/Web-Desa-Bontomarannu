@@ -65,6 +65,7 @@ $routes->group('user', static function ($routes) {
     $routes->get('umkm/(:num)/edit', 'User\UmkmController::edit/$1');
     $routes->post('umkm/(:num)', 'User\UmkmController::update/$1');
     $routes->get('umkm/(:num)/hapus', 'User\UmkmController::delete/$1');
+    $routes->post('umkm/(:num)/produk-api', 'User\UmkmController::produkApi/$1');
     $routes->get('umkm/produk/(:num)/edit', 'User\UmkmController::editProduk/$1');
     $routes->post('umkm/produk/(:num)', 'User\UmkmController::updateProduk/$1');
     $routes->get('umkm/produk/(:num)/hapus', 'User\UmkmController::deleteProduk/$1');
@@ -145,7 +146,7 @@ $routes->group('staff', static function ($routes) {
 
 
     $routes->get('perangkat-desa', 'Staff\ContentController::perangkatDesa');
-    $routes->get('perangkat-desa/api', 'Staff\ContentController::perangkatDesaApi');
+    $routes->post('perangkat-desa/api', 'Staff\ContentController::perangkatDesaApi');
     $routes->get('perangkat-desa/tambah', 'Staff\ContentController::createPerangkatDesa');
     $routes->get('perangkat-desa/(:num)/edit', 'Staff\ContentController::editPerangkatDesa/$1');
     $routes->post('perangkat-desa', 'Staff\ContentController::storePerangkatDesa');
@@ -162,6 +163,7 @@ $routes->group('staff', static function ($routes) {
     $routes->get('umkm/(:num)/hapus', 'Staff\UmkmController::delete/$1');
     $routes->post('umkm/(:num)/approve', 'Staff\UmkmController::approve/$1');
     $routes->post('umkm/(:num)/reject', 'Staff\UmkmController::reject/$1');
+    $routes->post('umkm/(:num)/produk-api', 'Staff\UmkmController::produkApi/$1');
     $routes->get('umkm/produk/(:num)/edit', 'Staff\UmkmController::editProduk/$1');
     $routes->post('umkm/produk/(:num)', 'Staff\UmkmController::updateProduk/$1');
     $routes->get('umkm/produk/(:num)/hapus', 'Staff\UmkmController::deleteProduk/$1');
