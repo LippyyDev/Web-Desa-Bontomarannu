@@ -16,6 +16,7 @@ class UmkmModel extends Model
         'alamat',
         'maps_embed_url',
         'kontak',
+        'foto_toko',
         'status',
         'alasan_tolak',
         'created_by',

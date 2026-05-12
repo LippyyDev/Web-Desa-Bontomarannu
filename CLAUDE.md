@@ -287,7 +287,10 @@ Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Re
 - Staff Pengumuman   → POST /staff/pengumuman/api   (limit: 12 fixed)
 - Staff Surat        → POST /staff/surat/api        (limit: dari filter Tampilkan)
 - Staff Pengaduan    → POST /staff/pengaduan/api    (limit: dari filter Tampilkan)
+- Staff UMKM         → POST /staff/umkm/api         (limit: dari filter Tampilkan, filter status & tanggal)
+- Staff Pariwisata   → POST /staff/pariwisata/api   (limit: 12 fixed)
 - User Surat         → POST /user/surat/api         (limit: dari filter Tampilkan)
+- User UMKM          → POST /user/umkm/api          (limit: dari filter Tampilkan, filter status & tanggal)
 ```
 
 ---
@@ -326,9 +329,9 @@ Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Re
 - pengaduan              → PengaduanModel
 - notifications          → NotificationModel
 - email_queue            → EmailQueueModel
-- umkm                   → UmkmModel
+- umkm                   → UmkmModel          (+ kolom foto_toko: VARCHAR(255) nullable)
 - umkm_ecommerce         → UmkmEcommerceModel
-- umkm_produk            → UmkmProdukModel
+- umkm_produk            → UmkmProdukModel     (kolom: nama_produk, harga, deskripsi)
 - umkm_produk_gambar     → UmkmProdukGambarModel
 - pariwisata             → PariwisataModel
 - pariwisata_gambar      → PariwisataGambarModel
@@ -624,7 +627,7 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] User letter export (Word .docx + PDF via official letterhead template)
 - [x] User letter status tracking (sent, read, replied)
 - [x] User notifications (letter status, staff reply, UMKM approval)
-- [x] User UMKM management (submit toko, edit, resubmit setelah ditolak)
+- [x] User UMKM management (submit toko + foto toko, edit info/produk langsung jika approved, resubmit setelah ditolak)
 - [x] Staff dashboard (incoming letter summary)
 - [x] Staff profile management
 - [x] Staff letter inbox (view, reply with attachment, delete)
@@ -638,7 +641,7 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] Staff announcements CRUD (pengumuman)
 - [x] Staff complaint management (pengaduan)
 - [x] Staff notifications (incoming letters from users)
-- [x] Staff UMKM management (CRUD + approve/reject user submissions)
+- [x] Staff UMKM management (CRUD + approve/reject user submissions + edit produk existing + foto toko)
 - [x] Staff Pariwisata management (CRUD + gallery photos)
 - [x] Admin dashboard
 - [x] Admin account management CRUD (admin/staff/user accounts)

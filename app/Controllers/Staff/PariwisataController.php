@@ -14,12 +14,59 @@ class PariwisataController extends ProtectedController
             return $redirect;
         }
 
-        $pariwisataModel = new PariwisataModel();
-        $list = $pariwisataModel->orderBy('created_at', 'DESC')->findAll();
-
         return view('Staff/pariwisata/index', [
             'title' => 'Kelola Pariwisata',
-            'list'  => $list,
+        ]);
+    }
+
+    public function api()
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
+        }
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 12;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
+
+        $pariwisataModel = new PariwisataModel();
+
+        if ($search !== '') {
+            $pariwisataModel->groupStart()
+                ->like('nama_tempat', $search)
+                ->orLike('alamat', $search)
+                ->orLike('deskripsi', $search)
+                ->groupEnd();
+        }
+
+        $total = $pariwisataModel->countAllResults(false);
+
+        $list = $pariwisataModel->orderBy('created_at', 'DESC')
+            ->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($list as $item) {
+            $data[] = [
+                'id'          => $item['id'],
+                'nama_tempat' => $item['nama_tempat'],
+                'alamat'      => $item['alamat'] ?? '',
+                'deskripsi'   => strip_tags($item['deskripsi'] ?? ''),
+                'thumbnail'   => $item['thumbnail'] ? base_url($item['thumbnail']) : null,
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'limit'       => $limit,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
         ]);
     }
 

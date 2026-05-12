@@ -19,15 +19,70 @@ class UmkmController extends ProtectedController
             return $redirect;
         }
 
-        $umkmModel = new UmkmModel();
-        $list = $umkmModel
-            ->where('user_id', $this->currentUser['id'])
-            ->orderBy('created_at', 'DESC')
-            ->findAll();
-
         return view('User/umkm/index', [
             'title' => 'UMKM Saya',
-            'list'  => $list,
+        ]);
+    }
+
+    public function api()
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
+        }
+
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $umkmModel = new UmkmModel();
+
+        $page      = (int)($this->request->getPost('page') ?: 1);
+        $limit     = (int)($this->request->getPost('length') ?: 10);
+        $search    = trim($this->request->getPost('search') ?? '');
+        $status    = trim($this->request->getPost('status_filter') ?? '');
+        $dateStart = trim($this->request->getPost('date_start') ?? '');
+        $dateEnd   = trim($this->request->getPost('date_end') ?? '');
+        $offset    = ($page - 1) * $limit;
+
+        $builder = $umkmModel->builder();
+        $builder->where('user_id', $this->currentUser['id']);
+
+        if ($search !== '') {
+            $builder->groupStart()
+                    ->like('nama_toko', $search)
+                    ->orLike('kontak', $search)
+                    ->groupEnd();
+        }
+
+        if ($status !== '') {
+            $builder->where('status', $status);
+        }
+
+        if ($dateStart !== '') {
+            $builder->where('DATE(created_at) >=', $dateStart);
+        }
+
+        if ($dateEnd !== '') {
+            $builder->where('DATE(created_at) <=', $dateEnd);
+        }
+
+        $total = $builder->countAllResults(false);
+        $list  = $builder->orderBy('created_at', 'DESC')
+                         ->limit($limit, $offset)
+                         ->get()
+                         ->getResultArray();
+
+        foreach ($list as &$item) {
+            $item['didaftarkan'] = date('d M Y', strtotime($item['created_at']));
+        }
+        unset($item);
+
+        return $this->response->setJSON([
+            'success'      => true,
+            'data'         => $list,
+            'total'        => $total,
+            'total_pages'  => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'current_page' => $page,
         ]);
     }
 
@@ -48,6 +103,7 @@ class UmkmController extends ProtectedController
             return $redirect;
         }
 
+        helper('upload');
         $mapsUrl = $this->parseMapsUrl($this->request->getPost('maps_embed_url'));
 
         $umkmModel = new UmkmModel();
@@ -63,6 +119,20 @@ class UmkmController extends ProtectedController
             'created_at'     => date('Y-m-d H:i:s'),
             'updated_at'     => date('Y-m-d H:i:s'),
         ];
+
+        // Handle foto toko
+        $fotoToko = $this->request->getFile('foto_toko');
+        if ($fotoToko && $fotoToko->isValid() && !$fotoToko->hasMoved()) {
+            $error = validate_image_upload($fotoToko);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto Toko: ' . $error);
+            }
+            $path = $this->uploadToWebp($fotoToko, 'uploads/umkm/toko');
+            if ($path === null) {
+                return redirect()->back()->withInput()->with('error', 'Gagal memproses foto toko.');
+            }
+            $data['foto_toko'] = $path;
+        }
 
         $umkmId = $umkmModel->insert($data, true);
 
@@ -118,6 +188,7 @@ class UmkmController extends ProtectedController
             return $redirect;
         }
 
+        helper('upload');
         $umkmModel = new UmkmModel();
         $umkm = $umkmModel->where('user_id', $this->currentUser['id'])->find($id);
         if (!$umkm) {
@@ -135,14 +206,35 @@ class UmkmController extends ProtectedController
             'updated_at'     => date('Y-m-d H:i:s'),
         ];
 
-        // Jika toko rejected atau pending → kembali ke pending (resubmit)
+        // Handle foto toko
+        $fotoToko = $this->request->getFile('foto_toko');
+        if ($fotoToko && $fotoToko->isValid() && !$fotoToko->hasMoved()) {
+            $error = validate_image_upload($fotoToko);
+            if ($error !== null) {
+                return redirect()->back()->withInput()->with('error', 'Foto Toko: ' . $error);
+            }
+            $path = $this->uploadToWebp($fotoToko, 'uploads/umkm/toko');
+            if ($path === null) {
+                return redirect()->back()->withInput()->with('error', 'Gagal memproses foto toko.');
+            }
+            // Hapus foto lama
+            if (!empty($umkm['foto_toko'])) {
+                $oldPath = FCPATH . ltrim($umkm['foto_toko'], '/');
+                if (is_file($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+            $updateData['foto_toko'] = $path;
+        }
+
+        // Hanya jika sebelumnya rejected → kembali ke pending (resubmit)
         $wasRejected = ($umkm['status'] === 'rejected');
-        $wasPending  = ($umkm['status'] === 'pending');
 
         if ($wasRejected) {
             $updateData['status']       = 'pending';
             $updateData['alasan_tolak'] = null;
         }
+        // Jika approved atau pending → status TIDAK berubah (langsung disimpan)
 
         $umkmModel->update($id, $updateData);
 
@@ -183,6 +275,14 @@ class UmkmController extends ProtectedController
             return redirect()->to('/user/umkm')->with('error', 'UMKM tidak ditemukan.');
         }
 
+        // Hapus foto toko
+        if (!empty($umkm['foto_toko'])) {
+            $filePath = FCPATH . ltrim($umkm['foto_toko'], '/');
+            if (is_file($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
         // Hapus semua gambar produk
         $produkList = $produkModel->where('umkm_id', $id)->findAll();
         foreach ($produkList as $produk) {
@@ -202,6 +302,176 @@ class UmkmController extends ProtectedController
         $umkmModel->delete($id);
 
         return redirect()->to('/user/umkm')->with('success', 'Toko UMKM berhasil dihapus.');
+    }
+
+    /**
+     * Form edit produk yang sudah ada (user)
+     */
+    public function editProduk($produkId)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $redirect;
+        }
+
+        $produkModel = new UmkmProdukModel();
+        $gambarModel = new UmkmProdukGambarModel();
+        $umkmModel   = new UmkmModel();
+
+        $produk = $produkModel->find($produkId);
+        if (!$produk) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
+        }
+
+        // Pastikan produk ini milik user yang login
+        $umkm = $umkmModel->where('user_id', $this->currentUser['id'])->find($produk['umkm_id']);
+        if (!$umkm) {
+            return redirect()->to('/user/umkm')->with('error', 'Akses ditolak.');
+        }
+
+        $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
+
+        return view('User/umkm/edit_produk', [
+            'title'  => 'Edit Produk',
+            'produk' => $produk,
+            'umkm'   => $umkm,
+        ]);
+    }
+
+    /**
+     * Proses update produk yang sudah ada (user)
+     */
+    public function updateProduk($produkId)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $redirect;
+        }
+
+        $produkModel = new UmkmProdukModel();
+        $gambarModel = new UmkmProdukGambarModel();
+        $umkmModel   = new UmkmModel();
+
+        $produk = $produkModel->find($produkId);
+        if (!$produk) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
+        }
+
+        $umkmId = $produk['umkm_id'];
+
+        // Pastikan produk ini milik user yang login
+        $umkm = $umkmModel->where('user_id', $this->currentUser['id'])->find($umkmId);
+        if (!$umkm) {
+            return redirect()->to('/user/umkm')->with('error', 'Akses ditolak.');
+        }
+
+        $hargaRaw   = $this->request->getPost('harga');
+        $hargaClean = !empty($hargaRaw) ? (float) str_replace([',', '.'], '', $hargaRaw) : null;
+
+        $produkModel->update($produkId, [
+            'nama_produk' => trim($this->request->getPost('nama_produk')),
+            'harga'       => $hargaClean,
+            'deskripsi'   => $this->request->getPost('deskripsi'),
+            'updated_at'  => date('Y-m-d H:i:s'),
+        ]);
+
+        // Upload gambar baru jika ada
+        $gambarFiles = $this->request->getFileMultiple('gambar_baru');
+        if ($gambarFiles) {
+            foreach ($gambarFiles as $file) {
+                if (!$file->isValid() || $file->hasMoved()) {
+                    continue;
+                }
+                $result = $this->processImageUpload($file, 'uploads/umkm');
+                if ($result['success']) {
+                    $gambarModel->insert([
+                        'produk_id'   => $produkId,
+                        'gambar_path' => $result['path'],
+                        'created_at'  => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->to('/user/umkm/' . $umkmId . '/edit')->with('success', 'Produk berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus produk (user)
+     */
+    public function deleteProduk($produkId)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $redirect;
+        }
+
+        $produkModel = new UmkmProdukModel();
+        $gambarModel = new UmkmProdukGambarModel();
+        $umkmModel   = new UmkmModel();
+
+        $produk = $produkModel->find($produkId);
+        if (!$produk) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
+        }
+
+        $umkmId = $produk['umkm_id'];
+
+        // Pastikan produk ini milik user yang login
+        $umkm = $umkmModel->where('user_id', $this->currentUser['id'])->find($umkmId);
+        if (!$umkm) {
+            return redirect()->to('/user/umkm')->with('error', 'Akses ditolak.');
+        }
+
+        // Hapus semua gambar produk
+        $gambarList = $gambarModel->where('produk_id', $produkId)->findAll();
+        foreach ($gambarList as $g) {
+            $filePath = FCPATH . ltrim($g['gambar_path'], '/');
+            if (is_file($filePath)) {
+                @unlink($filePath);
+            }
+        }
+        $gambarModel->where('produk_id', $produkId)->delete();
+        $produkModel->delete($produkId);
+
+        return redirect()->to('/user/umkm/' . $umkmId . '/edit')->with('success', 'Produk berhasil dihapus.');
+    }
+
+    /**
+     * Hapus gambar produk (user)
+     */
+    public function deleteGambarProduk($gambarId)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $redirect;
+        }
+
+        $gambarModel = new UmkmProdukGambarModel();
+        $produkModel = new UmkmProdukModel();
+        $umkmModel   = new UmkmModel();
+
+        $gambar = $gambarModel->find($gambarId);
+        if (!$gambar) {
+            return redirect()->back()->with('error', 'Gambar tidak ditemukan.');
+        }
+
+        $produk = $produkModel->find($gambar['produk_id']);
+        if (!$produk) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
+        }
+
+        $umkmId = $produk['umkm_id'];
+
+        // Pastikan ini milik user yang login
+        $umkm = $umkmModel->where('user_id', $this->currentUser['id'])->find($umkmId);
+        if (!$umkm) {
+            return redirect()->to('/user/umkm')->with('error', 'Akses ditolak.');
+        }
+
+        $filePath = FCPATH . ltrim($gambar['gambar_path'], '/');
+        if (is_file($filePath)) {
+            @unlink($filePath);
+        }
+        $gambarModel->delete($gambarId);
+
+        return redirect()->to('/user/umkm/' . $umkmId . '/edit')->with('success', 'Gambar produk berhasil dihapus.');
     }
 
     // ─── Private Helpers ──────────────────────────────────────────────────────
@@ -307,9 +577,9 @@ class UmkmController extends ProtectedController
                     $result = $this->processImageUpload($file, 'uploads/umkm');
                     if ($result['success']) {
                         $gambarModel->insert([
-                            'produk_id'  => $produkId,
-                            'gambar_path'=> $result['path'],
-                            'created_at' => date('Y-m-d H:i:s'),
+                            'produk_id'   => $produkId,
+                            'gambar_path' => $result['path'],
+                            'created_at'  => date('Y-m-d H:i:s'),
                         ]);
                     }
                 }
@@ -351,7 +621,7 @@ class UmkmController extends ProtectedController
             if (file_exists($tempPath)) {
                 @unlink($tempPath);
             }
-            return ['success' => false, 'message' => 'Gagal memproses gambar. Pastikan file adalah gambar yang valid.'];
+            return ['success' => false, 'message' => 'Gagal memproses gambar.'];
         }
     }
 
@@ -371,13 +641,13 @@ class UmkmController extends ProtectedController
 
         foreach ($staffList as $staff) {
             $notifModel->insert([
-                'user_id'        => $staff['id'],
-                'type'           => 'new_umkm',
-                'title'          => 'Pengajuan UMKM Baru',
-                'message'        => $userName . ' mengajukan toko UMKM: "' . $namaToko . '"',
-                'related_umkm_id'=> $umkmId,
-                'is_read'        => 0,
-                'created_at'     => date('Y-m-d H:i:s'),
+                'user_id'         => $staff['id'],
+                'type'            => 'new_umkm',
+                'title'           => 'Pengajuan UMKM Baru',
+                'message'         => $userName . ' mengajukan toko UMKM: "' . $namaToko . '"',
+                'related_umkm_id' => $umkmId,
+                'is_read'         => 0,
+                'created_at'      => date('Y-m-d H:i:s'),
             ]);
 
             try {

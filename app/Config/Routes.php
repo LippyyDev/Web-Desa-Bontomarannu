@@ -58,12 +58,17 @@ $routes->group('user', static function ($routes) {
     $routes->post('pengaduan', 'User\PengaduanController::store');
 
     $routes->get('umkm', 'User\UmkmController::index');
+    $routes->post('umkm/api', 'User\UmkmController::api');
     $routes->get('umkm/tambah', 'User\UmkmController::create');
     $routes->post('umkm', 'User\UmkmController::store');
     $routes->get('umkm/(:num)', 'User\UmkmController::show/$1');
     $routes->get('umkm/(:num)/edit', 'User\UmkmController::edit/$1');
     $routes->post('umkm/(:num)', 'User\UmkmController::update/$1');
     $routes->get('umkm/(:num)/hapus', 'User\UmkmController::delete/$1');
+    $routes->get('umkm/produk/(:num)/edit', 'User\UmkmController::editProduk/$1');
+    $routes->post('umkm/produk/(:num)', 'User\UmkmController::updateProduk/$1');
+    $routes->get('umkm/produk/(:num)/hapus', 'User\UmkmController::deleteProduk/$1');
+    $routes->get('umkm/gambar-produk/(:num)/hapus', 'User\UmkmController::deleteGambarProduk/$1');
 
     $routes->get('notifikasi', 'User\NotificationController::index');
     $routes->post('notifikasi/data', 'User\NotificationController::data');
@@ -148,6 +153,7 @@ $routes->group('staff', static function ($routes) {
     $routes->get('perangkat-desa/(:num)/hapus', 'Staff\ContentController::deletePerangkatDesa/$1');
 
     $routes->get('umkm', 'Staff\UmkmController::index');
+    $routes->post('umkm/api', 'Staff\UmkmController::api');
     $routes->get('umkm/tambah', 'Staff\UmkmController::create');
     $routes->post('umkm', 'Staff\UmkmController::store');
     $routes->get('umkm/(:num)', 'Staff\UmkmController::show/$1');
@@ -156,10 +162,13 @@ $routes->group('staff', static function ($routes) {
     $routes->get('umkm/(:num)/hapus', 'Staff\UmkmController::delete/$1');
     $routes->post('umkm/(:num)/approve', 'Staff\UmkmController::approve/$1');
     $routes->post('umkm/(:num)/reject', 'Staff\UmkmController::reject/$1');
+    $routes->get('umkm/produk/(:num)/edit', 'Staff\UmkmController::editProduk/$1');
+    $routes->post('umkm/produk/(:num)', 'Staff\UmkmController::updateProduk/$1');
     $routes->get('umkm/produk/(:num)/hapus', 'Staff\UmkmController::deleteProduk/$1');
     $routes->get('umkm/gambar-produk/(:num)/hapus', 'Staff\UmkmController::deleteGambarProduk/$1');
 
     $routes->get('pariwisata', 'Staff\PariwisataController::index');
+    $routes->post('pariwisata/api', 'Staff\PariwisataController::api');
     $routes->get('pariwisata/tambah', 'Staff\PariwisataController::create');
     $routes->post('pariwisata', 'Staff\PariwisataController::store');
     $routes->get('pariwisata/(:num)', 'Staff\PariwisataController::show/$1');
@@ -195,3 +204,4 @@ $routes->group('admin', static function ($routes) {
     $routes->post('notifikasi/delete-all', 'Admin\NotificationController::deleteAll');
     $routes->post('notifikasi/(:num)/read', 'Admin\NotificationController::markRead/$1');
 });
+

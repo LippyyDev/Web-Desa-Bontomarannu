@@ -1,14 +1,23 @@
 <?= $this->extend('Staff/layout') ?>
 
 <?= $this->section('content') ?>
-<div class="page-header">
+<div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
-        <h4><?= esc($title) ?></h4>
-        <div class="text-muted small">Perbarui informasi pariwisata.</div>
+        <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
+            <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
+            UMKM & PARIWISATA
+        </div>
+        <h2 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">
+            Edit <span style="color: #15803d;">Pariwisata</span>
+        </h2>
+        <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Perbarui informasi destinasi dan media pariwisata.</p>
     </div>
-    <div class="page-header-actions">
-        <a href="<?= base_url('/staff/pariwisata') ?>" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left"></i> Kembali
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-danger" id="btnHapusPariwisata" title="Hapus Pariwisata">
+            Hapus
+        </button>
+        <a href="<?= base_url('/staff/pariwisata') ?>" class="btn btn-outline-success">
+            Kembali
         </a>
     </div>
 </div>
@@ -16,87 +25,152 @@
 <form method="POST" action="<?= base_url('/staff/pariwisata/' . $item['id']) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header fw-semibold">Informasi Pariwisata</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-medium">Nama Tempat Wisata <span class="text-danger">*</span></label>
-                        <input type="text" name="nama_tempat" class="form-control" value="<?= esc($item['nama_tempat']) ?>" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-medium">Deskripsi</label>
-                        <textarea name="deskripsi" class="form-control" rows="5"><?= esc($item['deskripsi']) ?></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-medium">Alamat</label>
-                        <textarea name="alamat" class="form-control" rows="2"><?= esc($item['alamat']) ?></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-medium">Link Embedded Google Maps</label>
-                        <textarea name="maps_embed_url" class="form-control" rows="3"><?= esc($item['maps_embed_url']) ?></textarea>
-                        <div class="form-text">Bisa paste link biasa maupun kode iframe lengkap dari Google Maps.</div>
-                    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4 fw-bold">Informasi Dasar</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Nama Tempat Wisata <span class="text-danger">*</span></label>
+                    <input type="text" name="nama_tempat" class="form-control" value="<?= esc($item['nama_tempat']) ?>" required>
                 </div>
-            </div>
-
-            <!-- Galeri Foto yang sudah ada -->
-            <?php if (!empty($gambar)): ?>
-            <div class="card shadow-sm border-0 mt-4">
-                <div class="card-header fw-semibold">Foto yang Sudah Ada</div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <?php foreach ($gambar as $g): ?>
-                        <div class="col-4 col-md-3 position-relative" id="gambar-<?= $g['id'] ?>">
-                            <img src="<?= base_url($g['gambar_path']) ?>" class="img-fluid rounded" style="height:100px;width:100%;object-fit:cover;">
-                            <a href="<?= base_url('/staff/pariwisata/gambar/' . $g['id'] . '/hapus') ?>"
-                               onclick="return confirm('Hapus gambar ini?')"
-                               class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 p-0 px-1">
-                                <i class="bi bi-x"></i>
-                            </a>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Alamat</label>
+                    <input type="text" name="alamat" class="form-control" value="<?= esc($item['alamat']) ?>">
                 </div>
-            </div>
-            <?php endif; ?>
-
-            <!-- Upload foto baru -->
-            <div class="card shadow-sm border-0 mt-4">
-                <div class="card-header fw-semibold">Tambah Foto Baru</div>
-                <div class="card-body">
-                    <input type="file" name="gambar[]" class="form-control" multiple accept="image/*">
-                    <div class="form-text">Foto baru akan ditambahkan ke galeri yang sudah ada.</div>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Deskripsi</label>
+                    <textarea name="deskripsi" class="form-control" rows="5"><?= esc($item['deskripsi']) ?></textarea>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header fw-semibold">Thumbnail Utama</div>
-                <div class="card-body">
-                    <?php if ($item['thumbnail']): ?>
-                    <img src="<?= base_url($item['thumbnail']) ?>" class="img-fluid rounded mb-2">
-                    <?php endif; ?>
-                    <input type="file" name="thumbnail" id="thumbnailInput" class="form-control" accept="image/*">
-                    <div class="form-text mt-1">Kosongkan jika tidak ingin mengubah.</div>
-                </div>
-            </div>
-
-            <div class="card shadow-sm border-0 mt-3">
-                <div class="card-body">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-save"></i> Simpan Perubahan
-                    </button>
-                    <a href="<?= base_url('/staff/pariwisata/' . $item['id'] . '/hapus') ?>"
-                       onclick="return confirm('Hapus pariwisata ini beserta semua fotonya?')"
-                       class="btn btn-outline-danger w-100 mt-2">
-                        <i class="bi bi-trash"></i> Hapus Pariwisata
-                    </a>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Link Embedded Google Maps</label>
+                    <textarea name="maps_embed_url" class="form-control" rows="3"><?= esc($item['maps_embed_url']) ?></textarea>
+                    <div class="form-text mt-1 text-muted">Bisa paste link biasa maupun kode iframe lengkap dari Google Maps.</div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4 fw-bold">Media</h5>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-medium">Thumbnail (opsional)</label>
+                    <input type="file" name="thumbnail" id="thumbnailInput" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                    <div id="thumbnailPreview" class="mt-2">
+                        <?php if ($item['thumbnail']): ?>
+                            <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                                <div class="card border shadow-sm overflow-hidden mb-0">
+                                    <img src="<?= base_url($item['thumbnail']) ?>" class="w-100 bg-light" style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="thumbnail">
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-medium">Tambah Foto</label>
+                    <input type="file" name="gambar[]" id="mediaInput" class="form-control" multiple accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                    <div id="mediaPreview" class="row g-2 mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 mb-4">
+        <button class="btn btn-success" type="submit">
+            Update Pariwisata
+        </button>
+    </div>
 </form>
+
+<?php if (!empty($gambar)): ?>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-4 fw-bold">Media Saat Ini</h5>
+        <div class="row g-3">
+            <?php foreach ($gambar as $g): ?>
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="card border shadow-sm position-relative overflow-hidden mb-0">
+                        <button type="button" class="btn btn-danger position-absolute btn-hapus-media" data-url="<?= base_url('/staff/pariwisata/gambar/' . $g['id'] . '/hapus') ?>" style="top: 6px; right: 6px; z-index: 1000; width: 26px; height: 26px; padding: 0; line-height: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" title="Hapus Gambar">
+                            <i class="bi bi-trash" style="font-size: 14px;"></i>
+                        </button>
+                        <img src="<?= base_url($g['gambar_path']) ?>" class="w-100 bg-light" style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="gambar pariwisata">
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Preview Thumbnail
+    const thumbnailInput = document.getElementById('thumbnailInput');
+    const thumbnailPreview = document.getElementById('thumbnailPreview');
+    const originalThumbnailHtml = thumbnailPreview.innerHTML;
+    
+    thumbnailInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (typeof validateImageFile === 'function' && !validateImageFile(file)) {
+                thumbnailInput.value = '';
+                showError('Format tidak didukung atau ukuran melebihi 1MB (Hanya JPG/PNG).');
+                thumbnailPreview.innerHTML = originalThumbnailHtml;
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                thumbnailPreview.innerHTML = `
+                    <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                        <div class="card border shadow-sm overflow-hidden mb-0">
+                            <img src="${e.target.result}" class="w-100 bg-light" style="aspect-ratio: 16/9; object-fit: cover; display: block;" alt="thumbnail">
+                        </div>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            thumbnailPreview.innerHTML = originalThumbnailHtml;
+        }
+    });
+
+    // Preview Media Foto — dikelola oleh upload_validator.js jika ada
+    if (typeof initMediaUploader === 'function') {
+        initMediaUploader('mediaInput', 'mediaPreview');
+    }
+
+    // Hapus pariwisata via SweetAlert
+    const btnHapus = document.getElementById('btnHapusPariwisata');
+    if (btnHapus) {
+        btnHapus.addEventListener('click', function () {
+            if (typeof showConfirm === 'function') {
+                showConfirm('Pariwisata beserta semua media di dalamnya akan dihapus permanen.', 'Hapus Pariwisata?', 'Ya, Hapus', 'Batal').then(confirmed => {
+                    if (confirmed) window.location.href = '<?= base_url('/staff/pariwisata/' . $item['id'] . '/hapus') ?>';
+                });
+            } else {
+                if (confirm('Hapus pariwisata ini beserta semua fotonya?')) {
+                    window.location.href = '<?= base_url('/staff/pariwisata/' . $item['id'] . '/hapus') ?>';
+                }
+            }
+        });
+    }
+
+    // Hapus media via SweetAlert
+    document.querySelectorAll('.btn-hapus-media').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const url = this.getAttribute('data-url');
+            if (typeof showConfirm === 'function') {
+                showConfirm('Gambar ini akan dihapus permanen dari pariwisata.', 'Hapus Gambar?', 'Ya, Hapus', 'Batal').then(confirmed => {
+                    if (confirmed) window.location.href = url;
+                });
+            } else {
+                if (confirm('Hapus gambar ini?')) {
+                    window.location.href = url;
+                }
+            }
+        });
+    });
+});
+</script>
 <?= $this->endSection() ?>
