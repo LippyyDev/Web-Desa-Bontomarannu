@@ -188,7 +188,7 @@ $routes->group('staff', static function ($routes) {
 $routes->group('admin', static function ($routes) {
     $routes->get('dashboard', 'Admin\DashboardController::index');
     $routes->get('akun', 'Admin\AccountController::index');
-    $routes->get('akun/api', 'Admin\AccountController::api');
+    $routes->post('akun/api', 'Admin\AccountController::api');
     $routes->get('akun/tambah', 'Admin\AccountController::create');
     $routes->get('akun/(:num)/edit', 'Admin\AccountController::edit/$1');
     $routes->post('akun', 'Admin\AccountController::store');

@@ -20,33 +20,28 @@ class AccountController extends ProtectedController
     public function api()
     {
         if ($redirect = $this->guard(['admin'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
+            return $this->response->setJSON(['success' => false, 'error' => 'Unauthorized'])->setStatusCode(401);
         }
 
-        $userModel = new UserModel();
-        $profileModel = new UserProfileModel();
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
         $db = \Config\Database::connect();
-        
-        // Get DataTables parameters
-        $draw = $this->request->getGet('draw') ?? 1;
-        $start = $this->request->getGet('start') ?? 0;
-        $length = $this->request->getGet('length') ?? 10;
-        $search = $this->request->getGet('search')['value'] ?? '';
-        $orderColumn = $this->request->getGet('order')[0]['column'] ?? 5;
-        $orderDir = $this->request->getGet('order')[0]['dir'] ?? 'desc';
-        
-        // Column mapping (Foto, Username, Email, Role, Status, Dibuat, Aksi)
-        $columns = ['foto_profil', 'username', 'email', 'role', 'status', 'created_at'];
-        $orderBy = $columns[$orderColumn] ?? 'created_at';
-        
+
+        $page        = max(1, (int) ($this->request->getPost('page') ?? 1));
+        $length      = (int) ($this->request->getPost('length') ?? 10);
+        if ($length <= 0) $length = 10;
+        $search      = trim($this->request->getPost('search') ?? '');
+        $roleFilter  = trim($this->request->getPost('role_filter') ?? '');
+        $statusFilter= trim($this->request->getPost('status_filter') ?? '');
+        $offset      = ($page - 1) * $length;
+
         // Build base query with join
         $builder = $db->table('users u')
-            ->select('u.*, up.nama_lengkap, up.foto_profil')
+            ->select('u.id, u.username, u.email, u.role, u.status, u.created_at, up.foto_profil')
             ->join('user_profiles up', 'up.user_id = u.id', 'left');
-        
-        // Get total records
-        $recordsTotal = $builder->countAllResults(false);
-        
+
         // Apply search filter
         if (!empty($search)) {
             $builder->groupStart()
@@ -54,45 +49,43 @@ class AccountController extends ProtectedController
                 ->orLike('u.email', $search)
                 ->orLike('u.role', $search)
                 ->orLike('u.status', $search)
-                ->orLike('up.nama_lengkap', $search)
                 ->groupEnd();
         }
-        
-        // Get filtered count
-        $recordsFiltered = $builder->countAllResults(false);
-        
-        // Apply ordering
-        if ($orderBy === 'foto_profil') {
-            $builder->orderBy('u.created_at', strtoupper($orderDir));
-        } else {
-            $builder->orderBy('u.' . $orderBy, strtoupper($orderDir));
+
+        // Apply role filter
+        if (!empty($roleFilter)) {
+            $builder->where('u.role', $roleFilter);
         }
-        
-        // Apply pagination
-        $builder->limit($length, $start);
-        
+
+        // Apply status filter
+        if (!empty($statusFilter)) {
+            $builder->where('u.status', $statusFilter);
+        }
+
+        $total = $builder->countAllResults(false);
+
+        $builder->orderBy('u.created_at', 'DESC')->limit($length, $offset);
         $users = $builder->get()->getResultArray();
-        
-        // Format data
+
         $data = [];
         foreach ($users as $user) {
             $data[] = [
-                'id' => $user['id'],
-                'username' => esc($user['username']),
-                'email' => esc($user['email']),
-                'role' => esc($user['role']),
-                'status' => esc($user['status']),
+                'id'         => $user['id'],
+                'username'   => esc($user['username']),
+                'email'      => esc($user['email']),
+                'role'       => esc($user['role']),
+                'status'     => esc($user['status']),
                 'created_at' => date('d M Y', strtotime($user['created_at'])),
-                'nama_lengkap' => (!empty($user['nama_lengkap'])) ? esc($user['nama_lengkap']) : '-',
-                'foto_profil' => (!empty($user['foto_profil'])) ? $user['foto_profil'] : null,
+                'foto_profil'=> (!empty($user['foto_profil'])) ? $user['foto_profil'] : null,
             ];
         }
 
         return $this->response->setJSON([
-            'draw' => intval($draw),
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $length > 0 ? (int) ceil($total / $length) : 1,
+            'current_page'=> $page,
         ]);
     }
 
@@ -131,24 +124,58 @@ class AccountController extends ProtectedController
             return $redirect;
         }
 
+        // Validasi password
+        $password        = $this->request->getPost('password');
+        $confirmPassword = $this->request->getPost('confirm_password');
+
+        if (!$password || strlen($password) < 6) {
+            return redirect()->back()->withInput()->with('error', 'Password minimal 6 karakter.');
+        }
+
+        if ($password !== $confirmPassword) {
+            return redirect()->back()->withInput()->with('error', 'Password dan konfirmasi password tidak sama.');
+        }
+
         $userModel    = new UserModel();
         $profileModel = new UserProfileModel();
 
         $userId = $userModel->insert([
             'username'      => $this->request->getPost('username'),
             'email'         => $this->request->getPost('email'),
-            'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
             'role'          => $this->request->getPost('role') ?: 'user',
             'status'        => $this->request->getPost('status') ?: 'aktif',
             'is_verified'   => 1,
         ], true);
 
-        $profileModel->insert([
+        $profileData = [
             'user_id'      => $userId,
             'nama_lengkap' => $this->request->getPost('nama_lengkap'),
-        ]);
+        ];
 
-        return redirect()->back()->with('success', 'Akun baru dibuat.');
+        // Handle foto profil upload dengan 8-layer validasi
+        $file = $this->request->getFile('foto_profil');
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            helper('upload');
+            $error = validate_image_upload($file);
+            if ($error !== null) {
+                // Hapus user yang baru dibuat karena foto tidak valid
+                $userModel->delete($userId, true);
+                return redirect()->back()->withInput()->with('error', 'Foto profil: ' . $error);
+            }
+
+            $this->ensureUploadPath(FCPATH . 'uploads/profile');
+            $path = $this->uploadToWebp($file, 'uploads/profile');
+            if ($path === null) {
+                $userModel->delete($userId, true);
+                return redirect()->back()->withInput()->with('error', 'Gagal memproses foto profil. Pastikan file adalah gambar yang valid.');
+            }
+            $profileData['foto_profil'] = $path;
+        }
+
+        $profileModel->insert($profileData);
+
+        return redirect()->to('/admin/akun')->with('success', 'Akun baru berhasil dibuat.');
     }
 
     public function update($id)

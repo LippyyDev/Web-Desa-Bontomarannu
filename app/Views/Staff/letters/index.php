@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function getStatusBadge(status) {
         const map = {
             'Menunggu': 'bg-warning text-dark',
-            'Dibaca':   'bg-info text-white',
+            'Dibaca':   'bg-primary text-white',
             'Diterima': 'bg-success',
             'Ditolak':  'bg-danger',
         };

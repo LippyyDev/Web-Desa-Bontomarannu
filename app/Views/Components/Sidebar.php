@@ -17,51 +17,49 @@ $menus = match($role) {
     'admin' => [
         ['header' => 'UMUM'],
         ['label' => 'Dashboard', 'url' => '/admin/dashboard', 'icon' => 'bi-speedometer2'],
-        ['label' => 'Profil', 'url' => '/admin/profil', 'icon' => 'bi-person'],
-        ['label' => 'Notifikasi', 'url' => '/admin/notifikasi', 'icon' => 'bi-bell'],
-        
+        ['label' => 'Profil',    'url' => '/admin/profil',    'icon' => 'bi-person'],
+        ['label' => 'Notifikasi','url' => '/admin/notifikasi','icon' => 'bi-bell'],
+
         ['header' => 'MANAJEMEN PENGGUNA'],
         ['label' => 'Kelola Akun', 'url' => '/admin/akun', 'icon' => 'bi-people'],
     ],
     'staf' => [
         ['header' => 'UMUM'],
-        ['label' => 'Dashboard', 'url' => '/staff/dashboard', 'icon' => 'bi-speedometer2'],
-        ['label' => 'Profil', 'url' => '/staff/profil', 'icon' => 'bi-person'],
+        ['label' => 'Dashboard',  'url' => '/staff/dashboard',  'icon' => 'bi-speedometer2'],
+        ['label' => 'Profil',     'url' => '/staff/profil',     'icon' => 'bi-person'],
         ['label' => 'Notifikasi', 'url' => '/staff/notifikasi', 'icon' => 'bi-bell'],
 
-        ['header' => 'MANAJEMEN KONTEN'],
-        ['label' => 'Galeri', 'url' => '/staff/galeri', 'icon' => 'bi-images'],
-        ['label' => 'Berita', 'url' => '/staff/berita', 'icon' => 'bi-newspaper'],
-        ['label' => 'Pengumuman', 'url' => '/staff/pengumuman', 'icon' => 'bi-megaphone'],
+        ['header' => 'LAYANAN PUBLIK'],
+        ['label' => 'Surat Masuk', 'url' => '/staff/surat',     'icon' => 'bi-envelope'],
+        ['label' => 'Pengaduan',   'url' => '/staff/pengaduan', 'icon' => 'bi-chat-left-text'],
 
-        ['header' => 'LAYANAN SURAT'],
-        ['label' => 'Surat Masuk', 'url' => '/staff/surat', 'icon' => 'bi-envelope'],
-        ['label' => 'Pengaduan', 'url' => '/staff/pengaduan', 'icon' => 'bi-chat-left-text'],
+        ['header' => 'MANAJEMEN KONTEN'],
+        ['label' => 'Galeri',      'url' => '/staff/galeri',     'icon' => 'bi-images'],
+        ['label' => 'Berita',      'url' => '/staff/berita',     'icon' => 'bi-newspaper'],
+        ['label' => 'Pengumuman',  'url' => '/staff/pengumuman', 'icon' => 'bi-megaphone'],
 
         ['header' => 'UMKM & PARIWISATA'],
-        ['label' => 'UMKM', 'url' => '/staff/umkm', 'icon' => 'bi-shop'],
+        ['label' => 'UMKM',       'url' => '/staff/umkm',       'icon' => 'bi-shop'],
         ['label' => 'Pariwisata', 'url' => '/staff/pariwisata', 'icon' => 'bi-compass'],
 
         ['header' => 'MANAJEMEN DESA'],
-        ['label' => 'Perangkat Desa', 'url' => '/staff/perangkat-desa', 'icon' => 'bi-people'],
-        ['label' => 'Profil Desa', 'url' => '/staff/desa', 'icon' => 'bi-building'],
-        ['label' => 'Geografi Desa', 'url' => '/staff/geografi', 'icon' => 'bi-map'],
-        ['label' => 'Inventaris Desa', 'url' => '/staff/inventaris', 'icon' => 'bi-box-seam'],
+        ['label' => 'Perangkat Desa',  'url' => '/staff/perangkat-desa', 'icon' => 'bi-people'],
+        ['label' => 'Profil Desa',     'url' => '/staff/desa',           'icon' => 'bi-building'],
+        ['label' => 'Geografi Desa',   'url' => '/staff/geografi',       'icon' => 'bi-map'],
+        ['label' => 'Inventaris Desa', 'url' => '/staff/inventaris',     'icon' => 'bi-box-seam'],
     ],
     'user' => [
         ['header' => 'UMUM'],
-        ['label' => 'Dashboard', 'url' => '/user/dashboard', 'icon' => 'bi-speedometer2'],
+        ['label' => 'Dashboard',  'url' => '/user/dashboard',  'icon' => 'bi-speedometer2'],
+        ['label' => 'Profil',     'url' => '/user/profil',     'icon' => 'bi-person'],
         ['label' => 'Notifikasi', 'url' => '/user/notifikasi', 'icon' => 'bi-bell'],
-        
+
         ['header' => 'LAYANAN WARGA'],
-        ['label' => 'Surat', 'url' => '/user/surat', 'icon' => 'bi-envelope'],
-        ['label' => 'Pengaduan', 'url' => '/user/pengaduan', 'icon' => 'bi-chat-left-text'],
-        
+        ['label' => 'Surat',      'url' => '/user/surat',     'icon' => 'bi-envelope'],
+        ['label' => 'Pengaduan',  'url' => '/user/pengaduan', 'icon' => 'bi-chat-left-text'],
+
         ['header' => 'USAHA & EKONOMI'],
         ['label' => 'UMKM Saya', 'url' => '/user/umkm', 'icon' => 'bi-shop'],
-        
-        ['header' => 'PENGATURAN'],
-        ['label' => 'Profil', 'url' => '/user/profil', 'icon' => 'bi-person'],
     ],
     default => []
 };

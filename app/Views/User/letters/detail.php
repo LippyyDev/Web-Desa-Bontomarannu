@@ -5,7 +5,7 @@
 function statusTextUser(string $status): string {
     return match($status) {
         'Menunggu' => '<span class="fw-bold text-warning">Menunggu</span>',
-        'Dibaca'   => '<span class="fw-bold text-info">Dibaca</span>',
+        'Dibaca'   => '<span class="fw-bold text-primary">Dibaca</span>',
         'Diterima' => '<span class="fw-bold text-success">Diterima</span>',
         'Ditolak'  => '<span class="fw-bold text-danger">Status: Ditolak</span>',
         default    => '<span class="fw-bold text-secondary">' . esc($status) . '</span>',
