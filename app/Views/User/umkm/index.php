@@ -103,7 +103,7 @@
                 <i class="bi bi-x-circle-fill"></i>
             </button>
         </div>
-        <a href="<?= base_url('/user/umkm/tambah') ?>" class="btn btn-success">Daftarkan Toko</a>
+        <a href="<?= base_url('/user/umkm/tambah') ?>" class="btn btn-success"><i class="bi bi-plus-circle me-1"></i> Daftarkan Toko</a>
     </div>
 </div>
 
@@ -240,15 +240,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 : `<div class="umkm-placeholder"><i class="bi bi-shop"></i><span>Belum ada foto</span></div>`;
 
             const actionBtns = `
-                <a href="${baseUmkm}${item.id}" class="ua ua-detail"><i class="bi bi-eye"></i> Detail</a>
-                <a href="${baseUmkm}${item.id}/edit" class="ua ua-edit"><i class="bi bi-pencil"></i> Edit</a>
+                <a href="${baseUmkm}${item.id}" class="ua ua-detail" onclick="event.stopPropagation();"><i class="bi bi-eye"></i> Detail</a>
+                <a href="${baseUmkm}${item.id}/edit" class="ua ua-edit" onclick="event.stopPropagation();"><i class="bi bi-pencil"></i> Edit</a>
                 <a href="${baseUmkm}${item.id}/hapus" class="ua ua-delete btn-hapus"
-                    data-nama="${escapeHtml(item.nama_toko)}">
+                    data-nama="${escapeHtml(item.nama_toko)}" onclick="event.stopPropagation();">
                     <i class="bi bi-trash3"></i> Hapus</a>`;
 
             html += `
             <div class="col-sm-6 col-lg-4 col-xl-3">
-                <div class="umkm-card h-100">
+                <div class="umkm-card h-100" style="cursor:pointer;" onclick="window.location.href='${baseUmkm}${item.id}'">
                     <div class="umkm-img-wrapper">
                         ${imgHtml}
                         <div class="umkm-status-badge">${getStatusBadge(item.status)}</div>

@@ -16,6 +16,7 @@ class UserModel extends Model
         'role',
         'status',
         'is_verified',
+        'last_seen_at',
         'created_at',
         'updated_at',
     ];

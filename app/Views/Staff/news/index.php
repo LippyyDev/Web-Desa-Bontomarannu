@@ -165,7 +165,7 @@
             </button>
         </div>
         <a href="<?= base_url('/staff/berita/tambah') ?>" class="btn btn-success">
-            Tambah Berita
+            <i class="bi bi-plus-lg me-1"></i> Tambah Berita
         </a>
     </div>
 </div>

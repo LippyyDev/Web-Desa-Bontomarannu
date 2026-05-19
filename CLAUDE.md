@@ -314,7 +314,7 @@ Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Re
 
 # Current Tables (from Models)
 - users                  → UserModel
-- user_profiles          → UserProfileModel
+- user_profiles          → UserProfileModel   (kolom: nama_lengkap, jenis_kelamin ENUM('Laki-laki','Perempuan'), tempat_lahir, tanggal_lahir, agama, pekerjaan, nik, alamat, foto_profil)
 - auth_tokens            → AuthTokenModel
 - letters                → LetterModel
 - letter_attachments     → LetterAttachmentModel
@@ -322,7 +322,7 @@ Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Re
 - reply_attachments      → ReplyAttachmentModel
 - desa_profiles          → DesaProfileModel
 - geografi_desa          → GeografiDesaModel
-- perangkat_desa         → PerangkatDesaModel
+- perangkat_desa         → PerangkatDesaModel  (Kepala Desa: TIDAK BISA DIHAPUS — tombol hapus disembunyikan di UI & diblok di controller)
 - gallery_albums         → GalleryAlbumModel
 - gallery_media          → GalleryMediaModel
 - news                   → NewsModel
@@ -418,10 +418,18 @@ Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Re
 
 # Templates
 - Official letter templates use the kop surat (letterhead) of:
-  - Pemerintah Kabupaten Bulukumba
-  - Kecamatan Ujung Loe
-  - Desa Padang Loang
+  - Pemerintah Desa Bonto Marannu, Kecamatan Ulu Ere, Kabupaten Bantaeng
 - Templates are generated programmatically (not from static .docx files) using PHPWord
+
+# Penandatangan (Signature Section)
+- Nama dan Jabatan penandatangan diambil OTOMATIS dari tabel `perangkat_desa`
+  dimana `LOWER(jabatan) = 'kepala desa'` (case-insensitive)
+- Alamat penandatangan selalu: "Desa Bonto Marannu Kec.Ulu Ere Kab. Bantaeng" (hardcoded)
+- Implementasi: `Staff\PdfWordController::getKepalaDesa()` private method
+
+# Jenis Kelamin di Surat
+- Field Jenis Kelamin pada surat diambil dari `user_profiles.jenis_kelamin` (ENUM: Laki-laki/Perempuan)
+- Jika belum diisi di profil, tampil sebagai 'Belum Diisi'
 
 # File Handling
 - Generated files are streamed directly to the browser (download prompt)
@@ -535,6 +543,15 @@ Validasi upload file menggunakan **dua komponen reusable** — satu untuk backen
   → File invalid di-skip dengan pesan error via showError()
   → Cek duplikat otomatis
 
+# Fungsi Inline (per view) — Link Video YouTube
+- isValidYoutubeUrl(url: string): boolean
+  → Validasi satu URL YouTube (youtube.com/watch, youtu.be, /shorts, /embed)
+  → Dideklarasikan langsung di masing-masing view (bukan file global)
+
+- applyYoutubeValidation(input: HTMLInputElement): boolean
+  → Terapkan Bootstrap is-valid/is-invalid + tampilkan pesan error di .yt-feedback
+  → Dipanggil on blur, on input (jika sudah pernah divalidasi), dan on submit
+
 # Contoh Penggunaan (di view)
     // Uploader gambar (galeri)
     initMediaUploader('mediaInput', 'mediaPreview');
@@ -543,8 +560,10 @@ Validasi upload file menggunakan **dua komponen reusable** — satu untuk backen
     initLetterAttachmentUploader('letterAttachments', 'attachmentPreviewList');
 
 # View yang sudah menggunakan
-- Staff/gallery/create.php     → initMediaUploader('mediaInput', 'mediaPreview')
-- Staff/gallery/edit.php       → initMediaUploader('mediaInput', 'mediaPreview')
+- Staff/gallery/create.php     → initMediaUploader('mediaInput', 'mediaPreview') + isValidYoutubeUrl()
+- Staff/gallery/edit.php       → initMediaUploader('mediaInput', 'mediaPreview') + isValidYoutubeUrl()
+- Staff/news/create.php        → initMediaUploader('mediaInput', 'mediaPreview') + isValidYoutubeUrl()
+- Staff/news/edit.php          → initMediaUploader('mediaInput', 'mediaPreview') + isValidYoutubeUrl()
 - User/letters/form.php        → initLetterAttachmentUploader('letterAttachments', 'attachmentPreviewList')
 - Staff/letters/detail.php     → initLetterAttachmentUploader('replyAttachments', 'attachmentPreviewList')
 ```
@@ -560,6 +579,10 @@ Validasi upload file menggunakan **dua komponen reusable** — satu untuk backen
 # validate_letter_attachment
 - User\LetterController    → handleAttachments()      (lampiran surat baru dari user)
 - Staff\LetterController   → handleReplyAttachments() (lampiran balasan dari staff)
+
+# validate_youtube_url
+- Staff\ContentController  → saveGalleryMedia()  (backend gate: skip jika bukan YouTube)
+- Staff\ContentController  → saveNewsMedia()     (backend gate: skip jika bukan YouTube)
 ```
 
 ### Shared Helper: `uploadToWebp()` di ProtectedController
@@ -576,6 +599,97 @@ if ($path === null) {
     return redirect()->back()->with('error', 'Gagal memproses gambar.');
 }
 $data['thumbnail'] = $path;
+```
+
+---
+
+## 13.2 Security Headers (HTTP Response Headers)
+
+Semua HTTP security headers diinjeksikan secara otomatis via CI4 after-filter ke **setiap response**.
+
+```
+# Filter
+- File   : app/Filters/SecurityHeadersFilter.php
+- Aktif  : app/Config/Filters.php → $globals['after'] → 'securityheaders'
+- Scope  : Berlaku untuk SEMUA route (global after-filter)
+
+# Headers yang Diterapkan
+- X-Frame-Options          : SAMEORIGIN
+- X-Content-Type-Options   : nosniff
+- Referrer-Policy          : strict-origin-when-cross-origin
+- Content-Security-Policy  : (lihat daftar allow-list di bawah)
+- Permissions-Policy       : semua sensor/API browser sensitif dinonaktifkan
+- Strict-Transport-Security: max-age=31536000; includeSubDomains (hanya aktif jika HTTPS)
+```
+
+### ⚠️ WAJIB: Update CSP saat menambah Library / CDN / API Eksternal
+
+**SETIAP KALI** kamu menambahkan library JS/CSS baru, CDN baru, atau memanggil API eksternal dari frontend (fetch/XHR), kamu **HARUS** memperbarui direktif CSP yang relevan di `SecurityHeadersFilter.php`.
+
+Jika tidak diupdate → browser akan memblokir resource tersebut dengan error CSP di console.
+
+```
+# Direktif CSP yang harus diupdate sesuai jenis resource baru:
+
+Jenis resource baru         Direktif CSP yang diupdate
+--------------------------  ----------------------------
+Script JS dari CDN          script-src
+CSS dari CDN                style-src
+Font dari CDN / Google      font-src
+Gambar dari domain lain     img-src
+Fetch/XHR ke API eksternal  connect-src
+Embed iframe/map eksternal  frame-src
+```
+
+### Daftar Domain yang Sudah Di-allow (CSP saat ini)
+
+```
+# script-src
+- 'self'
+- 'unsafe-inline'          (dibutuhkan untuk script inline di view)
+- https://cdn.jsdelivr.net (Bootstrap JS, ApexCharts, SweetAlert2, **Quill Editor**)
+
+# style-src
+- 'self'
+- 'unsafe-inline'          (dibutuhkan untuk inline style di view)
+- https://cdn.jsdelivr.net (Bootstrap CSS, Bootstrap Icons, **Quill Editor CSS**)
+- https://fonts.googleapis.com (Google Fonts stylesheet)
+
+# font-src
+- 'self'
+- https://cdn.jsdelivr.net (Bootstrap Icons font files)
+- https://fonts.gstatic.com (Google Fonts files)
+
+# img-src
+- 'self'
+- data:                    (Base64 / data URI untuk foto profil WebP)
+- blob:                    (Blob URL)
+
+# connect-src  ← update ini saat menambah fetch/XHR ke domain luar
+- 'self'
+- https://cdn.jsdelivr.net (Bootstrap source maps - devtools)
+- https://api.open-meteo.com (Weather API untuk widget cuaca di dashboard)
+
+# frame-src
+- 'self'
+- https://www.openstreetmap.org (Embed peta desa)
+- https://maps.google.com       (Embed Google Maps)
+- https://www.youtube.com       (Embed video YouTube di galeri & berita)
+
+# object-src
+- 'none'  (Flash & plugin lama diblokir total)
+```
+
+### Contoh: Cara Menambah Domain Baru ke CSP
+
+```php
+// Di app/Filters/SecurityHeadersFilter.php, metode after():
+
+// Sebelum (hanya self):
+"connect-src 'self'",
+
+// Sesudah (tambah API baru):
+"connect-src 'self' https://cdn.jsdelivr.net https://api.open-meteo.com https://api.domainbaru.com",
 ```
 
 ---
@@ -625,21 +739,21 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] Authentication (login, register, email OTP verification, forgot/reset password)
 - [x] JWT-based auth with role redirect (admin/staff/user)
 - [x] User dashboard (letter summary, notifications)
-- [x] User profile management (photo, personal data, password change)
+- [x] User profile management (photo, personal data incl. jenis_kelamin, password change)
 - [x] User letter system CRUD (create, view, edit, delete, send to staff)
 - [x] User letter export (Word .docx + PDF via official letterhead template)
 - [x] User letter status tracking (sent, read, replied)
 - [x] User notifications (letter status, staff reply, UMKM approval)
 - [x] User UMKM management (submit toko + foto toko, edit info/produk langsung jika approved, resubmit setelah ditolak)
 - [x] Staff dashboard (incoming letter summary)
-- [x] Staff profile management
+- [x] Staff profile management (incl. jenis_kelamin dropdown)
 - [x] Staff letter inbox (view, reply with attachment, delete)
-- [x] Staff letter Word generation from letter data
+- [x] Staff letter Word generation from letter data (penandatangan & jenis kelamin dari DB)
 - [x] Staff village profile management (visi, misi, population stats, contact, location)
 - [x] Staff geographic data management
 - [x] Staff gallery CRUD (album + multi-photo/video) — AJAX listing via POST /staff/galeri/api
 - [x] Staff news CRUD (multi-photo)
-- [x] Staff village apparatus CRUD (perangkat desa)
+- [x] Staff village apparatus CRUD (perangkat desa) — Kepala Desa tidak bisa dihapus (UI + controller)
 - [x] Staff inventory CRUD (inventaris desa)
 - [x] Staff announcements CRUD (pengumuman)
 - [x] Staff complaint management (pengaduan)
@@ -653,6 +767,9 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] File upload security hardening (8-layer validation, WebP conversion for profile photos)
 - [x] Reusable image upload validation helper (app/Helpers/upload_helper.php — validate_image_upload())
 - [x] Gallery photo upload validation: max 1MB, JPG/JPEG/PNG only, frontend + backend
+- [x] Jenis Kelamin field di profil User & Staff (ENUM: Laki-laki/Perempuan, tersimpan di DB)
+- [x] Word export surat: jenis_kelamin dari DB pengaju, penandatangan dari Kepala Desa (perangkat_desa)
+- [x] Kepala Desa lock: tidak bisa dihapus dari kelola perangkat desa (UI & controller)
 
 # In Progress — DO NOT modify without confirmation
 - [ ] (none currently identified — confirm with user before adding here)

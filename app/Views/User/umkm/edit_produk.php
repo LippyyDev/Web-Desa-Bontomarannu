@@ -18,8 +18,8 @@
         <a href="<?= base_url('/user/umkm/produk/' . $produk['id'] . '/hapus') ?>"
            id="btnHapusProduk"
            data-href="<?= base_url('/user/umkm/produk/' . $produk['id'] . '/hapus') ?>"
-           class="btn btn-danger" title="Hapus Produk">Hapus</a>
-        <a href="<?= base_url('/user/umkm/' . $umkm['id'] . '/edit') ?>" class="btn btn-outline-success">Kembali</a>
+           class="btn btn-danger" title="Hapus Produk"><i class="bi bi-trash me-1"></i> Hapus</a>
+        <a href="<?= base_url('/user/umkm/' . $umkm['id'] . '/edit') ?>" class="btn btn-outline-success"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
     </div>
 </div>
 

@@ -141,12 +141,21 @@
                                 <option value="nonaktif" <?= $user['status'] === 'nonaktif' ? 'selected' : '' ?>>Nonaktif</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label class="form-label">Jenis Kelamin</label>
+                            <?php $jk = old('jenis_kelamin', $profile['jenis_kelamin'] ?? ''); ?>
+                            <select class="form-select" name="jenis_kelamin">
+                                <option value="">-- Pilih Jenis Kelamin --</option>
+                                <option value="Laki-laki" <?= $jk === 'Laki-laki' ? 'selected' : '' ?>>Laki-laki</option>
+                                <option value="Perempuan" <?= $jk === 'Perempuan' ? 'selected' : '' ?>>Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label">Tempat Lahir</label>
                             <input type="text" class="form-control" name="tempat_lahir" id="inputTempatLahir" value="<?= old('tempat_lahir', esc($profile['tempat_lahir'] ?? '')) ?>">
                             <div class="invalid-feedback">Tempat lahir hanya boleh berisi huruf, spasi, dan tanda hubung.</div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Tanggal Lahir</label>
                             <?php $tgl = old('tanggal_lahir', $profile['tanggal_lahir'] ?? ''); ?>
                             <input type="date" class="form-control" name="tanggal_lahir" value="<?= $tgl === '0000-00-00' ? '' : esc($tgl) ?>">

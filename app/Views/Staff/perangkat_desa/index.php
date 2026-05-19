@@ -4,109 +4,96 @@
 
 <style>
 .perangkat-card {
-    border: 1px solid #edf2f7;
+    border: 1px solid #f1f5f9;
     border-radius: 16px;
     overflow: hidden;
     background: #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 .perangkat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-    border-color: #e2e8f0;
-}
-.perangkat-header-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 80px;
-    background: #15803d;
-    z-index: 1;
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 .perangkat-img-wrapper {
-    position: relative;
-    width: 100%;
-    height: 120px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    margin-top: 20px;
-    z-index: 2;
+    padding-top: 2rem;
+    padding-bottom: 1rem;
+    background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
 }
 .perangkat-img-wrapper img {
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #fff;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: #fff;
+    border: 3px solid #10b981;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
 }
 .perangkat-card:hover .perangkat-img-wrapper img {
     transform: scale(1.05);
 }
 .perangkat-placeholder {
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
-    background: #f1f5f9;
-    border: 4px solid #fff;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background: #e2e8f0;
+    border: 3px solid #10b981;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #94a3b8;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s ease;
 }
 .perangkat-card:hover .perangkat-placeholder {
     transform: scale(1.05);
 }
 .perangkat-card-body {
-    padding: 0 1.25rem 1.25rem 1.25rem;
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    text-align: center;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-    text-align: center;
 }
 .perangkat-title {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: #1e293b;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.3rem;
 }
 .perangkat-role {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #059669;
     background: #ecfdf5;
-    padding: 4px 12px;
+    padding: 5px 14px;
     border-radius: 20px;
     display: inline-block;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 .perangkat-contact {
     font-size: 0.85rem;
     color: #64748b;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     flex-grow: 1;
 }
+.perangkat-contact i {
+    color: #94a3b8;
+}
 .perangkat-footer {
-    padding-top: 1rem;
-    border-top: 1px solid #f1f5f9;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto;
+    gap: 8px;
 }
 .perangkat-action {
     display: inline-flex;
@@ -114,22 +101,20 @@
     justify-content: center;
     gap: 6px;
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 500;
     text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    padding: 8px 12px;
+    border-radius: 10px;
+    transition: all 0.2s;
     flex-grow: 1;
-    text-align: center;
 }
 .perangkat-action-edit {
-    color: #10b981;
-    background: #ecfdf5;
-    margin-right: 8px;
+    color: #3b82f6;
+    background: #eff6ff;
 }
 .perangkat-action-edit:hover {
-    background: #d1fae5;
-    color: #059669;
+    background: #dbeafe;
+    color: #2563eb;
 }
 .perangkat-action-delete {
     color: #ef4444;
@@ -283,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     html += `
                     <div class="col-md-6 col-lg-4 col-xl-3">
                         <div class="perangkat-card h-100">
-                            <div class="perangkat-header-bg"></div>
                             <div class="perangkat-img-wrapper">
                                 ${imgHtml}
                             </div>
@@ -294,16 +278,17 @@ document.addEventListener('DOMContentLoaded', function () {
                                     ${item.kontak ? `<i class="bi bi-telephone"></i> ${escapeHtml(item.kontak)}` : '&nbsp;'}
                                 </div>
                                 <div class="perangkat-footer">
-                                    <a href="<?= base_url('/staff/perangkat-desa/') ?>${item.id}/edit" class="perangkat-action perangkat-action-edit stretched-link">
-                                        Edit
+                                    <a href="<?= base_url('/staff/perangkat-desa/') ?>${item.id}/edit" class="perangkat-action perangkat-action-edit ${ item.is_kepala_desa ? '' : 'stretched-link' }">
+                                        <i class="bi bi-pencil-square"></i> Edit
                                     </a>
+                                    ${ !item.is_kepala_desa ? `
                                     <button type="button"
                                         class="perangkat-action perangkat-action-delete btn-hapus-perangkat"
                                         data-id="${item.id}"
                                         data-nama="${escapeHtml(item.nama)}"
                                         style="position: relative; z-index: 2; border: none; cursor: pointer;">
-                                        Hapus
-                                    </button>
+                                        <i class="bi bi-trash3"></i> Hapus
+                                    </button>` : '' }
                                 </div>
                             </div>
                         </div>

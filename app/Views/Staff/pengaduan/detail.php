@@ -13,10 +13,10 @@
     </div>
     <div class="d-flex flex-wrap gap-2">
         <button type="button" class="btn btn-danger" onclick="hapusPengaduan(<?= $pengaduan['id'] ?>)">
-            Hapus
+            <i class="bi bi-trash me-1"></i> Hapus
         </button>
         <a href="<?= base_url('/staff/pengaduan') ?>" class="btn btn-outline-success">
-            Kembali
+            <i class="bi bi-arrow-left me-1"></i> Kembali
         </a>
     </div>
 </div>

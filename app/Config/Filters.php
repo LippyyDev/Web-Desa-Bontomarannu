@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Filters\SecurityHeadersFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -25,15 +26,16 @@ class Filters extends BaseFilters
      * or [filter_name => [classname1, classname2, ...]]
      */
     public array $aliases = [
-        'csrf'          => CSRF::class,
-        'toolbar'       => DebugToolbar::class,
-        'honeypot'      => Honeypot::class,
-        'invalidchars'  => InvalidChars::class,
-        'secureheaders' => SecureHeaders::class,
-        'cors'          => Cors::class,
-        'forcehttps'    => ForceHTTPS::class,
-        'pagecache'     => PageCache::class,
-        'performance'   => PerformanceMetrics::class,
+        'csrf'            => CSRF::class,
+        'toolbar'         => DebugToolbar::class,
+        'honeypot'        => Honeypot::class,
+        'invalidchars'    => InvalidChars::class,
+        'secureheaders'   => SecureHeaders::class,
+        'securityheaders' => SecurityHeadersFilter::class,
+        'cors'            => Cors::class,
+        'forcehttps'      => ForceHTTPS::class,
+        'pagecache'       => PageCache::class,
+        'performance'     => PerformanceMetrics::class,
     ];
 
     /**
@@ -78,7 +80,7 @@ class Filters extends BaseFilters
         ],
         'after' => [
             // 'honeypot',
-            // 'secureheaders',
+            'securityheaders', // Injeksi HTTP security headers ke semua response
             // 'emailqueue', // Dihapus - akan dipanggil via endpoint khusus
         ],
     ];

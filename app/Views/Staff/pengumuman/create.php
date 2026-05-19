@@ -16,7 +16,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="<?= base_url('/staff/pengumuman') ?>" class="btn btn-outline-success">
-            Kembali
+            <i class="bi bi-arrow-left me-1"></i> Kembali
         </a>
     </div>
 </div>
@@ -64,7 +64,7 @@
 
     <div class="mt-4 mb-4">
         <button class="btn btn-success" type="submit">
-            Simpan Pengumuman
+            <i class="bi bi-save me-1"></i> Simpan Pengumuman
         </button>
     </div>
 </form>

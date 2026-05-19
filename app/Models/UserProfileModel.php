@@ -14,6 +14,7 @@ class UserProfileModel extends Model
         'user_id',
         'foto_profil',
         'nama_lengkap',
+        'jenis_kelamin',
         'tempat_lahir',
         'tanggal_lahir',
         'agama',

@@ -16,10 +16,10 @@
     </div>
     <div class="d-flex gap-2">
         <button type="button" class="btn btn-danger" id="btnHapusPengumuman">
-            Hapus
+            <i class="bi bi-trash3 me-1"></i> Hapus
         </button>
         <a href="<?= base_url('/staff/pengumuman') ?>" class="btn btn-outline-success">
-            Kembali
+            <i class="bi bi-arrow-left me-1"></i> Kembali
         </a>
     </div>
 </div>
@@ -85,7 +85,7 @@
 
     <div class="mt-4 mb-4">
         <button class="btn btn-success" type="submit">
-            Update Pengumuman
+            <i class="bi bi-save me-1"></i> Update Pengumuman
         </button>
     </div>
 </form>

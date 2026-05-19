@@ -62,6 +62,7 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.4;
+    word-break: break-word;
 }
 .pariwisata-excerpt {
     font-size: 0.875rem;
@@ -73,6 +74,7 @@
     line-height: 1.5;
     margin-bottom: 1rem;
     flex-grow: 1;
+    word-break: break-word;
 }
 .pariwisata-footer {
     padding-top: 1rem;
@@ -224,12 +226,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         : `<div class="pariwisata-placeholder"><i class="bi bi-image"></i></div>`;
 
                     const alamatHtml = item.alamat
-                        ? `<p class="pariwisata-excerpt text-muted small mb-2"><i class="bi bi-geo-alt"></i> ${escapeHtml(item.alamat.substring(0, 60))}${item.alamat.length > 60 ? '...' : ''}</p>`
+                        ? `<p class="pariwisata-excerpt text-muted small mb-2 text-break"><i class="bi bi-geo-alt"></i> ${escapeHtml(item.alamat.substring(0, 60))}${item.alamat.length > 60 ? '...' : ''}</p>`
                         : '';
 
                     const deskripsiHtml = item.deskripsi
-                        ? `<p class="pariwisata-excerpt">${escapeHtml(item.deskripsi.substring(0, 100))}${item.deskripsi.length > 100 ? '...' : ''}</p>`
-                        : `<p class="pariwisata-excerpt text-muted fst-italic">Tidak ada deskripsi</p>`;
+                        ? `<p class="pariwisata-excerpt text-break">${escapeHtml(item.deskripsi.substring(0, 100))}${item.deskripsi.length > 100 ? '...' : ''}</p>`
+                        : `<p class="pariwisata-excerpt text-muted fst-italic text-break">Tidak ada deskripsi</p>`;
 
                     html += `
                     <div class="col-md-6 col-lg-4 col-xl-3">
@@ -238,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 ${imgHtml}
                             </div>
                             <div class="pariwisata-card-body">
-                                <h5 class="pariwisata-title">${escapeHtml(item.nama_tempat)}</h5>
+                                <h5 class="pariwisata-title text-break">${escapeHtml(item.nama_tempat)}</h5>
                                 ${alamatHtml}
                                 ${deskripsiHtml}
                                 <div class="pariwisata-footer">

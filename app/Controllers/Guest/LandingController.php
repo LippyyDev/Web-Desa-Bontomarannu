@@ -174,7 +174,7 @@ class LandingController extends BaseController
         $geografi = $geografiModel->first();
         
         return view('Guest/geografis', [
-            'title' => 'Geografi Desa - Desa Padangloang',
+            'title' => 'Geografi Desa - Desa Bonto Marannu',
             'geografi' => $geografi
         ]);
     }

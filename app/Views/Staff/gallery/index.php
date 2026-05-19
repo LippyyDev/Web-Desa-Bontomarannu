@@ -165,7 +165,7 @@
             </button>
         </div>
         <a href="<?= base_url('/staff/galeri/tambah') ?>" class="btn btn-success">
-            Buat Album
+            <i class="bi bi-plus-lg me-1"></i> Buat Album
         </a>
     </div>
 </div>

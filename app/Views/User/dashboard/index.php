@@ -39,6 +39,8 @@ else { $greeting = 'Selamat malam'; }
 .stat-icon-bento { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
 .bento-card { transition: transform 0.2s ease, box-shadow 0.2s ease; border-radius: 16px; }
 .bento-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+.card-arrow-icon { transition: transform 0.3s ease; display: inline-block; }
+.bento-card:hover .card-arrow-icon { transform: rotate(-45deg) scale(1.1); }
 
 .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; display: inline-block; margin-left: 4px; vertical-align: middle; animation: pulse-dot 1.5s infinite; }
 @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
@@ -85,32 +87,31 @@ else { $greeting = 'Selamat malam'; }
 
     <?php
     function renderBentoStat($colSize, $title, $value, $desc, $icon, $link, $iconColor, $titleExtra = '') {
-        $linkHtml = $link ? '<a href="'.$link.'" class="text-success" title="Kelola"><i class="bi bi-arrow-right-circle fs-5"></i></a>' : '<div style="width:24px;"></div>';
+        $href = $link ? $link : '#';
         return '
-        <div class="card bento-card bc-'.$colSize.' border-0 shadow-sm">
+        <a href="'.$href.'" class="card bento-card bc-'.$colSize.' border-0 shadow-sm text-decoration-none">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="stat-icon-bento" style="background-color: #dcfce7; color: '.$iconColor.';">
                         <i class="bi '.$icon.'"></i>
                     </div>
-                    '.$linkHtml.'
+                    <div class="text-success" title="Kelola"><i class="bi bi-arrow-right-circle fs-4 card-arrow-icon"></i></div>
                 </div>
                 <div class="text-uppercase fw-semibold mb-1 text-muted" style="font-size: 0.7rem; letter-spacing: 1px;">'.$title.' '.$titleExtra.'</div>
                 <div class="fw-bold text-dark lh-1 mb-1" style="font-size: 1.8rem;">'.$value.'</div>
                 <div class="text-muted" style="font-size: 0.75rem;">'.$desc.'</div>
             </div>
-        </div>';
+        </a>';
     }
     ?>
 
     <!-- ROW 2 -->
-    <?= renderBentoStat(4, 'Menunggu', $sentCount, 'Belum diproses staff', 'bi-hourglass-split', null, '#15803d') ?>
-    <?= renderBentoStat(4, 'Dibaca', $readCount, 'Sedang diproses', 'bi-eye-fill', null, '#16a34a') ?>
-    <?= renderBentoStat(4, 'Diputuskan', $repliedCount, 'Diterima / ditolak', 'bi-patch-check-fill', null, '#065f46') ?>
+    <?= renderBentoStat(4, 'Menunggu', $sentCount, 'Belum diproses staff', 'bi-hourglass-split', base_url('/user/surat'), '#15803d') ?>
+    <?= renderBentoStat(4, 'Dibaca', $readCount, 'Sedang diproses', 'bi-eye-fill', base_url('/user/surat'), '#059669') ?>
+    <?= renderBentoStat(4, 'Diputuskan', $repliedCount, 'Diterima / ditolak', 'bi-patch-check-fill', base_url('/user/surat'), '#16a34a') ?>
 
     <!-- ROW 3: Stats & UMKM Chart -->
-    <?php $notifExtra = $unreadNotif > 0 ? '<span class="notif-dot"></span>' : ''; ?>
-    <?= renderBentoStat(4, 'Notifikasi', $unreadNotif, 'Notifikasi belum dibaca', 'bi-bell-fill', base_url('/user/notifikasi'), '#10b981', $notifExtra) ?>
+    <?= renderBentoStat(4, 'Notifikasi', $unreadNotif, 'Notifikasi belum dibaca', 'bi-bell-fill', base_url('/user/notifikasi'), '#10b981') ?>
 
     <div class="card bento-card bc-8 border-0 shadow-sm">
         <div class="card-body">
@@ -208,9 +209,6 @@ else { $greeting = 'Selamat malam'; }
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 class="text-uppercase fw-bold text-muted mb-0" style="font-size: 0.75rem; letter-spacing: 1px;">
                     Notifikasi Terbaru
-                    <?php if ($unreadNotif > 0): ?>
-                        <span class="badge bg-danger ms-1"><?= $unreadNotif ?> baru</span>
-                    <?php endif; ?>
                 </h6>
                 <a href="<?= base_url('/user/notifikasi') ?>" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:0.75rem;">Lihat Semua</a>
             </div>

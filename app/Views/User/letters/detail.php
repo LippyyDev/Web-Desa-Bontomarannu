@@ -44,11 +44,11 @@ function truncateFilename(string $filename, int $maxLength = 35): string {
         <a href="<?= base_url('/user/surat/' . $letter['id'] . '/edit') ?>" class="btn btn-primary" title="Edit Surat">
             <i class="bi bi-pencil"></i> Edit
         </a>
-        <a href="<?= base_url('/user/surat/' . $letter['id'] . '/hapus') ?>" class="btn btn-danger" onclick="return confirm('Hapus surat ini?')" title="Hapus Surat">
+        <a href="#" class="btn btn-danger" id="btnHapusSurat" data-url="<?= base_url('/user/surat/' . $letter['id'] . '/hapus') ?>" title="Hapus Surat">
             <i class="bi bi-trash"></i> Hapus
         </a>
         <a href="<?= base_url('/user/surat') ?>" class="btn btn-outline-success">
-            Kembali
+            <i class="bi bi-arrow-left me-1"></i> Kembali
         </a>
     </div>
 </div>
@@ -85,9 +85,9 @@ function truncateFilename(string $filename, int $maxLength = 35): string {
                 <?php foreach ($attachments as $att): 
                     $fileName = esc($att['original_name'] ?: basename($att['file_path']));
                 ?>
-                    <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="d-flex align-items-center gap-2 p-2 border rounded bg-light text-decoration-none text-dark" style="width: fit-content; max-width: 100%;">
-                        <i class="bi <?= getFileIcon($fileName) ?> fs-5"></i>
-                        <span class="text-truncate" title="<?= $fileName ?>"><?= truncateFilename($fileName) ?></span>
+                    <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="d-inline-flex align-items-center gap-2 p-2 border rounded bg-light text-decoration-none text-dark" style="max-width: 100%;">
+                        <i class="bi <?= getFileIcon($fileName) ?> fs-5 flex-shrink-0"></i>
+                        <span class="text-truncate" title="<?= $fileName ?>"><?= truncateFilename($fileName, 25) ?></span>
                     </a>
                 <?php endforeach; ?>
                 </div>
@@ -138,23 +138,23 @@ function truncateFilename(string $filename, int $maxLength = 35): string {
                             </div>
                         </div>
                         <div class="text-muted mb-2"><?= nl2br($reply['reply_text']) ?></div>
-                        <?php if (!empty($replyAttachments[$reply['id']])): ?>
-                            <div class="mt-3">
-                                <div class="small text-muted mb-2 fw-semibold">Lampiran:</div>
-                                <div class="d-flex flex-column gap-2">
-                                <?php foreach ($replyAttachments[$reply['id']] as $att): 
-                                    $fileName = esc($att['original_name'] ?: basename($att['file_path']));
-                                ?>
-                                    <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="d-flex align-items-center gap-2 p-2 border rounded bg-light text-decoration-none text-dark" style="width: fit-content; max-width: 100%;">
-                                        <i class="bi <?= getFileIcon($fileName) ?> fs-5"></i>
-                                        <span class="text-truncate" title="<?= $fileName ?>"><?= truncateFilename($fileName) ?></span>
-                                    </a>
-                                <?php endforeach; ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
+                <?php if (!empty($replyAttachments[$reply['id']])): ?>
+                    <div class="mt-3">
+                        <div class="small text-muted mb-2 fw-semibold">Lampiran:</div>
+                        <div class="d-flex flex-column gap-2">
+                        <?php foreach ($replyAttachments[$reply['id']] as $att): 
+                            $fileName = esc($att['original_name'] ?: basename($att['file_path']));
+                        ?>
+                            <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="d-inline-flex align-items-center gap-2 p-2 border rounded bg-light text-decoration-none text-dark" style="max-width: 100%;">
+                                <i class="bi <?= getFileIcon($fileName) ?> fs-5 flex-shrink-0"></i>
+                                <span class="text-truncate" title="<?= $fileName ?>"><?= truncateFilename($fileName, 25) ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
         <?php if (empty($replies)): ?>
@@ -162,4 +162,15 @@ function truncateFilename(string $filename, int $maxLength = 35): string {
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+document.getElementById('btnHapusSurat')?.addEventListener('click', function (e) {
+    e.preventDefault();
+    const url = this.getAttribute('data-url');
+    showConfirm('Hapus surat ini? Semua balasan dan lampiran juga akan ikut terhapus.', 'Hapus Surat', 'Ya, Hapus')
+        .then(confirmed => {
+            if (confirmed) window.location.href = url;
+        });
+});
+</script>
 <?= $this->endSection() ?>

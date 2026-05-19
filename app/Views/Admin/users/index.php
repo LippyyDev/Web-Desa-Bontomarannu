@@ -17,8 +17,29 @@
     gap: 6px;
 }
 .badge-role-admin { background-color: #dc3545; color: white; }
-.badge-role-staf { background-color: #6a1b9a; color: white; }
-.badge-role-user { background-color: #0d47a1; color: white; }
+.badge-role-staf  { background-color: #6a1b9a; color: white; }
+.badge-role-user  { background-color: #0d47a1; color: white; }
+.badge-online  { background-color: #198754; color: white; }
+.badge-offline { background-color: #6c757d; color: white; }
+.online-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    margin-right: 4px;
+    animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.45; }
+}
+.offline-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #94a3b8;
+    margin-right: 4px;
+}
 </style>
 
 <div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
@@ -91,13 +112,14 @@
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
-                    <th>Status</th>
-                    <th>Dibuat</th>
+                    <th>Status Akun</th>
+                    <th>Status Online</th>
+                    <th>Terakhir Online</th>
                     <th>Aksi</th>
                 </tr>
                 </thead>
                 <tbody id="accountsTableBody">
-                    <tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-success spinner-border-sm"></div></td></tr>
+                    <tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-success spinner-border-sm"></div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -213,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderEmpty() {
         if (isDesktop()) {
             document.getElementById('accountsTableBody').innerHTML =
-                `<tr><td colspan="7" class="text-center py-4 text-muted">Tidak ada data akun.</td></tr>`;
+                `<tr><td colspan="8" class="text-center py-4 text-muted">Tidak ada data akun.</td></tr>`;
             document.getElementById('desktopPagination').style.display = 'none';
         } else {
             document.getElementById('accountsCardContainer').innerHTML =
@@ -222,12 +244,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function getOnlineBadge(isOnline) {
+        return isOnline
+            ? `<span class="badge badge-online"><span class="online-dot"></span>Online</span>`
+            : `<span class="badge badge-offline"><span class="offline-dot"></span>Offline</span>`;
+    }
+
     function renderTable(accounts) {
         const tbody = document.getElementById('accountsTableBody');
+        const currentUserId = <?= json_encode($currentUserId ?? 0) ?>;
         tbody.innerHTML = accounts.map(acc => {
             const fotoUrl = acc.foto_profil
                 ? '<?= base_url() ?>' + acc.foto_profil
                 : '<?= base_url('assets/img/guest.webp') ?>';
+            const isSelf    = parseInt(acc.id) === parseInt(currentUserId);
+            const isActive  = acc.status === 'aktif';
+            const toggleBtn = isSelf
+                ? `<button class="btn btn-sm btn-secondary" disabled title="Tidak bisa menonaktifkan akun sendiri">
+                       <i class="bi bi-toggle-on"></i>
+                   </button>`
+                : `<button type="button" class="btn btn-sm ${isActive ? 'btn-warning' : 'btn-success'} btn-toggle-status"
+                       data-id="${acc.id}" data-username="${escapeHtml(acc.username)}" data-status="${escapeHtml(acc.status)}"
+                       title="${isActive ? 'Nonaktifkan' : 'Aktifkan'} akun">
+                       <i class="bi bi-toggle-${isActive ? 'on' : 'off'}"></i>
+                   </button>`;
             return `
             <tr>
                 <td><img src="${escapeHtml(fotoUrl)}" alt="Foto" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;"></td>
@@ -235,15 +275,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td class="small text-muted">${escapeHtml(acc.email)}</td>
                 <td>${getRoleBadge(acc.role)}</td>
                 <td>${getStatusBadge(acc.status)}</td>
-                <td class="small text-muted">${escapeHtml(acc.created_at)}</td>
+                <td>${getOnlineBadge(acc.is_online)}</td>
+                <td class="small text-muted">${escapeHtml(acc.last_seen_at)}</td>
                 <td>
                     <div class="btn-group" role="group">
-                        <a href="<?= base_url('/admin/akun/') ?>${acc.id}/edit" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i> Edit
+                        <a href="<?= base_url('/admin/akun/') ?>${acc.id}/edit" class="btn btn-sm btn-outline-primary" title="Edit">
+                            <i class="bi bi-pencil"></i>
                         </a>
+                        ${toggleBtn}
                         <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-akun"
-                            data-id="${acc.id}" data-username="${escapeHtml(acc.username)}">
-                            <i class="bi bi-trash"></i> Hapus
+                            data-id="${acc.id}" data-username="${escapeHtml(acc.username)}" title="Hapus">
+                            <i class="bi bi-trash"></i>
                         </button>
                     </div>
                 </td>
@@ -252,14 +294,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('desktopPagination').style.display = totalPages > 1 ? 'block' : 'none';
         attachDeleteEvents();
+        attachToggleEvents();
     }
 
     function renderCards(accounts) {
         const container = document.getElementById('accountsCardContainer');
+        const currentUserId = <?= json_encode($currentUserId ?? 0) ?>;
         container.innerHTML = accounts.map(acc => {
             const fotoUrl = acc.foto_profil
                 ? '<?= base_url() ?>' + acc.foto_profil
                 : '<?= base_url('assets/img/guest.webp') ?>';
+            const isSelf   = parseInt(acc.id) === parseInt(currentUserId);
+            const isActive = acc.status === 'aktif';
+            const toggleBtn = isSelf
+                ? `<button class="btn btn-sm btn-secondary" disabled>Akun Saya</button>`
+                : `<button type="button" class="btn btn-sm ${isActive ? 'btn-warning' : 'btn-success'} btn-toggle-status"
+                       data-id="${acc.id}" data-username="${escapeHtml(acc.username)}" data-status="${escapeHtml(acc.status)}">
+                       <i class="bi bi-toggle-${isActive ? 'on' : 'off'}"></i> ${isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                   </button>`;
             return `
             <div class="account-card">
                 <div class="account-card-header">
@@ -273,19 +325,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="account-card-badges">
                         ${getStatusBadge(acc.status)}
                         ${getRoleBadge(acc.role)}
+                        ${getOnlineBadge(acc.is_online)}
                     </div>
                 </div>
                 <div class="account-card-body">
                     <div class="account-card-info">
                         <div class="account-card-item">
-                            <i class="bi bi-calendar"></i>
-                            <span>Dibuat: ${escapeHtml(acc.created_at)}</span>
+                            <i class="bi bi-clock-history"></i>
+                            <span>Terakhir Online: ${escapeHtml(acc.last_seen_at)}</span>
                         </div>
                     </div>
                     <div class="account-card-actions">
                         <a href="<?= base_url('/admin/akun/') ?>${acc.id}/edit" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil"></i> Edit
                         </a>
+                        ${toggleBtn}
                         <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-akun"
                             data-id="${acc.id}" data-username="${escapeHtml(acc.username)}">
                             <i class="bi bi-trash"></i> Hapus
@@ -296,6 +350,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }).join('');
 
         attachDeleteEvents();
+        attachToggleEvents();
     }
 
     function attachDeleteEvents() {
@@ -308,6 +363,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     'Hapus Akun', 'Ya, Hapus'
                 ).then(confirmed => {
                     if (confirmed) window.location.href = `<?= base_url('/admin/akun/') ?>${id}/hapus`;
+                });
+            });
+        });
+    }
+
+    function attachToggleEvents() {
+        document.querySelectorAll('.btn-toggle-status').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id       = this.getAttribute('data-id');
+                const username = this.getAttribute('data-username');
+                const status   = this.getAttribute('data-status');
+                const isActive = status === 'aktif';
+                const action   = isActive ? 'Nonaktifkan' : 'Aktifkan';
+                const msg      = isActive
+                    ? `Nonaktifkan akun "${username}"? User tidak akan bisa login hingga diaktifkan kembali.`
+                    : `Aktifkan kembali akun "${username}"? User akan bisa login lagi.`;
+                showConfirm(msg, `${action} Akun`, `Ya, ${action}`).then(confirmed => {
+                    if (confirmed) window.location.href = `<?= base_url('/admin/akun/') ?>${id}/toggle-status`;
                 });
             });
         });

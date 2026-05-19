@@ -53,8 +53,11 @@ $routes->group('user', static function ($routes) {
     $routes->get('surat/(:num)/edit', 'User\LetterController::edit/$1');
     $routes->post('surat/(:num)', 'User\LetterController::update/$1');
     $routes->get('surat/(:num)/hapus', 'User\LetterController::delete/$1');
+    $routes->get('surat/lampiran/(:num)/hapus', 'User\LetterController::deleteAttachment/$1');
 
     $routes->get('pengaduan', 'User\PengaduanController::index');
+    $routes->get('pengaduan/captcha', 'User\PengaduanController::captcha');
+    $routes->post('pengaduan/captcha/verify', 'User\PengaduanController::verifyCaptcha');
     $routes->post('pengaduan', 'User\PengaduanController::store');
 
     $routes->get('umkm', 'User\UmkmController::index');
@@ -66,6 +69,7 @@ $routes->group('user', static function ($routes) {
     $routes->post('umkm/(:num)', 'User\UmkmController::update/$1');
     $routes->get('umkm/(:num)/hapus', 'User\UmkmController::delete/$1');
     $routes->post('umkm/(:num)/produk-api', 'User\UmkmController::produkApi/$1');
+    $routes->get('umkm/produk/(:num)', 'User\UmkmController::showProduk/$1');
     $routes->get('umkm/produk/(:num)/edit', 'User\UmkmController::editProduk/$1');
     $routes->post('umkm/produk/(:num)', 'User\UmkmController::updateProduk/$1');
     $routes->get('umkm/produk/(:num)/hapus', 'User\UmkmController::deleteProduk/$1');
@@ -163,6 +167,7 @@ $routes->group('staff', static function ($routes) {
     $routes->post('umkm/(:num)/approve', 'Staff\UmkmController::approve/$1');
     $routes->post('umkm/(:num)/reject', 'Staff\UmkmController::reject/$1');
     $routes->post('umkm/(:num)/produk-api', 'Staff\UmkmController::produkApi/$1');
+    $routes->get('umkm/produk/(:num)', 'Staff\UmkmController::showProduk/$1');
     $routes->get('umkm/produk/(:num)/edit', 'Staff\UmkmController::editProduk/$1');
     $routes->post('umkm/produk/(:num)', 'Staff\UmkmController::updateProduk/$1');
     $routes->get('umkm/produk/(:num)/hapus', 'Staff\UmkmController::deleteProduk/$1');
@@ -195,6 +200,7 @@ $routes->group('admin', static function ($routes) {
     $routes->post('akun/(:num)', 'Admin\AccountController::update/$1');
     $routes->post('akun/(:num)/ubah-password', 'Admin\AccountController::changePassword/$1');
     $routes->get('akun/(:num)/hapus', 'Admin\AccountController::delete/$1');
+    $routes->get('akun/(:num)/toggle-status', 'Admin\AccountController::toggleStatus/$1');
     $routes->get('profil', 'Admin\ProfileController::index');
     $routes->post('profil', 'Admin\ProfileController::update');
     $routes->post('profil/ubah-password', 'Admin\ProfileController::changePassword');

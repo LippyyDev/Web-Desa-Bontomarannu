@@ -16,7 +16,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="<?= base_url('/staff/berita') ?>" class="btn btn-outline-success">
-            Kembali
+            <i class="bi bi-arrow-left me-1"></i> Kembali
         </a>
     </div>
 </div>
@@ -78,13 +78,13 @@
 
     <div class="mt-4 mb-4">
         <button class="btn btn-success" type="submit">
-            Simpan Berita
+            <i class="bi bi-save me-1"></i> Simpan Berita
         </button>
     </div>
 </form>
 
 <!-- Quill Editor CSS -->
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
 <style>
     .quill-wrapper { margin-bottom: 0; }
     .quill-wrapper #editor { min-height: 280px; max-height: 500px; overflow-y: auto; }
@@ -92,9 +92,55 @@
     .quill-wrapper .ql-toolbar.ql-snow { border: 1px solid #ced4da; border-bottom: none; border-top-left-radius: 0.375rem; border-top-right-radius: 0.375rem; }
 </style>
 <!-- Quill Editor JS -->
-<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
 
 <script>
+// ── Validasi URL YouTube ──────────────────────────────────────
+function isValidYoutubeUrl(url) {
+    url = url.trim();
+    if (url === '') return true;
+    try {
+        const parsed = new URL(url);
+        const host   = parsed.hostname.toLowerCase();
+        const path   = parsed.pathname;
+        if (host === 'youtu.be' || host === 'www.youtu.be') {
+            const id = path.replace(/^\//, '');
+            return id !== '' && /^[a-zA-Z0-9_\-]{1,20}$/.test(id);
+        }
+        if (host === 'youtube.com' || host === 'www.youtube.com') {
+            if (path.startsWith('/watch')) {
+                const v = parsed.searchParams.get('v');
+                return v !== null && /^[a-zA-Z0-9_\-]{1,20}$/.test(v);
+            }
+            if (/^\/shorts\/[a-zA-Z0-9_\-]{1,20}/.test(path)) return true;
+            if (/^\/embed\/[a-zA-Z0-9_\-]{1,20}/.test(path)) return true;
+        }
+        return false;
+    } catch (e) { return false; }
+}
+
+function applyYoutubeValidation(input) {
+    const val      = input.value.trim();
+    const feedback = input.nextElementSibling?.classList.contains('yt-feedback')
+        ? input.nextElementSibling : null;
+    if (val === '') {
+        input.classList.remove('is-invalid', 'is-valid');
+        if (feedback) feedback.textContent = '';
+        return true;
+    }
+    if (isValidYoutubeUrl(val)) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        if (feedback) feedback.textContent = '';
+        return true;
+    } else {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        if (feedback) feedback.textContent = 'Link tidak valid. Gunakan link YouTube yang benar (youtube.com/watch, youtu.be, /shorts, /embed).';
+        return false;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // ── Quill Editor ──────────────────────────────────────────
     const quill = new Quill('#editor', {
@@ -121,6 +167,16 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!quill.getText().trim()) {
             e.preventDefault();
             showError('Isi Berita tidak boleh kosong!');
+            return;
+        }
+        // Validasi YouTube
+        let hasYtError = false;
+        document.querySelectorAll('input[name="video_links[]"]').forEach(input => {
+            if (!applyYoutubeValidation(input)) hasYtError = true;
+        });
+        if (hasYtError) {
+            e.preventDefault();
+            showError('Terdapat link video yang tidak valid. Hanya link YouTube yang diperbolehkan.');
             return;
         }
         textarea.value = quill.root.innerHTML;
@@ -162,13 +218,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const addField = (value = '') => {
         const group = document.createElement('div');
-        group.className = 'd-flex gap-2 mb-2 video-item';
+        group.className = 'd-flex flex-column gap-1 mb-2 video-item';
         group.innerHTML = `
-            <input type="text" class="form-control" name="video_links[]" placeholder="https://youtube.com/..." value="${value}">
-            <button type="button" class="btn btn-danger px-3" title="Hapus"><i class="bi bi-trash"></i></button>
+            <div class="d-flex gap-2">
+                <input type="text" class="form-control" name="video_links[]" placeholder="https://youtube.com/watch?v=... atau https://youtu.be/..." value="${value}">
+                <button type="button" class="btn btn-danger px-3" title="Hapus"><i class="bi bi-trash"></i></button>
+            </div>
+            <div class="invalid-feedback d-block yt-feedback" style="margin-top:-4px;"></div>
         `;
+        const input = group.querySelector('input');
         group.querySelector('button').addEventListener('click', () => group.remove());
+        input.addEventListener('blur', () => applyYoutubeValidation(input));
+        input.addEventListener('input', () => {
+            if (input.classList.contains('is-invalid') || input.classList.contains('is-valid')) {
+                applyYoutubeValidation(input);
+            }
+        });
         list.appendChild(group);
+        if (value !== '') applyYoutubeValidation(input);
     };
 
     addBtn.addEventListener('click', () => addField(''));

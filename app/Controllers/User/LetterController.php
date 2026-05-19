@@ -139,16 +139,35 @@ class LetterController extends ProtectedController
         }
 
         $letterModel = new LetterModel();
-        
+
+        // ----------------------------------------------------------------
+        // Sanitasi & validasi judul dan isi surat
+        // ----------------------------------------------------------------
+        $judulPerihal = trim(strip_tags($this->request->getPost('judul_perihal') ?? ''));
+        $isiSurat     = trim(strip_tags($this->request->getPost('isi_surat') ?? ''));
+        $judulPerihal = preg_replace('/[<>]/', '', $judulPerihal);
+        $isiSurat     = preg_replace('/[<>]/', '', $isiSurat);
+
+        if (mb_strlen($judulPerihal) < 3 || mb_strlen($judulPerihal) > 200) {
+            return redirect()->back()->withInput()->with('error', 'Judul/Perihal harus antara 3–200 karakter.');
+        }
+        if (mb_strlen($isiSurat) < 10 || mb_strlen($isiSurat) > 3000) {
+            return redirect()->back()->withInput()->with('error', 'Isi surat harus antara 10–3000 karakter.');
+        }
+        $dangerPattern = '/(javascript\s*:|vbscript\s*:|data\s*:|expression\s*\(|on\w+\s*=|<\s*script|\$\{|`[^`]*`)/i';
+        if (preg_match($dangerPattern, $judulPerihal) || preg_match($dangerPattern, $isiSurat)) {
+            return redirect()->back()->withInput()->with('error', 'Input mengandung karakter atau pola yang tidak diizinkan.');
+        }
+
         // Generate kode unik
         $kodeUnik = $this->generateKodeUnik($letterModel);
-        
-        $data        = [
-            'kode_unik'    => $kodeUnik,
-            'user_id'   => $this->currentUser['id'],
-            'judul_perihal' => $this->request->getPost('judul_perihal'),
+
+        $data = [
+            'kode_unik'     => $kodeUnik,
+            'user_id'       => $this->currentUser['id'],
+            'judul_perihal' => $judulPerihal,
             'tipe_surat'    => $tipeSurat,
-            'isi_surat'     => $this->request->getPost('isi_surat'),
+            'isi_surat'     => $isiSurat,
             'status'        => 'Menunggu',
             'sent_at'       => date('Y-m-d H:i:s'),
         ];
@@ -259,7 +278,10 @@ class LetterController extends ProtectedController
             return redirect()->to('/user/surat')->with('error', 'Surat tidak ditemukan.');
         }
 
-        return view('User/letters/form', ['letter' => $letter]);
+        $attachmentModel = new LetterAttachmentModel();
+        $attachments = $attachmentModel->where('letter_id', $id)->findAll();
+
+        return view('User/letters/form', ['letter' => $letter, 'attachments' => $attachments]);
     }
 
     public function update($id)
@@ -290,10 +312,29 @@ class LetterController extends ProtectedController
             return redirect()->to('/user/surat')->with('error', 'Surat tidak ditemukan.');
         }
 
+        // ----------------------------------------------------------------
+        // Sanitasi & validasi judul dan isi surat
+        // ----------------------------------------------------------------
+        $judulPerihal = trim(strip_tags($this->request->getPost('judul_perihal') ?? ''));
+        $isiSurat     = trim(strip_tags($this->request->getPost('isi_surat') ?? ''));
+        $judulPerihal = preg_replace('/[<>]/', '', $judulPerihal);
+        $isiSurat     = preg_replace('/[<>]/', '', $isiSurat);
+
+        if (mb_strlen($judulPerihal) < 3 || mb_strlen($judulPerihal) > 200) {
+            return redirect()->back()->withInput()->with('error', 'Judul/Perihal harus antara 3–200 karakter.');
+        }
+        if (mb_strlen($isiSurat) < 10 || mb_strlen($isiSurat) > 3000) {
+            return redirect()->back()->withInput()->with('error', 'Isi surat harus antara 10–3000 karakter.');
+        }
+        $dangerPattern = '/(javascript\s*:|vbscript\s*:|data\s*:|expression\s*\(|on\w+\s*=|<\s*script|\$\{|`[^`]*`)/i';
+        if (preg_match($dangerPattern, $judulPerihal) || preg_match($dangerPattern, $isiSurat)) {
+            return redirect()->back()->withInput()->with('error', 'Input mengandung karakter atau pola yang tidak diizinkan.');
+        }
+
         $letterModel->update($id, [
-            'judul_perihal' => $this->request->getPost('judul_perihal'),
+            'judul_perihal' => $judulPerihal,
             'tipe_surat'    => $tipeSurat,
-            'isi_surat'     => $this->request->getPost('isi_surat'),
+            'isi_surat'     => $isiSurat,
         ]);
 
         $this->handleAttachments($id);
@@ -350,6 +391,37 @@ class LetterController extends ProtectedController
         $letterModel->delete($id);
 
         return redirect()->to('/user/surat')->with('success', 'Surat berhasil dihapus.');
+    }
+
+    public function deleteAttachment($id)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $redirect;
+        }
+
+        $attachmentModel = new LetterAttachmentModel();
+        $attachment = $attachmentModel->find($id);
+        
+        if (!$attachment) {
+            return redirect()->back()->with('error', 'Lampiran tidak ditemukan.');
+        }
+
+        // Verify letter ownership
+        $letterModel = new LetterModel();
+        $letter = $letterModel->where('user_id', $this->currentUser['id'])->find($attachment['letter_id']);
+        
+        if (!$letter) {
+            return redirect()->back()->with('error', 'Akses ditolak.');
+        }
+
+        $filePath = FCPATH . ltrim($attachment['file_path'], '/');
+        if (is_file($filePath)) {
+            @unlink($filePath);
+        }
+
+        $attachmentModel->delete($id);
+
+        return redirect()->back()->with('success', 'Lampiran berhasil dihapus.');
     }
 
     private function handleAttachments(int $letterId): void

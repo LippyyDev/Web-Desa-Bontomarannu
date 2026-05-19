@@ -4,11 +4,35 @@ namespace App\Controllers\Guest;
 
 use App\Controllers\BaseController;
 use App\Libraries\EmailService;
+use App\Models\NotificationModel;
 use App\Models\UserModel;
 use App\Models\UserProfileModel;
 
 class AuthController extends BaseController
 {
+    /**
+     * Kirim notifikasi ke semua akun admin ketika ada registrasi baru.
+     */
+    private function notifyAdmins(string $username, string $email): void
+    {
+        $userModel  = new UserModel();
+        $notifModel = new NotificationModel();
+
+        $admins = $userModel->where('role', 'admin')->findAll();
+        $now    = date('Y-m-d H:i:s');
+
+        foreach ($admins as $admin) {
+            $notifModel->insert([
+                'user_id'    => $admin['id'],
+                'type'       => 'new_registration',
+                'title'      => 'Akun Baru Terdaftar',
+                'message'    => "Pengguna baru \"$username\" ($email) telah berhasil mendaftar dan memverifikasi akunnya.",
+                'is_read'    => 0,
+                'created_at' => $now,
+            ]);
+        }
+    }
+
     private function generateOtp(): string
     {
         return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -199,7 +223,10 @@ class AuthController extends BaseController
             // Bersihkan session
             session()->remove('pending_registration');
             session()->remove('pending_verification');
-            
+
+            // Kirim notifikasi ke semua admin
+            $this->notifyAdmins($registrationData['username'], $registrationData['email']);
+
             // Set session user
             $user = $userModel->find($userId);
             session()->set('user', [
@@ -301,7 +328,10 @@ class AuthController extends BaseController
         // Bersihkan session
         session()->remove('pending_registration');
         session()->remove('pending_verification');
-        
+
+        // Kirim notifikasi ke semua admin
+        $this->notifyAdmins($registrationData['username'], $registrationData['email']);
+
         // Set session user
         $user = $userModel->find($userId);
         session()->set('user', [

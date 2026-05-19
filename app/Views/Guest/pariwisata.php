@@ -52,11 +52,11 @@
                 </div>
                 <?php endif; ?>
                 <div class="card-body">
-                    <h5 class="card-title fw-bold"><?= esc($item['nama_tempat']) ?></h5>
+                    <h5 class="card-title fw-bold text-break"><?= esc($item['nama_tempat']) ?></h5>
                     <?php if ($item['alamat']): ?>
-                    <p class="small text-muted mb-2"><i class="bi bi-geo-alt"></i> <?= esc(mb_strimwidth($item['alamat'], 0, 70, '...')) ?></p>
+                    <p class="small text-muted mb-2 text-break"><i class="bi bi-geo-alt"></i> <?= esc(mb_strimwidth($item['alamat'], 0, 70, '...')) ?></p>
                     <?php endif; ?>
-                    <p class="card-text text-muted small"><?= esc(mb_strimwidth(strip_tags($item['deskripsi'] ?? ''), 0, 100, '...')) ?></p>
+                    <p class="card-text text-muted small text-break"><?= esc(mb_strimwidth(strip_tags($item['deskripsi'] ?? ''), 0, 100, '...')) ?></p>
                 </div>
                 <div class="card-footer bg-transparent border-0 pb-3">
                     <a href="<?= base_url('/pariwisata/' . $item['id']) ?>" class="btn btn-primary btn-sm w-100">

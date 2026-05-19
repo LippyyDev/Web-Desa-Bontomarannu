@@ -425,6 +425,39 @@ class UmkmController extends ProtectedController
     }
 
     /**
+     * Halaman detail produk (user)
+     */
+    public function showProduk($produkId)
+    {
+        if ($redirect = $this->guard(['user'])) {
+            return $redirect;
+        }
+
+        $produkModel = new UmkmProdukModel();
+        $gambarModel = new UmkmProdukGambarModel();
+        $umkmModel   = new UmkmModel();
+
+        $produk = $produkModel->find($produkId);
+        if (!$produk) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
+        }
+
+        // Pastikan produk ini milik user yang login
+        $umkm = $umkmModel->where('user_id', $this->currentUser['id'])->find($produk['umkm_id']);
+        if (!$umkm) {
+            return redirect()->to('/user/umkm')->with('error', 'Akses ditolak.');
+        }
+
+        $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
+
+        return view('User/umkm/show_produk', [
+            'title'  => 'Detail Produk',
+            'produk' => $produk,
+            'umkm'   => $umkm,
+        ]);
+    }
+
+    /**
      * Form edit produk yang sudah ada (user)
      */
     public function editProduk($produkId)

@@ -14,96 +14,19 @@ $heroImage = !empty($albums[0]['thumbnail'])
     <div class="hero-media" style="background-image: url('<?= esc($heroImage) ?>');" aria-hidden="true"></div>
     <div class="hero-overlay" aria-hidden="true"></div>
     <div class="container position-relative">
-        <div class="row align-items-center g-4 g-xl-5 min-vh-hero">
-            <div class="col-lg-7 col-xl-6">
-                <div class="hero-copy">
+        <div class="row align-items-center justify-content-center text-center g-4 g-xl-5 min-vh-hero">
+            <div class="col-lg-10 col-xl-8">
+                <div class="hero-copy d-flex flex-column align-items-center">
                     <span class="hero-kicker"><i class="bi bi-stars"></i> Website Resmi Pemerintah Desa</span>
                     <h1>Desa Padang Loang</h1>
                     <p class="hero-lead">Pusat informasi pelayanan, pengumuman, berita, dan dokumentasi kegiatan desa yang mudah diakses oleh masyarakat.</p>
-                    <div class="hero-actions">
+                    <div class="hero-actions d-flex justify-content-center">
                         <a href="#about" class="btn btn-hero-primary btn-lg">
                             <i class="bi bi-compass me-2"></i>Jelajahi Desa
                         </a>
                         <a href="<?= base_url('/login') ?>" class="btn btn-hero-outline btn-lg">
                             <i class="bi bi-file-earmark-text me-2"></i>Ajukan Surat
                         </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-5 col-xl-6">
-                <div class="hero-showcase">
-                    <div class="showcase-image">
-                        <img src="<?= esc($heroImage) ?>" alt="Dokumentasi Desa Padang Loang">
-                        <div class="showcase-badge">
-                            <i class="bi bi-geo-alt-fill"></i>
-                            <span>Ujung Loe, Bulukumba</span>
-                        </div>
-                    </div>
-                    <div class="hero-service-panel">
-                        <div class="panel-header">
-                            <div>
-                                <span class="panel-label">Akses Cepat</span>
-                                <h2>Layanan Desa</h2>
-                            </div>
-                            <i class="bi bi-grid-1x2-fill"></i>
-                        </div>
-                        <div class="quick-link-list">
-                            <a href="<?= base_url('/pengumuman') ?>" class="quick-link">
-                                <span class="quick-icon bg-sky"><i class="bi bi-megaphone"></i></span>
-                                <span>
-                                    <strong>Pengumuman</strong>
-                                    <small>Informasi resmi terbaru</small>
-                                </span>
-                                <i class="bi bi-arrow-right-short"></i>
-                            </a>
-                            <a href="<?= base_url('/pengaduan') ?>" class="quick-link">
-                                <span class="quick-icon bg-rose"><i class="bi bi-chat-dots"></i></span>
-                                <span>
-                                    <strong>Pengaduan</strong>
-                                    <small>Sampaikan aspirasi warga</small>
-                                </span>
-                                <i class="bi bi-arrow-right-short"></i>
-                            </a>
-                            <a href="<?= base_url('/profil') ?>" class="quick-link">
-                                <span class="quick-icon bg-emerald"><i class="bi bi-bank"></i></span>
-                                <span>
-                                    <strong>Profil Desa</strong>
-                                    <small>Sejarah dan potensi wilayah</small>
-                                </span>
-                                <i class="bi bi-arrow-right-short"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="hero-stats row g-3">
-            <div class="col-md-4">
-                <div class="stat-tile">
-                    <span class="stat-icon"><i class="bi bi-newspaper"></i></span>
-                    <div>
-                        <strong><?= count($news ?? []) ?></strong>
-                        <span>Berita terbaru</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-tile">
-                    <span class="stat-icon"><i class="bi bi-images"></i></span>
-                    <div>
-                        <strong><?= count($albums ?? []) ?></strong>
-                        <span>Album kegiatan</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-tile">
-                    <span class="stat-icon"><i class="bi bi-shield-check"></i></span>
-                    <div>
-                        <strong>24 Jam</strong>
-                        <span>Informasi dapat diakses</span>
                     </div>
                 </div>
             </div>

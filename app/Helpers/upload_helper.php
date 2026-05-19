@@ -3,14 +3,16 @@
 /**
  * upload_helper.php
  *
- * Reusable helpers untuk validasi file upload.
+ * Reusable helpers untuk validasi file upload dan URL eksternal.
  * Load di controller dengan: helper('upload');
  *
  * Fungsi tersedia:
  *   - validate_image_upload()        → hanya JPG/JPEG/PNG (untuk foto profil, galeri, dll)
  *   - validate_letter_attachment()   → PDF, Word, JPG/JPEG/PNG (untuk lampiran surat)
+ *   - validate_youtube_url()         → URL YouTube saja (untuk field video link galeri & berita)
+ *   - validate_maps_url()            → URL Google Maps saja (untuk embed peta desa)
  *
- * @see CLAUDE.md §17 — File Upload Validation Pattern
+ * @see CLAUDE.md §13.1 — File Upload Validation Helper
  */
 
 if (!function_exists('validate_image_upload')) {
@@ -120,6 +122,71 @@ if (!function_exists('validate_letter_attachment')) {
         }
 
         return null;
+    }
+}
+
+if (!function_exists('validate_youtube_url')) {
+    /**
+     * Validasi URL YouTube yang diinput pengguna.
+     *
+     * Field ini bersifat OPSIONAL. Jika kosong, return null (valid).
+     * Jika diisi, harus berupa URL YouTube yang valid.
+     *
+     * Format yang diterima:
+     *   - https://www.youtube.com/watch?v=VIDEO_ID
+     *   - https://youtu.be/VIDEO_ID
+     *   - https://www.youtube.com/shorts/VIDEO_ID
+     *   - https://www.youtube.com/embed/VIDEO_ID
+     *
+     * @param string|null $url Input dari form
+     * @return string|null  null jika valid (atau kosong), string pesan error jika tidak valid
+     */
+    function validate_youtube_url(?string $url): ?string
+    {
+        if (!$url || trim($url) === '') {
+            return null; // opsional — kosong = valid
+        }
+
+        $url    = trim($url);
+        $parsed = parse_url($url);
+
+        if (!$parsed || empty($parsed['host'])) {
+            return 'URL tidak valid. Masukkan link YouTube yang benar.';
+        }
+
+        $host = strtolower($parsed['host']);
+        $path = $parsed['path'] ?? '';
+
+        // Format: youtu.be/<VIDEO_ID>
+        if ($host === 'youtu.be' || $host === 'www.youtu.be') {
+            $id = ltrim($path, '/');
+            if ($id !== '' && preg_match('/^[a-zA-Z0-9_\-]{1,20}$/', $id)) {
+                return null; // valid
+            }
+            return 'Link YouTube tidak valid. Format: https://youtu.be/VIDEO_ID';
+        }
+
+        // Format: youtube.com/watch?v=, /shorts/, /embed/
+        if ($host === 'youtube.com' || $host === 'www.youtube.com') {
+            // /watch?v=VIDEO_ID
+            if (str_starts_with($path, '/watch')) {
+                parse_str($parsed['query'] ?? '', $query);
+                if (!empty($query['v']) && preg_match('/^[a-zA-Z0-9_\-]{1,20}$/', $query['v'])) {
+                    return null; // valid
+                }
+            }
+            // /shorts/VIDEO_ID
+            if (preg_match('#^/shorts/([a-zA-Z0-9_\-]{1,20})#', $path)) {
+                return null; // valid
+            }
+            // /embed/VIDEO_ID
+            if (preg_match('#^/embed/([a-zA-Z0-9_\-]{1,20})#', $path)) {
+                return null; // valid
+            }
+            return 'Link YouTube tidak valid. Gunakan format: youtube.com/watch?v=..., youtu.be/..., atau /shorts/...';
+        }
+
+        return 'Hanya link YouTube yang diperbolehkan (youtube.com atau youtu.be).';
     }
 }
 

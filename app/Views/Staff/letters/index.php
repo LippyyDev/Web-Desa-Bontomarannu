@@ -46,19 +46,19 @@
         <h5 class="card-title mb-4 fw-bold">Template Surat</h5>
         <div class="row g-3">
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-usaha') ?>" class="btn btn-success w-100">KET USAHA</a>
+                <a href="<?= base_url('/staff/surat/template/keterangan-usaha') ?>" class="btn btn-success w-100"><i class="bi bi-file-earmark-text me-1"></i> KET USAHA</a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-tidak-mampu') ?>" class="btn btn-success w-100">KET TIDAK MAMPU</a>
+                <a href="<?= base_url('/staff/surat/template/keterangan-tidak-mampu') ?>" class="btn btn-success w-100"><i class="bi bi-file-earmark-text me-1"></i> KET TIDAK MAMPU</a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-belum-menikah') ?>" class="btn btn-success w-100">KET BELUM MENIKAH</a>
+                <a href="<?= base_url('/staff/surat/template/keterangan-belum-menikah') ?>" class="btn btn-success w-100"><i class="bi bi-file-earmark-text me-1"></i> KET BELUM MENIKAH</a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/keterangan-domisili') ?>" class="btn btn-success w-100">KET DOMISILI</a>
+                <a href="<?= base_url('/staff/surat/template/keterangan-domisili') ?>" class="btn btn-success w-100"><i class="bi bi-file-earmark-text me-1"></i> KET DOMISILI</a>
             </div>
             <div class="col-6 col-md-4 col-lg">
-                <a href="<?= base_url('/staff/surat/template/undangan') ?>" class="btn btn-success w-100">UNDANGAN</a>
+                <a href="<?= base_url('/staff/surat/template/undangan') ?>" class="btn btn-success w-100"><i class="bi bi-envelope-paper me-1"></i> UNDANGAN</a>
             </div>
         </div>
     </div>

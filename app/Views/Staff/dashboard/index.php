@@ -39,6 +39,8 @@ else { $greeting = 'Selamat malam'; }
 .stat-icon-bento { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
 .bento-card { transition: transform 0.2s ease, box-shadow 0.2s ease; border-radius: 16px; }
 .bento-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+.card-arrow-icon { transition: transform 0.3s ease; display: inline-block; }
+.bento-card:hover .card-arrow-icon { transform: rotate(-45deg) scale(1.1); }
 </style>
 
 <div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
@@ -85,24 +87,25 @@ else { $greeting = 'Selamat malam'; }
     <!-- ROW 2: Stat Cards yang tersisa -->
     <?php
     function renderBentoStat($colSize, $title, $value, $desc, $icon, $link, $iconColor) {
+        $href = $link ? $link : '#';
         return '
-        <div class="card bento-card bc-'.$colSize.' border-0 shadow-sm">
+        <a href="'.$href.'" class="card bento-card bc-'.$colSize.' border-0 shadow-sm text-decoration-none">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="stat-icon-bento" style="background-color: #dcfce7; color: '.$iconColor.';">
                         <i class="bi '.$icon.'"></i>
                     </div>
-                    <a href="'.$link.'" class="text-success" title="Kelola"><i class="bi bi-arrow-right-circle fs-5"></i></a>
+                    <div class="text-success" title="Kelola"><i class="bi bi-arrow-right-circle fs-4 card-arrow-icon"></i></div>
                 </div>
                 <div class="text-uppercase fw-semibold mb-1 text-muted" style="font-size: 0.7rem; letter-spacing: 1px;">'.$title.'</div>
                 <div class="fw-bold text-dark lh-1 mb-1" style="font-size: 1.8rem;">'.$value.'</div>
                 <div class="text-muted" style="font-size: 0.75rem;">'.$desc.'</div>
             </div>
-        </div>';
+        </a>';
     }
     ?>
-    <?= renderBentoStat(6, 'Inventaris Desa', $inventarisTotal, 'Item tercatat', 'bi-archive-fill', base_url('/staff/inventaris'), '#064e3b') ?>
-    <?= renderBentoStat(6, 'Perangkat Desa', $perangkatTotal, 'Staf aktif', 'bi-people-fill', base_url('/staff/perangkat-desa'), '#34d399') ?>
+    <?= renderBentoStat(6, 'Inventaris Desa', $inventarisTotal, 'Item tercatat', 'bi-archive-fill', base_url('/staff/inventaris'), '#15803d') ?>
+    <?= renderBentoStat(6, 'Perangkat Desa', $perangkatTotal, 'Staf aktif', 'bi-people-fill', base_url('/staff/perangkat-desa'), '#059669') ?>
 
     <!-- ROW 3: Modern Charts -->
     <div class="card bento-card bc-8 border-0 shadow-sm">

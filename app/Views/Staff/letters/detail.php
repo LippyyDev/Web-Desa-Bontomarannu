@@ -48,7 +48,7 @@ function truncateFilename(string $filename, int $maxLength = 35): string {
             </a>
         <?php endif; ?>
         <a href="<?= base_url('/staff/surat') ?>" class="btn btn-outline-success">
-            Kembali
+            <i class="bi bi-arrow-left me-1"></i> Kembali
         </a>
     </div>
 </div>
@@ -87,9 +87,9 @@ function truncateFilename(string $filename, int $maxLength = 35): string {
                 <?php foreach ($attachments as $att): 
                     $fileName = esc($att['original_name'] ?: basename($att['file_path']));
                 ?>
-                    <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="d-flex align-items-center gap-2 p-2 border rounded bg-light text-decoration-none text-dark" style="width: fit-content; max-width: 100%;">
-                        <i class="bi <?= getFileIcon($fileName) ?> fs-5"></i>
-                        <span class="text-truncate" title="<?= $fileName ?>"><?= truncateFilename($fileName) ?></span>
+                    <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="d-inline-flex align-items-center gap-2 p-2 border rounded bg-light text-decoration-none text-dark" style="max-width: 100%;">
+                        <i class="bi <?= getFileIcon($fileName) ?> fs-5 flex-shrink-0"></i>
+                        <span class="text-truncate" title="<?= $fileName ?>"><?= truncateFilename($fileName, 25) ?></span>
                     </a>
                 <?php endforeach; ?>
                 </div>
@@ -128,14 +128,14 @@ function truncateFilename(string $filename, int $maxLength = 35): string {
             <div class="d-flex gap-2 flex-wrap mt-2">
                 <?php if (in_array($letter['status'], ['Dibaca', 'Menunggu'], true)): ?>
                     <button class="btn btn-success" type="button" onclick="submitAction('<?= base_url('/staff/surat/' . $letter['id'] . '/terima') ?>', false)">
-                        Terima Surat
+                        <i class="bi bi-check-circle me-1"></i> Terima Surat
                     </button>
                     <button class="btn btn-danger" type="button" onclick="submitAction('<?= base_url('/staff/surat/' . $letter['id'] . '/tolak') ?>', true, 'Yakin ingin menolak surat ini?')">
-                        Tolak Surat
+                        <i class="bi bi-x-circle me-1"></i> Tolak Surat
                     </button>
                 <?php else: ?>
                     <button class="btn btn-success" type="button" onclick="submitAction('<?= base_url('/staff/surat/' . $letter['id'] . '/balas') ?>', true)">
-                        Kirim Balasan
+                        <i class="bi bi-reply-fill me-1"></i> Kirim Balasan
                     </button>
                 <?php endif; ?>
             </div>
@@ -150,14 +150,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-function submitAction(actionUrl, requireText = false, confirmMsg = null) {
+async function submitAction(actionUrl, requireText = false, confirmMsg = null) {
     const text = document.getElementById('reply_text').value.trim();
     if (requireText && !text) {
-        alert('Pesan / Catatan wajib diisi untuk tindakan ini.');
+        showError('Pesan / Catatan wajib diisi untuk tindakan ini.', 'Wajib Diisi');
         return;
     }
-    if (confirmMsg && !confirm(confirmMsg)) {
-        return;
+    if (confirmMsg) {
+        const confirmed = await showConfirm(confirmMsg, 'Konfirmasi', 'Ya', 'Batal');
+        if (!confirmed) return;
     }
     const form = document.getElementById('formTindakLanjut');
     form.action = actionUrl;
@@ -191,32 +192,31 @@ function submitAction(actionUrl, requireText = false, confirmMsg = null) {
                             </div>
                             <?php if ($reply['staff_id'] == $currentStaffId): ?>
                             <div>
-                                <a href="<?= base_url('/staff/surat/' . $letter['id'] . '/balasan/' . $reply['id'] . '/hapus') ?>" 
-                                   class="btn btn-sm btn-outline-danger" 
-                                   onclick="return confirm('Yakin ingin menghapus balasan ini?')">
+                                <a href="#" data-url="<?= base_url('/staff/surat/' . $letter['id'] . '/balasan/' . $reply['id'] . '/hapus') ?>" 
+                                   class="btn btn-sm btn-danger btn-hapus-balasan" title="Hapus Balasan">
                                     <i class="bi bi-trash"></i> Hapus
                                 </a>
                             </div>
                             <?php endif; ?>
                         </div>
                         <div class="text-muted mb-2"><?= nl2br($reply['reply_text']) ?></div>
-                        <?php if (!empty($replyAttachments[$reply['id']])): ?>
-                            <div class="mt-3">
-                                <div class="small text-muted mb-2 fw-semibold">Lampiran:</div>
-                                <div class="d-flex flex-column gap-2">
-                                <?php foreach ($replyAttachments[$reply['id']] as $att): 
-                                    $fileName = esc($att['original_name'] ?: basename($att['file_path']));
-                                ?>
-                                    <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="d-flex align-items-center gap-2 p-2 border rounded bg-light text-decoration-none text-dark" style="width: fit-content; max-width: 100%;">
-                                        <i class="bi <?= getFileIcon($fileName) ?> fs-5"></i>
-                                        <span class="text-truncate" title="<?= $fileName ?>"><?= truncateFilename($fileName) ?></span>
-                                    </a>
-                                <?php endforeach; ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
+                <?php if (!empty($replyAttachments[$reply['id']])): ?>
+                    <div class="mt-3">
+                        <div class="small text-muted mb-2 fw-semibold">Lampiran:</div>
+                        <div class="d-flex flex-column gap-2">
+                        <?php foreach ($replyAttachments[$reply['id']] as $att): 
+                            $fileName = esc($att['original_name'] ?: basename($att['file_path']));
+                        ?>
+                            <a href="<?= base_url($att['file_path']) ?>" target="_blank" class="d-inline-flex align-items-center gap-2 p-2 border rounded bg-light text-decoration-none text-dark" style="max-width: 100%;">
+                                <i class="bi <?= getFileIcon($fileName) ?> fs-5 flex-shrink-0"></i>
+                                <span class="text-truncate" title="<?= $fileName ?>"><?= truncateFilename($fileName, 25) ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
         <?php if (empty($replies)): ?>
@@ -226,5 +226,18 @@ function submitAction(actionUrl, requireText = false, confirmMsg = null) {
 </div>
 
 
+
+<script>
+document.querySelectorAll('.btn-hapus-balasan').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.getAttribute('data-url');
+        showConfirm('Yakin ingin menghapus balasan ini?', 'Hapus Balasan', 'Ya, Hapus')
+            .then(confirmed => {
+                if (confirmed) window.location.href = url;
+            });
+    });
+});
+</script>
 
 <?= $this->endSection() ?>

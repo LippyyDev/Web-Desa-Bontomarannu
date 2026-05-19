@@ -33,6 +33,20 @@ class ProfileController extends ProtectedController
         $profileModel = new UserProfileModel();
         $userModel    = new UserModel();
         $uid          = $this->currentUser['id'];
+        $db           = \Config\Database::connect();
+
+        $newUsername = trim($this->request->getPost('username') ?? '');
+        $newEmail    = trim($this->request->getPost('email') ?? '');
+
+        // Cek duplikat username (kecuali akun sendiri)
+        if ($db->table('users')->where('username', $newUsername)->where('id !=', $uid)->get()->getRow()) {
+            return redirect()->to('/admin/profil')->with('error', 'Username "' . esc($newUsername) . '" sudah digunakan oleh akun lain.');
+        }
+
+        // Cek duplikat email (kecuali akun sendiri)
+        if ($db->table('users')->where('email', $newEmail)->where('id !=', $uid)->get()->getRow()) {
+            return redirect()->to('/admin/profil')->with('error', 'Email "' . esc($newEmail) . '" sudah digunakan oleh akun lain.');
+        }
 
         $nik = trim($this->request->getPost('nik') ?? '');
         
@@ -102,9 +116,15 @@ class ProfileController extends ProtectedController
         }
 
         $userModel->update($uid, [
-            'username' => $this->request->getPost('username'),
-            'email' => $this->request->getPost('email'),
+            'username' => $newUsername,
+            'email'    => $newEmail,
         ]);
+
+        // Refresh session agar username/email di header dan form ikut berubah
+        $sessionUser             = session('user');
+        $sessionUser['username'] = $newUsername;
+        $sessionUser['email']    = $newEmail;
+        session()->set('user', $sessionUser);
 
         return redirect()->to('/admin/profil')->with('success', 'Profil diperbarui.');
     }

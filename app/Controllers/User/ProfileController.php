@@ -34,17 +34,33 @@ class ProfileController extends ProtectedController
         $profileModel = new UserProfileModel();
         $userModel    = new UserModel();
         $uid          = $this->currentUser['id'];
+        $db           = \Config\Database::connect();
+
+        $newUsername = trim($this->request->getPost('username') ?? '');
+        $newEmail    = trim($this->request->getPost('email') ?? '');
+
+        // Cek duplikat username (kecuali akun sendiri)
+        if ($db->table('users')->where('username', $newUsername)->where('id !=', $uid)->get()->getRow()) {
+            return redirect()->to('/user/profil')->with('error', 'Username "' . esc($newUsername) . '" sudah digunakan oleh akun lain.');
+        }
+
+        // Cek duplikat email (kecuali akun sendiri)
+        if ($db->table('users')->where('email', $newEmail)->where('id !=', $uid)->get()->getRow()) {
+            return redirect()->to('/user/profil')->with('error', 'Email "' . esc($newEmail) . '" sudah digunakan oleh akun lain.');
+        }
 
         $nik = trim($this->request->getPost('nik') ?? '');
         
+        $jenisKelamin = $this->request->getPost('jenis_kelamin');
         $data = [
-            'nama_lengkap' => $this->request->getPost('nama_lengkap'),
-            'tempat_lahir' => $this->request->getPost('tempat_lahir'),
-            'tanggal_lahir'=> $this->request->getPost('tanggal_lahir'),
-            'agama'        => $this->request->getPost('agama'),
-            'pekerjaan'    => $this->request->getPost('pekerjaan'),
-            'nik'          => $nik !== '' ? $nik : null,
-            'alamat'       => $this->request->getPost('alamat'),
+            'nama_lengkap'  => $this->request->getPost('nama_lengkap'),
+            'jenis_kelamin' => in_array($jenisKelamin, ['Laki-laki', 'Perempuan']) ? $jenisKelamin : null,
+            'tempat_lahir'  => $this->request->getPost('tempat_lahir'),
+            'tanggal_lahir' => $this->request->getPost('tanggal_lahir'),
+            'agama'         => $this->request->getPost('agama'),
+            'pekerjaan'     => $this->request->getPost('pekerjaan'),
+            'nik'           => $nik !== '' ? $nik : null,
+            'alamat'        => $this->request->getPost('alamat'),
         ];
 
         $file = $this->request->getFile('foto_profil');
@@ -103,9 +119,15 @@ class ProfileController extends ProtectedController
         }
 
         $userModel->update($uid, [
-            'username' => $this->request->getPost('username'),
-            'email' => $this->request->getPost('email'),
+            'username' => $newUsername,
+            'email'    => $newEmail,
         ]);
+
+        // Refresh session agar username/email di header dan form ikut berubah
+        $sessionUser             = session('user');
+        $sessionUser['username'] = $newUsername;
+        $sessionUser['email']    = $newEmail;
+        session()->set('user', $sessionUser);
 
         return redirect()->to('/user/profil')->with('success', 'Profil diperbarui.');
     }

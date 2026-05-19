@@ -57,12 +57,16 @@
                 <div class="col-md-6">
                     <label class="form-label fw-medium">Nama Lengkap <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="nama" id="inputNama"
-                           value="<?= old('nama') ?>" placeholder="Contoh: Budi Santoso" required>
+                           value="<?= old('nama') ?>" placeholder="Contoh: Budi Santoso"
+                           pattern="[^0-9]+" title="Nama hanya boleh berisi huruf dan simbol, tidak boleh ada angka"
+                           required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-medium">Jabatan <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="jabatan" id="inputJabatan"
-                           value="<?= old('jabatan') ?>" placeholder="Contoh: Kepala Desa" required>
+                           value="<?= old('jabatan') ?>" placeholder="Contoh: Kepala Desa"
+                           pattern="[^0-9]+" title="Jabatan hanya boleh berisi huruf dan simbol, tidak boleh ada angka"
+                           required>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-medium">Kontak</label>
@@ -92,9 +96,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Live preview nama & jabatan di card foto
     inputNama.addEventListener('input', function () {
+        this.value = this.value.replace(/[0-9]/g, '');
         namaPreview.textContent = this.value.trim() || 'Belum diisi';
     });
     inputJabatan.addEventListener('input', function () {
+        this.value = this.value.replace(/[0-9]/g, '');
         jabatanPrev.textContent = this.value.trim() || '—';
     });
 

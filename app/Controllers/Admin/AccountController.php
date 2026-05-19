@@ -14,7 +14,9 @@ class AccountController extends ProtectedController
             return $redirect;
         }
 
-        return view('Admin/users/index');
+        return view('Admin/users/index', [
+            'currentUserId' => $this->currentUser['id'] ?? 0,
+        ]);
     }
 
     public function api()
@@ -39,7 +41,7 @@ class AccountController extends ProtectedController
 
         // Build base query with join
         $builder = $db->table('users u')
-            ->select('u.id, u.username, u.email, u.role, u.status, u.created_at, up.foto_profil')
+            ->select('u.id, u.username, u.email, u.role, u.status, u.created_at, u.last_seen_at, up.foto_profil')
             ->join('user_profiles up', 'up.user_id = u.id', 'left');
 
         // Apply search filter
@@ -67,16 +69,32 @@ class AccountController extends ProtectedController
         $builder->orderBy('u.created_at', 'DESC')->limit($length, $offset);
         $users = $builder->get()->getResultArray();
 
+        // Threshold online: 5 menit (300 detik)
+        $onlineThreshold = 300;
+        $now = time();
+
         $data = [];
         foreach ($users as $user) {
+            $lastSeenAt  = $user['last_seen_at'];
+            $isOnline    = false;
+            $lastSeenStr = 'Belum pernah';
+
+            if (!empty($lastSeenAt)) {
+                $lastSeenTs  = strtotime($lastSeenAt);
+                $isOnline    = ($now - $lastSeenTs) <= $onlineThreshold;
+                $lastSeenStr = date('d M Y, H:i', $lastSeenTs);
+            }
+
             $data[] = [
-                'id'         => $user['id'],
-                'username'   => esc($user['username']),
-                'email'      => esc($user['email']),
-                'role'       => esc($user['role']),
-                'status'     => esc($user['status']),
-                'created_at' => date('d M Y', strtotime($user['created_at'])),
-                'foto_profil'=> (!empty($user['foto_profil'])) ? $user['foto_profil'] : null,
+                'id'           => $user['id'],
+                'username'     => esc($user['username']),
+                'email'        => esc($user['email']),
+                'role'         => esc($user['role']),
+                'status'       => esc($user['status']),
+                'created_at'   => date('d M Y', strtotime($user['created_at'])),
+                'foto_profil'  => (!empty($user['foto_profil'])) ? $user['foto_profil'] : null,
+                'is_online'    => $isOnline,
+                'last_seen_at' => $lastSeenStr,
             ];
         }
 
@@ -202,14 +220,16 @@ class AccountController extends ProtectedController
 
         // Update profile data
         $nik = trim($this->request->getPost('nik') ?? '');
+        $jenisKelamin = $this->request->getPost('jenis_kelamin');
         $profileData = [
-            'nama_lengkap' => $this->request->getPost('nama_lengkap'),
-            'tempat_lahir' => $this->request->getPost('tempat_lahir'),
-            'tanggal_lahir'=> $this->request->getPost('tanggal_lahir'),
-            'agama'        => $this->request->getPost('agama'),
-            'pekerjaan'    => $this->request->getPost('pekerjaan'),
-            'nik'          => $nik !== '' ? $nik : null,
-            'alamat'       => $this->request->getPost('alamat'),
+            'nama_lengkap'  => $this->request->getPost('nama_lengkap'),
+            'jenis_kelamin' => in_array($jenisKelamin, ['Laki-laki', 'Perempuan']) ? $jenisKelamin : null,
+            'tempat_lahir'  => $this->request->getPost('tempat_lahir'),
+            'tanggal_lahir' => $this->request->getPost('tanggal_lahir'),
+            'agama'         => $this->request->getPost('agama'),
+            'pekerjaan'     => $this->request->getPost('pekerjaan'),
+            'nik'           => $nik !== '' ? $nik : null,
+            'alamat'        => $this->request->getPost('alamat'),
         ];
 
         // Handle foto profil upload
@@ -309,6 +329,31 @@ class AccountController extends ProtectedController
         $userModel->delete($id);
 
         return redirect()->back()->with('success', 'Akun dihapus.');
+    }
+
+    public function toggleStatus($id)
+    {
+        if ($redirect = $this->guard(['admin'])) {
+            return $redirect;
+        }
+
+        // Cegah admin menonaktifkan akunnya sendiri
+        if ((int) $id === (int) $this->currentUser['id']) {
+            return redirect()->back()->with('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri.');
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->find($id);
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'Akun tidak ditemukan.');
+        }
+
+        $newStatus = ($user['status'] === 'aktif') ? 'nonaktif' : 'aktif';
+        $userModel->update($id, ['status' => $newStatus]);
+
+        $label = $newStatus === 'aktif' ? 'diaktifkan' : 'dinonaktifkan';
+        return redirect()->back()->with('success', "Akun \"{$user['username']}\" berhasil {$label}.");
     }
 }
 

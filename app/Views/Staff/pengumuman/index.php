@@ -163,7 +163,7 @@
             </button>
         </div>
         <a href="<?= base_url('/staff/pengumuman/tambah') ?>" class="btn btn-success">
-            Tambah Pengumuman
+            <i class="bi bi-plus-lg me-1"></i> Tambah Pengumuman
         </a>
     </div>
 </div>

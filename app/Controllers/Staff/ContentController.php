@@ -95,7 +95,7 @@ class ContentController extends ProtectedController
             $profileModel->save($data);
         }
 
-        return redirect()->to('/staff/desa')->with('message', 'Profil desa berhasil diperbarui');
+        return redirect()->to('/staff/desa')->with('success', 'Profil desa berhasil diperbarui.');
     }
 
     public function updateGeografis()
@@ -149,7 +149,7 @@ class ContentController extends ProtectedController
             $geografiModel->save($geografiData);
         }
 
-        return redirect()->to('/staff/geografi')->with('message', 'Data geografis berhasil diperbarui.');
+        return redirect()->to('/staff/geografi')->with('success', 'Data geografis berhasil diperbarui.');
     }
 
     public function gallery()
@@ -332,7 +332,7 @@ class ContentController extends ProtectedController
         $albumId = $albumModel->insert($data, true);
         $this->saveGalleryMedia($albumId);
 
-        return redirect()->back()->with('success', 'Album galeri disimpan.');
+        return redirect()->to('/staff/galeri')->with('success', 'Album galeri disimpan.');
     }
 
     public function updateGallery($id)
@@ -419,7 +419,7 @@ class ContentController extends ProtectedController
         $albumModel->update($id, $data);
         $this->saveGalleryMedia($id);
 
-        return redirect()->back()->with('success', 'Album diperbarui.');
+        return redirect()->to('/staff/galeri')->with('success', 'Album diperbarui.');
     }
 
     public function deleteGallery($id)
@@ -444,7 +444,7 @@ class ContentController extends ProtectedController
             $albumModel->delete($id);
         }
 
-        return redirect()->back()->with('success', 'Album dihapus.');
+        return redirect()->to('/staff/galeri')->with('success', 'Album dihapus.');
     }
 
     private function saveGalleryMedia(int $albumId): void
@@ -503,13 +503,18 @@ class ContentController extends ProtectedController
             foreach ($videoLinks as $block) {
                 $lines = preg_split('/\r\n|\r|\n/', (string) $block);
                 foreach ($lines as $link) {
-                    if (trim($link) === '') {
+                    $link = trim($link);
+                    if ($link === '') {
                         continue;
+                    }
+                    // Validasi backend: hanya YouTube yang diperbolehkan
+                    if (validate_youtube_url($link) !== null) {
+                        continue; // skip URL yang bukan YouTube
                     }
                     $mediaModel->insert([
                         'album_id'   => $albumId,
                         'media_type' => 'video_link',
-                        'media_path' => trim($link),
+                        'media_path' => $link,
                     ]);
                 }
             }
@@ -694,7 +699,7 @@ class ContentController extends ProtectedController
         $newsId = $newsModel->insert($data, true);
         $this->saveNewsMedia($newsId);
 
-        return redirect()->back()->with('success', 'Berita disimpan.');
+        return redirect()->to('/staff/berita')->with('success', 'Berita disimpan.');
     }
 
     public function updateNews($id)
@@ -769,7 +774,7 @@ class ContentController extends ProtectedController
         $newsModel->update($id, $data);
         $this->saveNewsMedia($id);
 
-        return redirect()->back()->with('success', 'Berita diperbarui.');
+        return redirect()->to('/staff/berita')->with('success', 'Berita diperbarui.');
     }
 
     public function deleteNews($id)
@@ -796,7 +801,7 @@ class ContentController extends ProtectedController
             $newsModel->delete($id);
         }
 
-        return redirect()->back()->with('success', 'Berita dihapus.');
+        return redirect()->to('/staff/berita')->with('success', 'Berita dihapus.');
     }
 
     private function saveNewsMedia(int $newsId): void
@@ -806,18 +811,43 @@ class ContentController extends ProtectedController
             $mediaModel = new NewsMediaModel();
             $path       = FCPATH . 'uploads/news';
             $this->ensureUploadPath($path);
+            $image      = \Config\Services::image();
 
             foreach ($files as $file) {
                 if (!$file->isValid()) {
                     continue;
                 }
-                $name = $file->getRandomName();
-                $file->move($path, $name);
-                $mediaModel->insert([
-                    'news_id'    => $newsId,
-                    'media_type' => 'foto',
-                    'media_path' => 'uploads/news/' . $name,
-                ]);
+
+                // Upload file sementara
+                $tempName = $file->getRandomName();
+                $file->move($path, $tempName);
+                $tempPath = $path . '/' . $tempName;
+
+                // Convert ke WebP
+                $webpName = pathinfo($tempName, PATHINFO_FILENAME) . '.webp';
+                $webpPath = $path . '/' . $webpName;
+
+                try {
+                    $image->withFile($tempPath)
+                        ->convert(IMAGETYPE_WEBP)
+                        ->save($webpPath, 85);
+
+                    if (file_exists($tempPath)) {
+                        @unlink($tempPath);
+                    }
+
+                    $mediaModel->insert([
+                        'news_id'    => $newsId,
+                        'media_type' => 'foto',
+                        'media_path' => 'uploads/news/' . $webpName,
+                    ]);
+                } catch (\Exception $e) {
+                    if (file_exists($tempPath)) {
+                        @unlink($tempPath);
+                    }
+                    // Skip file yang gagal dikonversi
+                    continue;
+                }
             }
         }
 
@@ -827,13 +857,18 @@ class ContentController extends ProtectedController
             foreach ($videoLinks as $block) {
                 $lines = preg_split('/\r\n|\r|\n/', (string) $block);
                 foreach ($lines as $link) {
-                    if (trim($link) === '') {
+                    $link = trim($link);
+                    if ($link === '') {
                         continue;
+                    }
+                    // Validasi backend: hanya YouTube yang diperbolehkan
+                    if (validate_youtube_url($link) !== null) {
+                        continue; // skip URL yang bukan YouTube
                     }
                     $mediaModel->insert([
                         'news_id'    => $newsId,
                         'media_type' => 'video_link',
-                        'media_path' => trim($link),
+                        'media_path' => $link,
                     ]);
                 }
             }
@@ -941,12 +976,14 @@ class ContentController extends ProtectedController
 
         $data = [];
         foreach ($list as $item) {
+            $isKepala = strtolower(trim($item['jabatan'] ?? '')) === 'kepala desa';
             $data[] = [
-                'id'      => $item['id'],
-                'nama'    => $item['nama'],
-                'jabatan' => $item['jabatan'],
-                'kontak'  => $item['kontak'] ?? '',
-                'foto_url' => $item['foto'] ? base_url($item['foto']) : base_url('assets/img/guest.webp'),
+                'id'             => $item['id'],
+                'nama'           => $item['nama'],
+                'jabatan'        => $item['jabatan'],
+                'kontak'         => $item['kontak'] ?? '',
+                'foto_url'       => $item['foto'] ? base_url($item['foto']) : base_url('assets/img/guest.webp'),
+                'is_kepala_desa' => $isKepala,
             ];
         }
 
@@ -996,9 +1033,20 @@ class ContentController extends ProtectedController
 
         $model = new PerangkatDesaModel();
 
+        $nama    = trim($this->request->getPost('nama'));
+        $jabatan = trim($this->request->getPost('jabatan'));
+
+        // Validasi: nama & jabatan tidak boleh mengandung angka
+        if (preg_match('/[0-9]/', $nama)) {
+            return redirect()->back()->withInput()->with('error', 'Nama tidak boleh mengandung angka.');
+        }
+        if (preg_match('/[0-9]/', $jabatan)) {
+            return redirect()->back()->withInput()->with('error', 'Jabatan tidak boleh mengandung angka.');
+        }
+
         $data = [
-            'nama'    => $this->request->getPost('nama'),
-            'jabatan' => $this->request->getPost('jabatan'),
+            'nama'    => $nama,
+            'jabatan' => $jabatan,
             'kontak'  => $this->request->getPost('kontak'),
         ];
 
@@ -1036,9 +1084,20 @@ class ContentController extends ProtectedController
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
 
+        $nama    = trim($this->request->getPost('nama'));
+        $jabatan = trim($this->request->getPost('jabatan'));
+
+        // Validasi: nama & jabatan tidak boleh mengandung angka
+        if (preg_match('/[0-9]/', $nama)) {
+            return redirect()->back()->withInput()->with('error', 'Nama tidak boleh mengandung angka.');
+        }
+        if (preg_match('/[0-9]/', $jabatan)) {
+            return redirect()->back()->withInput()->with('error', 'Jabatan tidak boleh mengandung angka.');
+        }
+
         $data = [
-            'nama'    => $this->request->getPost('nama'),
-            'jabatan' => $this->request->getPost('jabatan'),
+            'nama'    => $nama,
+            'jabatan' => $jabatan,
             'kontak'  => $this->request->getPost('kontak'),
         ];
 
@@ -1079,6 +1138,11 @@ class ContentController extends ProtectedController
         $item = $model->find($id);
 
         if ($item) {
+            // Cegah penghapusan Kepala Desa
+            if (strtolower(trim($item['jabatan'] ?? '')) === 'kepala desa') {
+                return redirect()->back()->with('error', 'Data Kepala Desa tidak dapat dihapus.');
+            }
+
             // Hapus foto jika ada
             if ($item['foto']) {
                 $file = FCPATH . ltrim($item['foto'], '/');
@@ -1220,7 +1284,7 @@ class ContentController extends ProtectedController
 
         $inventarisModel->insert($data);
 
-        return redirect()->to('/staff/inventaris')->with('message', 'Data inventaris berhasil ditambahkan.');
+        return redirect()->to('/staff/inventaris')->with('success', 'Data inventaris berhasil ditambahkan.');
     }
 
     public function updateInventaris($id)
@@ -1263,7 +1327,7 @@ class ContentController extends ProtectedController
 
         $inventarisModel->update($id, $data);
 
-        return redirect()->to('/staff/inventaris/' . $id . '/edit')->with('message', 'Data inventaris berhasil diperbarui.');
+        return redirect()->to('/staff/inventaris/' . $id . '/edit')->with('success', 'Data inventaris berhasil diperbarui.');
     }
 
     public function deleteInventaris($id)
@@ -1285,7 +1349,7 @@ class ContentController extends ProtectedController
             $inventarisModel->delete($id);
         }
 
-        return redirect()->to('/staff/inventaris')->with('message', 'Data inventaris berhasil dihapus');
+        return redirect()->to('/staff/inventaris')->with('success', 'Data inventaris berhasil dihapus.');
     }
 
     // Pengumuman Methods
@@ -1527,7 +1591,7 @@ class ContentController extends ProtectedController
             $pengumumanModel->delete($id);
         }
 
-        return redirect()->to('/staff/pengumuman')->with('message', 'Pengumuman berhasil dihapus');
+        return redirect()->to('/staff/pengumuman')->with('success', 'Pengumuman berhasil dihapus.');
     }
 
     // Pengaduan Methods
@@ -1638,7 +1702,7 @@ class ContentController extends ProtectedController
             $pengaduanModel->delete($id);
         }
 
-        return redirect()->to('/staff/pengaduan')->with('message', 'Pengaduan berhasil dihapus');
+        return redirect()->to('/staff/pengaduan')->with('success', 'Pengaduan berhasil dihapus.');
     }
 }
 

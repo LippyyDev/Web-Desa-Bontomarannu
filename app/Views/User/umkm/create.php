@@ -29,7 +29,7 @@
         <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Isi data toko UMKM Anda beserta produknya. Tunggu persetujuan setelah submit.</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="<?= base_url('/user/umkm') ?>" class="btn btn-outline-success">Kembali</a>
+        <a href="<?= base_url('/user/umkm') ?>" class="btn btn-outline-success"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
     </div>
 </div>
 
@@ -116,7 +116,7 @@
 
             <div class="mt-4 mb-4">
                 <button type="button" class="btn btn-success" onclick="lanjutKeProduk()">
-                    Lanjut ke Tambah Produk
+                    <i class="bi bi-arrow-right-circle me-1"></i> Lanjut ke Tambah Produk
                 </button>
             </div>
         </div>
@@ -157,14 +157,14 @@
                         </div>
                     </div>
                     <button type="button" class="btn btn-outline-success btn-sm mt-1" onclick="addProduk()">
-                        <i class="bi bi-plus"></i> Tambah Item Produk
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Item Produk
                     </button>
                 </div>
             </div>
 
             <div class="mt-4 mb-4">
                 <button type="submit" class="btn btn-success">
-                    Kirim untuk Ditinjau
+                    <i class="bi bi-send me-1"></i> Kirim untuk Ditinjau
                 </button>
             </div>
         </div>

@@ -578,6 +578,46 @@ class UmkmController extends ProtectedController
     }
 
     /**
+     * Halaman detail produk (staff)
+     */
+    public function showProduk($produkId)
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $redirect;
+        }
+
+        $produkModel  = new UmkmProdukModel();
+        $gambarModel  = new UmkmProdukGambarModel();
+        $umkmModel    = new UmkmModel();
+        $profileModel = new UserProfileModel();
+
+        $produk = $produkModel->find($produkId);
+        if (!$produk) {
+            return redirect()->back()->with('error', 'Produk tidak ditemukan.');
+        }
+
+        $umkm = $umkmModel->find($produk['umkm_id']);
+        if (!$umkm) {
+            return redirect()->to('/staff/umkm')->with('error', 'UMKM tidak ditemukan.');
+        }
+
+        $pemilik = 'Staff';
+        if ($umkm['user_id']) {
+            $profile = $profileModel->find($umkm['user_id']);
+            $pemilik = $profile['nama_lengkap'] ?? 'User';
+        }
+
+        $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
+
+        return view('Staff/umkm/show_produk', [
+            'title'   => 'Detail Produk',
+            'produk'  => $produk,
+            'umkm'    => $umkm,
+            'pemilik' => $pemilik,
+        ]);
+    }
+
+    /**
      * Form edit produk yang sudah ada (staff)
      */
     public function editProduk($produkId)

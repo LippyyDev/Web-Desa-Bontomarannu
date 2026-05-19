@@ -74,7 +74,7 @@
             <div>
                 <input type="file" id="fotoProfilInput" name="foto_profil" accept=".jpg,.jpeg,.png" style="display: none;" form="formProfil">
                 <label for="fotoProfilInput" class="btn btn-outline-success mb-0">
-                    Ubah Foto
+                    <i class="bi bi-camera me-1"></i> Ubah Foto
                 </label>
             </div>
         </div>
@@ -109,7 +109,7 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Username</label>
-                            <input type="text" class="form-control" name="username" id="inputUsername" value="<?= old('username', session('user.username')) ?>" placeholder="Contoh: ahmad123">
+                            <input type="text" class="form-control" name="username" id="inputUsername" value="<?= old('username', $user['username'] ?? '') ?>" placeholder="Contoh: ahmad123">
                             <div class="invalid-feedback">Username hanya boleh berisi huruf dan angka tanpa spasi.</div>
                         </div>
                         <div class="col-md-4">
@@ -122,12 +122,21 @@
                             <input type="text" class="form-control" name="nama_lengkap" id="inputNama" value="<?= old('nama_lengkap', $profile['nama_lengkap'] ?? '') ?>" placeholder="Contoh: Ahmad Fauzi">
                             <div class="invalid-feedback">Nama lengkap hanya boleh berisi huruf dan spasi.</div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label class="form-label">Jenis Kelamin</label>
+                            <?php $jk = old('jenis_kelamin', $profile['jenis_kelamin'] ?? ''); ?>
+                            <select class="form-select" name="jenis_kelamin">
+                                <option value="">-- Pilih Jenis Kelamin --</option>
+                                <option value="Laki-laki" <?= $jk === 'Laki-laki' ? 'selected' : '' ?>>Laki-laki</option>
+                                <option value="Perempuan" <?= $jk === 'Perempuan' ? 'selected' : '' ?>>Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label">Tempat Lahir</label>
                             <input type="text" class="form-control" name="tempat_lahir" id="inputTempatLahir" value="<?= old('tempat_lahir', $profile['tempat_lahir'] ?? '') ?>" placeholder="Contoh: Bulukumba">
                             <div class="invalid-feedback">Tempat lahir hanya boleh berisi huruf, spasi, dan tanda hubung.</div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Tanggal Lahir</label>
                             <?php $tgl = old('tanggal_lahir', $profile['tanggal_lahir'] ?? ''); ?>
                             <input type="date" class="form-control" name="tanggal_lahir" value="<?= $tgl === '0000-00-00' ? '' : esc($tgl) ?>">
@@ -154,7 +163,7 @@
                     </div>
                     <div class="mt-4">
                         <button class="btn btn-success" type="submit" id="btnSimpanProfil">
-                            Simpan Profil
+                            <i class="bi bi-floppy me-1"></i> Simpan Profil
                         </button>
                     </div>
                 </form>
@@ -196,7 +205,7 @@
                     </div>
                     <div class="mt-4">
                         <button class="btn btn-success" type="submit">
-                            Ganti Password
+                            <i class="bi bi-shield-check me-1"></i> Ganti Password
                         </button>
                     </div>
                 </form>
@@ -257,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const formProfil = document.getElementById('formProfil');
     const inputs = {
         username: { el: document.getElementById('inputUsername'), regex: /^[a-zA-Z0-9]*$/ },
-        email: { el: document.getElementById('inputEmail'), regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }, // Basic email format
+        email: { el: document.getElementById('inputEmail'), regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
         nama: { el: document.getElementById('inputNama'), regex: /^[a-zA-Z\s]*$/ },
         tempatLahir: { el: document.getElementById('inputTempatLahir'), regex: /^[a-zA-Z\s\-]*$/ },
         agama: { el: document.getElementById('inputAgama'), regex: /^[a-zA-Z\s]*$/ },
@@ -267,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Helper to toggle error state
     function validateInput(key, el, regex, isSubmit = false) {
-        if (!el || !el.value) return true; // Skip if empty (unless required, but we'll assume required handled backend or not strict here for empty)
+        if (!el || !el.value) return true;
         
         let val = el.value;
         let isValid = true;
@@ -282,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
              val = val.replace(/\D/g, '');
              el.value = val;
              if (isSubmit && val.length > 0 && val.length !== 16) isValid = false;
-             else if (!isSubmit && val.length > 0 && !/^\d+$/.test(val)) isValid = false; // Just check if it's digit while typing
+             else if (!isSubmit && val.length > 0 && !/^\d+$/.test(val)) isValid = false;
         } else {
              // Other inputs using strict regex
              isValid = regex.test(val);
@@ -291,8 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
                  if (key === 'username') el.value = val.replace(/[^a-zA-Z0-9]/g, '');
                  if (key === 'nama' || key === 'agama' || key === 'pekerjaan') el.value = val.replace(/[^a-zA-Z\s]/g, '');
                  if (key === 'tempatLahir') el.value = val.replace(/[^a-zA-Z\s\-]/g, '');
-                 // After cleaning, check again
-                 isValid = regex.test(el.value);
+             isValid = regex.test(el.value);
              }
         }
 
@@ -309,7 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const { el, regex } = inputs[key];
         if (el) {
             el.addEventListener('input', () => validateInput(key, el, regex));
-            // Trigger once on load to clear any initial weird states, though old() values should be ok.
         }
     });
 

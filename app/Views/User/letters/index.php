@@ -38,7 +38,7 @@
             </button>
         </div>
         <a href="<?= base_url('/user/surat/buat') ?>" class="btn btn-success">
-            Buat Surat
+            <i class="bi bi-plus-circle me-1"></i> Buat Surat
         </a>
     </div>
 </div>

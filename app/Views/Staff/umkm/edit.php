@@ -139,15 +139,15 @@
         <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Ubah informasi toko, produk, atau kelola gambar.</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="<?= base_url('/staff/umkm/' . $umkm['id'] . '/hapus') ?>" id="btnHapusToko" class="btn btn-danger" title="Hapus Toko">Hapus</a>
-        <a href="<?= base_url('/staff/umkm') ?>" class="btn btn-outline-success">Kembali</a>
+        <a href="<?= base_url('/staff/umkm/' . $umkm['id'] . '/hapus') ?>" id="btnHapusToko" class="btn btn-danger" title="Hapus UMKM"><i class="bi bi-trash me-1"></i> Hapus</a>
+        <a href="<?= base_url('/staff/umkm') ?>" class="btn btn-outline-success"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
     </div>
 </div>
 
 
 
 
-<form method="POST" action="<?= base_url('/staff/umkm/' . $umkm['id']) ?>" enctype="multipart/form-data">
+<form method="POST" action="<?= base_url('/staff/umkm/' . $umkm['id']) ?>" enctype="multipart/form-data" id="umkmForm">
     <?= csrf_field() ?>
 
     <!-- Nav Tabs Selector -->
@@ -281,7 +281,7 @@
                         <p class="text-muted small mb-0">Klik "Tambah Item Produk" untuk menambah produk baru ke toko ini saat menyimpan.</p>
                     </div>
                     <button type="button" class="btn btn-outline-success btn-sm mt-3" onclick="addProduk()">
-                        <i class="bi bi-plus"></i> Tambah Item Produk
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Item Produk
                     </button>
                 </div>
             </div>
@@ -309,8 +309,8 @@
                     <textarea name="alasan" class="form-control" rows="4" placeholder="Jelaskan alasan penolakan..." required></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Tolak UMKM</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x me-1"></i> Batal</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle me-1"></i> Tolak UMKM</button>
                 </div>
             </form>
         </div>
@@ -511,21 +511,23 @@ function addProduk() {
                 ? `<p class="gallery-desc">${escapeHtml(p.deskripsi)}</p>`
                 : `<p class="gallery-desc text-muted fst-italic">Tidak ada deskripsi</p>`;
 
+            const detailUrl = `<?= base_url('/staff/umkm/produk/') ?>${p.id}`;
+
             const col = document.createElement('div');
             col.className = 'col-6 col-sm-4 col-md-3 col-lg-2 col-produk';
             col.innerHTML = `
-                <div class="gallery-card h-100">
+                <div class="gallery-card h-100" style="cursor:pointer;" onclick="window.location.href='${detailUrl}'">
                     <div class="gallery-img-wrapper">${imgHtml}</div>
                     <div class="gallery-card-body">
                         <h5 class="gallery-title">${escapeHtml(p.nama_produk)}</h5>
                         ${hargaHtml}
                         ${deskHtml}
                         <div class="gallery-footer mt-auto">
-                            <a href="${editBase}${p.id}/edit" class="gallery-action gallery-action-edit">
+                            <a href="${editBase}${p.id}/edit" class="gallery-action gallery-action-edit" onclick="event.stopPropagation();">
                                 <i class="bi bi-pencil-square"></i> Edit
                             </a>
                             <a href="${hapusBase}${p.id}/hapus" class="gallery-action gallery-action-delete btn-hapus-produk"
-                               data-nama="${escapeHtml(p.nama_produk)}">
+                               data-nama="${escapeHtml(p.nama_produk)}" onclick="event.stopPropagation();">
                                 <i class="bi bi-trash3"></i> Hapus
                             </a>
                         </div>

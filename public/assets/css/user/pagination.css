@@ -12,17 +12,17 @@
 }
 
 .pagination .page-link:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: #15803d;
   color: #ffffff;
-  border-color: #2563eb;
+  border-color: #15803d;
   transform: translateY(-2px);
 }
 
 .pagination .page-item.active .page-link {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border-color: #2563eb;
+  background: #15803d;
+  border-color: #15803d;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: none;
 }
 
 /* ============================================================
@@ -83,18 +83,18 @@
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button a:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: #15803d;
   color: #ffffff;
-  border-color: #2563eb;
+  border-color: #15803d;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: none;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current a {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border-color: #2563eb;
+  background: #15803d;
+  border-color: #15803d;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: none;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled a {
@@ -146,18 +146,18 @@
 }
 
 .pagination-btn:hover:not(.disabled):not(.active) {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: #15803d;
   color: #ffffff;
-  border-color: #2563eb;
+  border-color: #15803d;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: none;
 }
 
 .pagination-btn.active {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: #15803d;
   color: #ffffff;
-  border-color: #2563eb;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  border-color: #15803d;
+  box-shadow: none;
 }
 
 .pagination-btn.disabled {

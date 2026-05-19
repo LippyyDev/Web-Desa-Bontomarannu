@@ -13,8 +13,8 @@
         <p class="text-muted fs-6 mb-0" style="max-width: 600px;">Status terbaru surat dan balasan staf.</p>
     </div>
     <div class="d-flex gap-2">
-        <button id="btn-mark-all-read" class="btn btn-outline-success">Tandai Semua Dibaca</button>
-        <button id="btn-delete-all" class="btn btn-danger">Hapus Semua</button>
+        <button id="btn-mark-all-read" class="btn btn-outline-success"><i class="bi bi-check2-all me-1"></i> Tandai Semua Dibaca</button>
+        <button id="btn-delete-all" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Hapus Semua</button>
     </div>
 </div>
 
@@ -103,54 +103,73 @@ document.addEventListener('DOMContentLoaded', function() {
         items.forEach(notif => {
             const isRead = parseInt(notif.is_read) === 1;
             
-            let markReadHtml = '';
-            if (!isRead) {
-                markReadHtml = `<button class="btn btn-link btn-sm p-0 text-decoration-none text-success mark-read-btn fw-medium" data-id="${notif.id}">Tandai dibaca</button>`;
-            }
-            
-            let actionHtml = '';
-            if (notif.action_url) {
-                actionHtml = `<a href="${notif.action_url}" class="d-block small mt-1 text-decoration-none text-success fw-medium">${notif.action_label} <i class="bi bi-arrow-right"></i></a>`;
+            let actionTextHtml = '';
+            let actionUrl = notif.action_url && notif.action_url !== '#' ? notif.action_url : '';
+            if (actionUrl) {
+                actionTextHtml = `<div class="d-block small mt-1 text-success fw-medium">${notif.action_label} <i class="bi bi-arrow-right"></i></div>`;
             }
             
             const itemHtml = `
-                <div class="list-group-item d-flex justify-content-between align-items-start py-3" id="notif-item-${notif.id}">
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-start py-3 notif-item-clickable" id="notif-item-${notif.id}" data-id="${notif.id}" data-url="${actionUrl}" data-unread="${!isRead ? '1' : '0'}" style="cursor: pointer;">
                     <div style="width: calc(100% - 130px);">
                         <div class="fw-semibold mb-1 ${!isRead ? 'text-dark' : 'text-muted'}">${escapeHtml(notif.title)}</div>
                         <div class="small ${!isRead ? 'text-secondary' : 'text-muted'}" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(notif.message)}</div>
-                        ${actionHtml}
+                        ${actionTextHtml}
                     </div>
                     <div class="text-end ms-3" style="min-width: 110px;">
                         <div class="small text-muted mb-1">${notif.created_at_formatted}</div>
-                        <div id="notif-action-${notif.id}">
-                            ${markReadHtml}
-                        </div>
+                        <div id="notif-action-${notif.id}"></div>
                     </div>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', itemHtml);
         });
         
-        attachMarkReadEvents();
+        attachItemClickEvents();
     }
     
-    function attachMarkReadEvents() {
-        document.querySelectorAll('.mark-read-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
+    function attachItemClickEvents() {
+        document.querySelectorAll('.notif-item-clickable:not(.bound)').forEach(item => {
+            item.classList.add('bound');
+            item.addEventListener('click', function(e) {
                 const id = this.getAttribute('data-id');
-                markAsRead(id, this);
+                const url = this.getAttribute('data-url');
+                const isUnread = this.getAttribute('data-unread') === '1';
+                
+                if (isUnread) {
+                    markAsReadSilently(id, this, url);
+                } else if (url) {
+                    window.location.href = url;
+                }
             });
         });
     }
     
-    function markAsRead(id, btnElement) {
+    function markAsReadSilently(id, itemElement, url) {
+        // Optimistic UI update
+        itemElement.setAttribute('data-unread', '0');
+        itemElement.querySelector('.fw-semibold').classList.replace('text-dark', 'text-muted');
+        const secondaryText = itemElement.querySelector('.small.text-secondary');
+        if (secondaryText) secondaryText.classList.replace('text-secondary', 'text-muted');
+        
+        // Update badge if exists
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            let count = parseInt(badge.innerText.replace('+', '')) - 1;
+            if (count > 0) {
+                badge.innerText = count > 99 ? '99+' : count;
+            } else {
+                badge.remove();
+            }
+        }
+
+        const actionContainer = document.getElementById(`notif-action-${id}`);
+        if (actionContainer) {
+            actionContainer.innerHTML = '<span class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></span>';
+        }
+
         const formData = new URLSearchParams();
         formData.append(csrfHeaderName, getCsrfHash());
-        
-        const originalText = btnElement.innerText;
-        btnElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-        btnElement.disabled = true;
         
         fetch(`<?= base_url('/user/notifikasi') ?>/${id}/read`, {
             method: 'POST',
@@ -159,35 +178,13 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                const actionContainer = document.getElementById(`notif-action-${id}`);
-                if (actionContainer) actionContainer.innerHTML = '';
-                
-                const item = document.getElementById(`notif-item-${id}`);
-                if (item) {
-                    item.querySelector('.fw-semibold').classList.replace('text-dark', 'text-muted');
-                    item.querySelector('.small.text-secondary')?.classList.replace('text-secondary', 'text-muted');
-                }
-                
-                // Update badge if exists
-                const badge = document.querySelector('.notification-badge');
-                if (badge) {
-                    let count = parseInt(badge.innerText.replace('+', '')) - 1;
-                    if (count > 0) {
-                        badge.innerText = count > 99 ? '99+' : count;
-                    } else {
-                        badge.remove();
-                    }
-                }
-            } else {
-                btnElement.innerHTML = originalText;
-                btnElement.disabled = false;
-            }
+            if (actionContainer) actionContainer.innerHTML = '';
+            if (url) window.location.href = url;
         })
         .catch(err => {
             console.error(err);
-            btnElement.innerHTML = originalText;
-            btnElement.disabled = false;
+            if (actionContainer) actionContainer.innerHTML = '';
+            if (url) window.location.href = url;
         });
     }
 
@@ -227,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Remove all unread visual indicators
                     document.querySelectorAll('.fw-semibold.text-dark').forEach(el => el.classList.replace('text-dark', 'text-muted'));
                     document.querySelectorAll('.small.text-secondary').forEach(el => el.classList.replace('text-secondary', 'text-muted'));
-                    document.querySelectorAll('.mark-read-btn').forEach(el => el.remove());
+                    document.querySelectorAll('.notif-item-clickable').forEach(el => el.setAttribute('data-unread', '0'));
                     
                     // Clear badge
                     const badge = document.querySelector('.notification-badge');

@@ -23,13 +23,14 @@
             <span style="display: inline-block; width: 24px; height: 2px; background-color: #cbd5e1; margin-bottom: 4px; margin-right: 8px;"></span>
             UMKM SAYA
         </div>
-        <h2 class="fw-bold text-dark mb-0" style="font-size: 2.2rem; letter-spacing: -0.5px;">
-            Detail <span style="color: #15803d;">Toko</span>
+        <h2 class="fw-bold text-dark mb-1" style="font-size: 2.2rem; letter-spacing: -0.5px;">
+            Detail <span style="color: #15803d;">UMKM</span>
         </h2>
+        <p class="text-muted fs-6 mb-0"><?= esc($umkm['nama_toko']) ?></p>
     </div>
     <div class="d-flex gap-2">
-        <a href="<?= base_url('/user/umkm/' . $umkm['id'] . '/edit') ?>" class="btn btn-success" title="Edit Toko">Edit</a>
-        <a href="<?= base_url('/user/umkm') ?>" class="btn btn-outline-success">Kembali</a>
+        <a href="<?= base_url('/user/umkm/' . $umkm['id'] . '/edit') ?>" class="btn btn-success" title="Edit Toko"><i class="bi bi-pencil-square me-1"></i> Edit Toko</a>
+        <a href="<?= base_url('/user/umkm') ?>" class="btn btn-outline-success"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
     </div>
 </div>
 
@@ -131,8 +132,22 @@
             <div class="card-body">
                 <h5 class="card-title mb-4 fw-bold">Link E-Commerce</h5>
                 <div class="d-flex flex-wrap gap-2">
-                    <?php foreach ($ecommerce as $e): ?>
-                    <a href="<?= esc($e['url']) ?>" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <?php
+                    $ecomColors = [
+                        ['bg' => '#16a34a', 'hover' => '#15803d'],  // hijau
+                        ['bg' => '#2563eb', 'hover' => '#1d4ed8'],  // biru
+                        ['bg' => '#7c3aed', 'hover' => '#6d28d9'],  // ungu
+                        ['bg' => '#ea580c', 'hover' => '#c2410c'],  // orange
+                        ['bg' => '#dc2626', 'hover' => '#b91c1c'],  // merah
+                    ];
+                    foreach ($ecommerce as $eIdx => $e):
+                        $c = $ecomColors[$eIdx % 5];
+                    ?>
+                    <a href="<?= esc($e['url']) ?>" target="_blank"
+                       class="btn btn-sm ecom-link-btn"
+                       style="background-color:<?= $c['bg'] ?>;color:#fff;border:none;"
+                       onmouseover="this.style.backgroundColor='<?= $c['hover'] ?>';"
+                       onmouseout="this.style.backgroundColor='<?= $c['bg'] ?>';">
                         <i class="bi bi-bag"></i> <?= esc($e['platform'] ?: 'E-Commerce') ?>
                     </a>
                     <?php endforeach; ?>
@@ -151,7 +166,8 @@
         <div class="row g-3 mb-4 mt-1">
             <?php foreach ($produk as $p): ?>
             <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                <div class="gallery-card h-100">
+                <a href="<?= base_url('/user/umkm/produk/' . $p['id']) ?>" class="text-decoration-none">
+                <div class="gallery-card h-100" style="cursor:pointer;">
                     <div class="gallery-img-wrapper">
                         <?php if (!empty($p['gambar'])): ?>
                             <img src="<?= base_url($p['gambar'][0]['gambar_path']) ?>" alt="<?= esc($p['nama_produk']) ?>" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'gallery-placeholder\'><i class=\'bi bi-images\'></i></div>'">
@@ -169,8 +185,12 @@
                         <?php else: ?>
                             <p class="gallery-desc text-muted fst-italic">Tidak ada deskripsi</p>
                         <?php endif; ?>
+                        <div class="text-center mt-auto pt-2" style="border-top:1px solid #f1f5f9;">
+                            <span class="small text-success fw-semibold"><i class="bi bi-eye me-1"></i>Lihat Detail</span>
+                        </div>
                     </div>
                 </div>
+                </a>
             </div>
             <?php endforeach; ?>
         </div>

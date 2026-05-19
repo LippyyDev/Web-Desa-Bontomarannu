@@ -48,7 +48,18 @@ abstract class BaseController extends Controller
     {
         parent::initController($request, $response, $logger);
 
-        $this->session = service('session');
+        $this->session   = service('session');
         $this->currentUser = $this->session->get('user');
+
+        // Update last_seen_at secara throttled (maks 1x per 60 detik per user)
+        // Tidak memberatkan performa: query ringan (UPDATE by PK), dibatasi frekuensinya via session
+        if ($this->currentUser && isset($this->currentUser['id'])) {
+            $lastPing = $this->session->get('last_seen_ping') ?? 0;
+            if ((time() - $lastPing) >= 60) {
+                $db = \Config\Database::connect();
+                $db->query('UPDATE users SET last_seen_at = NOW() WHERE id = ?', [$this->currentUser['id']]);
+                $this->session->set('last_seen_ping', time());
+            }
+        }
     }
 }
