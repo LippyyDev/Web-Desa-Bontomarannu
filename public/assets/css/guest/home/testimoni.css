@@ -1,0 +1,33 @@
+/* ================================================
+   TESTIMONIAL SECTION
+   ================================================ */
+
+.testimonial-section {
+    padding: clamp(6rem, 9vw, 9rem) 0;
+    background: transparent;
+}
+
+.testimonial-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.05) !important;
+}
+
+/* --- Glowing Stars --- */
+.testimonial-stars i {
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.testimonial-card:hover .testimonial-stars i {
+    color: #ffca28 !important;
+    text-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+    transform: scale(1.1);
+}

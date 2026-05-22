@@ -9,8 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= base_url('assets/css/guest/style.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/guest/home/home.css?v=' . time()) ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/components/guest-navbar.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/components/guest-footer.css') ?>">
+    <?= $this->renderSection('styles') ?>
 </head>
 <body>
 <?= $this->include('Components/GuestNavbar') ?>
@@ -32,15 +34,7 @@
     <?= $this->renderSection('content') ?>
 </main>
 
-<footer class="bg-primary text-white py-4 mt-5">
-    <div class="container d-flex justify-content-between align-items-center">
-        <div>
-            <div class="fw-semibold">Desa Padang Loang</div>
-            <div class="small">Website Resmi Desa Padang Loang</div>
-        </div>
-        <div class="small">&copy; <?= date('Y') ?> Pemerintah Desa Padang Loang</div>
-    </div>
-</footer>
+<?= $this->include('Guest/footer') ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= base_url('assets/js/components/guest-navbar.js') ?>"></script>

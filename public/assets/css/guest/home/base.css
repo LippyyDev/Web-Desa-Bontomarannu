@@ -1,0 +1,79 @@
+/* ================================================
+   BASE — Global variables, body, page wrapper
+   ================================================ */
+
+:root {
+  --primary: #1769e0;
+  --primary-dark: #0c3478;
+  --teal: #13a889;
+  --amber: #f5b840;
+  --rose: #dc4f77;
+  --ink: #111827;
+  --muted: #667085;
+  --soft: #f5f7fb;
+  --line: #e4eaf2;
+}
+
+body {
+  font-family: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background-color: #f8fafc;
+  background-image: 
+    linear-gradient(to right, rgba(203, 213, 225, 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(203, 213, 225, 0.3) 1px, transparent 1px);
+  background-size: 64px 64px, 64px 64px;
+  background-attachment: fixed;
+}
+
+.page-wrapper {
+  padding-top: 90px;
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Animated Grid Line Glow Effect --- */
+.page-wrapper::before, .page-wrapper::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: -1; 
+  
+  /* Green grid identical to the main grid */
+  background-image: 
+    linear-gradient(to right, rgba(34, 197, 94, 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 197, 94, 0.4) 1px, transparent 1px);
+  background-size: 64px 64px, 64px 64px;
+}
+
+.page-wrapper::before {
+  /* Soft circle masks to reveal small spots */
+  -webkit-mask-image: 
+    radial-gradient(circle at 20% 30%, black 0%, transparent 20%),
+    radial-gradient(circle at 80% 60%, black 0%, transparent 15%);
+  -webkit-mask-size: 300px 300px;
+  -webkit-mask-repeat: repeat;
+  animation: grid-pan-1 12s infinite linear;
+}
+
+.page-wrapper::after {
+  -webkit-mask-image: 
+    radial-gradient(circle at 60% 20%, black 0%, transparent 15%),
+    radial-gradient(circle at 30% 80%, black 0%, transparent 25%),
+    radial-gradient(circle at 90% 90%, black 0%, transparent 15%);
+  -webkit-mask-size: 500px 500px;
+  -webkit-mask-repeat: repeat;
+  animation: grid-pan-2 18s infinite linear reverse;
+}
+
+@keyframes grid-pan-1 {
+  0% { -webkit-mask-position: 0px 0px; opacity: 0.2; }
+  50% { opacity: 0.6; }
+  100% { -webkit-mask-position: 300px 300px; opacity: 0.2; }
+}
+
+@keyframes grid-pan-2 {
+  0% { -webkit-mask-position: 0px 0px; opacity: 0.6; }
+  50% { opacity: 0.2; }
+  100% { -webkit-mask-position: -500px 500px; opacity: 0.6; }
+}

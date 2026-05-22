@@ -1,0 +1,145 @@
+/* ================================================
+   GALERI MARQUEE — Infinite running ticker
+   ================================================ */
+
+.home-galeri-section {
+    position: relative;
+    margin: 0 0.75rem;
+    border-radius: 32px; 
+    overflow: hidden;
+}
+
+/* --- Slider Container & Track --- */
+.galeri-slider-container {
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.galeri-slider-track {
+    display: flex;
+    gap: 1.5rem;
+    width: max-content;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: transform;
+}
+
+/* --- Slider Controls --- */
+.galeri-controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.5rem;
+}
+
+.btn-galeri-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.btn-galeri-nav:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.9);
+    transform: scale(1.05);
+}
+
+.btn-galeri-nav:active {
+    transform: scale(0.95);
+}
+
+/* Individual card */
+.galeri-slide-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: 280px;
+    height: 380px;
+    border-radius: 20px;
+    overflow: hidden;
+    text-decoration: none;
+    background: #f1f5f9;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+.galeri-slide-card:hover {
+    /* Hanya efek zoom pada gambar, tidak ada card terangkat */
+}
+
+.galeri-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+.galeri-slide-card:hover .galeri-img {
+    transform: scale(1.06);
+}
+
+.galeri-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1;
+    background-color: #f8fafc;
+}
+.galeri-placeholder i {
+    font-size: 4rem;
+}
+
+.galeri-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 3rem 1.25rem 1.25rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 55%, transparent 100%);
+    color: white;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.galeri-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+    text-transform: uppercase;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.galeri-kicker {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #a7f3d0;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+@media (min-width: 768px) {
+    .galeri-slide-card { width: 320px; height: 420px; }
+}
+@media (min-width: 992px) {
+    .galeri-slide-card { width: 360px; height: 460px; }
+    .galeri-title { font-size: 1.4rem; }
+}
+
+

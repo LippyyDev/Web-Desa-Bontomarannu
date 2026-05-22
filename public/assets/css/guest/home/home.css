@@ -1,0 +1,16 @@
+/* ================================================
+   HOME — Main entry point for home page CSS
+   Imports all partials in correct cascade order
+   ================================================ */
+
+@import url("base.css");
+@import url("hero.css");
+@import url("about.css");
+@import url("button.css");
+@import url("sections.css");
+@import url("testimoni.css");
+@import url("pengumuman.css");
+@import url("berita.css");
+@import url("galeri.css");
+@import url("umkm.css");
+@import url("pariwisata.css");

@@ -1,0 +1,243 @@
+/* ================================================
+   ABOUT SECTION — 3-Column Layout
+   ================================================ */
+
+.about-hero-section {
+    padding: clamp(7rem, 10vw, 10rem) 0;
+    font-family: "Poppins", system-ui, sans-serif;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 3rem;
+    align-items: stretch;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* --- Left Column --- */
+.about-left {
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.about-kicker {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+}
+
+.about-title {
+    font-family: "Poppins", system-ui, sans-serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+}
+
+.about-checks {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.about-cta-link {
+    font-size: 1.1rem;
+    transition: opacity 0.2s ease;
+}
+
+/* --- Arrow Animation --- */
+.icon-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #EBEBEB; /* Soft light grey */
+    color: #111827;
+    transition: background-color 0.3s ease;
+}
+
+.hover-arrow {
+    transition: opacity 0.3s ease;
+}
+
+/* Ensure ALL icons inside .hover-arrow animate smoothly */
+.hover-arrow i {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effects for the link */
+.hover-arrow:hover .icon-circle {
+    background-color: #d1d5db; /* Slightly darker on hover */
+}
+
+/* Arrow rotates from flat to top-right corner */
+.hover-arrow:hover i {
+    transform: rotate(-45deg);
+}
+
+/* --- Center Column (Image Card) --- */
+
+.about-image-card {
+    position: relative;
+    width: 405px;
+    height: 100%;
+    min-height: 595px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.about-card-badge {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 10;
+    border: 1px solid rgba(255,255,255,0.4);
+}
+
+.about-carousel-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+.about-carousel-controls .btn {
+    background: rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.about-carousel-controls .btn:hover {
+    background: rgba(255, 255, 255, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.about-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 3rem 1.5rem 1.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+    color: #fff;
+    z-index: 10;
+}
+
+.about-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+}
+
+.about-card-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* --- Right Column --- */
+.about-right {
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.about-info-list {
+    margin-bottom: 2rem;
+}
+
+.info-label {
+    font-size: 0.9rem;
+}
+
+.info-val {
+    font-size: 0.95rem;
+}
+
+/* --- Map Card --- */
+.about-map-card {
+    height: 100%;
+    min-height: 350px;
+    position: relative;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1199px) {
+    .about-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .about-center {
+        grid-column: 1 / -1;
+        order: -1; /* Move image to top */
+        margin-bottom: 2rem;
+    }
+    
+    .about-left, .about-right {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    .about-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+    }
+    
+    .about-right {
+        display: contents;
+    }
+    
+    .about-left {
+        order: 1;
+    }
+    
+    .about-info-list {
+        order: 2;
+        width: 100%;
+        margin-bottom: 0 !important;
+    }
+    
+    .about-center {
+        order: 3;
+        width: 100%;
+        margin-bottom: 0 !important;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .about-map-card {
+        order: 4;
+        width: 100%;
+    }
+    
+    .about-image-card {
+        width: 100%; /* Responsive on small screens */
+        max-width: 405px;
+    }
+}

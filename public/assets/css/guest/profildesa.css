@@ -1,0 +1,245 @@
+/* public/assets/css/guest/profildesa.css */
+
+.profil-desa-section {
+    font-family: 'Poppins', sans-serif;
+    color: #111827;
+    padding-bottom: 4rem;
+}
+
+/* Page Header */
+.profil-desa-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.profil-desa-subtitle {
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2E7D32;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    position: relative;
+}
+
+.profil-desa-subtitle::before,
+.profil-desa-subtitle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 30px;
+    height: 1px;
+    background-color: #2E7D32;
+}
+
+.profil-desa-subtitle::before {
+    left: -40px;
+}
+
+.profil-desa-subtitle::after {
+    right: -40px;
+}
+
+.profil-desa-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.profil-desa-title span {
+    color: #2E7D32;
+}
+
+/* Bento Grid System */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Bento Cards */
+.bento-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(46, 125, 50, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.bento-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+}
+
+.bento-card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(46, 125, 50, 0.1);
+    color: #2E7D32;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.bento-card-icon-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(46, 125, 50, 0.1);
+    color: #2E7D32;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Grid Layout Assignments */
+.bento-main {
+    grid-column: span 12;
+}
+
+.bento-stats {
+    grid-column: span 6;
+    justify-content: center;
+}
+
+.bento-small {
+    grid-column: span 4;
+}
+
+@media (min-width: 992px) {
+    .bento-main {
+        grid-column: span 8;
+        grid-row: span 2;
+    }
+    
+    .bento-stats {
+        grid-column: span 4;
+    }
+    
+    .bento-small {
+        grid-column: span 3;
+    }
+}
+
+@media (max-width: 768px) {
+    .bento-stats, .bento-small {
+        grid-column: span 12;
+    }
+}
+
+/* Typography inside cards */
+.bento-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.bento-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.bento-value .unit {
+    font-size: 0.85rem;
+    color: #2E7D32;
+    font-weight: 600;
+    background: rgba(46, 125, 50, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+}
+
+.bento-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.bento-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px dashed rgba(0,0,0,0.05);
+}
+
+.bento-list li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.bento-list li:first-child {
+    padding-top: 0;
+}
+
+.bento-list-label {
+    color: #6b7280;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.bento-list-label i {
+    color: #2E7D32;
+    width: 20px;
+    text-align: center;
+}
+
+.bento-list-val {
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.95rem;
+    text-align: right;
+}
+
+/* Sections */
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    color: #2E7D32;
+}
+
+.history-text {
+    color: #4b5563;
+    line-height: 1.8;
+    text-align: justify;
+    font-size: 0.95rem;
+}
+
+.map-container {
+    width: 100%;
+    height: 100%;
+    min-height: 350px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}

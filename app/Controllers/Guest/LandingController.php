@@ -28,6 +28,7 @@ class LandingController extends BaseController
         $profileModel = new DesaProfileModel();
         $albumModel   = new GalleryAlbumModel();
         $newsModel    = new NewsModel();
+        $pengumumanModel = new PengumumanModel();
 
 
         $profile = $profileModel->first();
@@ -35,11 +36,36 @@ class LandingController extends BaseController
             $profile['maps_embed_url'] = $this->convertToMapsEmbed($profile['maps_url']);
         }
 
-        $data = [
-            'desaProfile' => $profile,
-            'albums'      => $albumModel->orderBy('tanggal_waktu', 'DESC')->findAll(6),
-            'news'        => $newsModel->orderBy('tanggal_waktu', 'DESC')->findAll(6),
+        $umkmProdukModel = new \App\Models\UmkmProdukModel();
+        $umkmGambarModel = new \App\Models\UmkmProdukGambarModel();
+        
+        $randomProducts = $umkmProdukModel->orderBy('RAND()')->findAll(6);
+        foreach ($randomProducts as &$produk) {
+            $gambar = $umkmGambarModel->where('produk_id', $produk['id'])->orderBy('id', 'ASC')->first();
+            $produk['gambar_path'] = $gambar ? $gambar['gambar_path'] : null;
+        }
 
+        $pariwisataModel = new \App\Models\PariwisataModel();
+        $pariwisataGambarModel = new \App\Models\PariwisataGambarModel();
+        
+        // Ambil 6 pariwisata terbaru
+        $pariwisataList = $pariwisataModel->orderBy('created_at', 'DESC')->findAll(6);
+        foreach ($pariwisataList as &$pariwisata) {
+            if (empty($pariwisata['thumbnail'])) {
+                $gambar = $pariwisataGambarModel->where('pariwisata_id', $pariwisata['id'])->first();
+                $pariwisata['thumbnail_display'] = $gambar ? $gambar['gambar_path'] : null;
+            } else {
+                $pariwisata['thumbnail_display'] = $pariwisata['thumbnail'];
+            }
+        }
+
+        $data = [
+            'desaProfile'    => $profile,
+            'albums'         => $albumModel->orderBy('tanggal_waktu', 'DESC')->findAll(6),
+            'news'           => $newsModel->orderBy('tanggal_waktu', 'DESC')->findAll(6),
+            'pengumuman'     => $pengumumanModel->orderBy('created_at', 'DESC')->findAll(4),
+            'umkmProducts'   => $randomProducts,
+            'pariwisataList' => $pariwisataList,
         ];
 
         return view('Guest/home', $data);

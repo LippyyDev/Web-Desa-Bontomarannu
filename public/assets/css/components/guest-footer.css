@@ -1,0 +1,49 @@
+/* ================================================
+   GUEST FOOTER
+   ================================================ */
+
+.guest-footer {
+    background-color: #14532d;
+    color: #fff;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    margin-top: 5rem;
+}
+
+@media (min-width: 768px) {
+    .guest-footer {
+        padding-top: 4rem;
+    }
+}
+
+/* Footer Links */
+.guest-footer .footer-link {
+    display: inline-block;
+    color: #a7f3d0;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.guest-footer .footer-link:hover {
+    color: #fff !important;
+    transform: translateX(6px);
+}
+
+/* Social Media Buttons */
+.guest-footer .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.guest-footer .btn-outline-light:hover {
+    background-color: #4ade80 !important;
+    border-color: #4ade80 !important;
+    color: #14532d !important;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+}
+
+/* Base list item transition fix */
+.guest-footer ul li {
+    margin-bottom: 0.2rem;
+}

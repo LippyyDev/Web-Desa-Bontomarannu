@@ -38,23 +38,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Navbar scroll effect (optional - bisa ditambahkan jika ingin navbar berubah saat scroll)
-    let lastScroll = 0;
+    // Navbar scroll effect
     const navbar = document.querySelector('.guest-navbar');
     
     if (navbar) {
         window.addEventListener('scroll', function() {
             const currentScroll = window.pageYOffset;
             
-            // Tambahkan shadow lebih tebal saat scroll
             if (currentScroll > 50) {
-                navbar.querySelector('.navbar-content').style.boxShadow = '0 4px 24px rgba(0, 0, 0, 0.12)';
+                navbar.classList.add('navbar-scrolled');
             } else {
-                navbar.querySelector('.navbar-content').style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
+                navbar.classList.remove('navbar-scrolled');
             }
-            
-            lastScroll = currentScroll;
         });
+        
+        // Trigger once on load to set correct state
+        if (window.pageYOffset > 50) {
+            navbar.classList.add('navbar-scrolled');
+        }
     }
 });
 

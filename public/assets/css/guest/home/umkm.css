@@ -1,0 +1,128 @@
+/* ================================================
+   UMKM / PRODUK UNGGULAN SECTION
+   Unified Modern Card Style
+   ================================================ */
+
+.home-umkm-section {
+    position: relative;
+    background: transparent;
+}
+
+/* --- Card Styles --- */
+.umkm-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95); /* Unified white background */
+    border: 1px solid rgba(0, 0, 0, 0.05); /* Soft border */
+    border-radius: 24px;
+    padding: 0.75rem; /* Padding inside the card to frame the image */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.umkm-card:hover {
+    color: inherit;
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    border-color: rgba(22, 101, 52, 0.2);
+}
+
+.umkm-img-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1;
+    background-color: #f1f5f9; /* Slate 100 - very soft gray */
+    border-radius: 18px; /* Slightly smaller than card's 24px to look nested */
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: background-color 0.4s ease;
+}
+
+.umkm-card:hover .umkm-img-wrapper {
+    background-color: #f8fafc;
+}
+
+.umkm-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.05));
+}
+
+.umkm-card:hover .umkm-img-wrapper img {
+    transform: scale(1.1);
+}
+
+.umkm-placeholder {
+    font-size: 3.5rem;
+    color: #cbd5e1;
+    transition: transform 0.6s ease;
+}
+.umkm-card:hover .umkm-placeholder {
+    transform: scale(1.1);
+}
+
+/* --- Card Body --- */
+.umkm-card-body {
+    padding: 1.25rem 0.5rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Left align for a cleaner e-commerce look */
+    text-align: left;
+    flex-grow: 1;
+}
+
+.umkm-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+    transition: color 0.3s ease;
+    line-height: 1.4;
+}
+
+.umkm-card:hover .umkm-title {
+    color: #166534; /* Green on hover */
+}
+
+/* Price & Action Row */
+.umkm-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: auto;
+}
+
+.umkm-price {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #166534;
+    letter-spacing: -0.5px;
+}
+
+.umkm-action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #166534;
+    transition: all 0.3s ease;
+}
+
+.umkm-card:hover .umkm-action-icon {
+    background-color: #166534;
+    color: white;
+    transform: translateY(-6px) rotate(-45deg) scale(1.1);
+}
+
+

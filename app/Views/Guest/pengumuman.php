@@ -3,76 +3,53 @@
 <?= $this->section('content') ?>
 <div class="container py-5" style="margin-top: 90px;">
     <div class="text-center mb-5">
-        <h2 class="fw-bold mb-2">Pengaduan Masyarakat</h2>
-        <p class="text-muted">Sampaikan keluhan atau laporan Anda kepada pemerintah desa</p>
+        <h2 class="fw-bold mb-2">Pengumuman Desa</h2>
+        <p class="text-muted">Informasi resmi dan pengumuman terbaru dari Pemerintah Desa Bonto Marannu</p>
     </div>
 
-    <?php if (session()->getFlashdata('message')) : ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?= session()->getFlashdata('message'); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if (session()->getFlashdata('error')) : ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <?= session()->getFlashdata('error'); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
-
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <form action="<?= base_url('/pengaduan') ?>" method="post" enctype="multipart/form-data">
-                        <?= csrf_field() ?>
-                        
-                        <div class="row g-3">
-                            <?php if (!session()->get('isLoggedIn')): ?>
-                                <div class="col-md-6">
-                                    <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="nama" required value="<?= old('nama') ?>">
+    <div class="row g-4">
+        <?php if (!empty($pengumuman)): ?>
+            <?php foreach ($pengumuman as $item): ?>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 rounded-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-3 p-2 me-3" style="background: rgba(23, 105, 224, 0.08);">
+                                    <i class="bi bi-megaphone-fill text-primary fs-5"></i>
                                 </div>
-                            <?php endif; ?>
-                            
-                            <div class="<?= session()->get('isLoggedIn') ? 'col-12' : 'col-md-6' ?>">
-                                <label class="form-label">Kontak (No. HP/Email) <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="kontak" required value="<?= old('kontak') ?>">
-                                <div class="form-text">Nomor HP atau email untuk dihubungi</div>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <?= date('d M Y', strtotime($item['created_at'])) ?>
+                                </small>
                             </div>
-                            
-                            <div class="col-12">
-                                <label class="form-label">Perihal <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="perihal" required value="<?= old('perihal') ?>" placeholder="Judul singkat pengaduan Anda">
-                            </div>
-                            
-                            <div class="col-12">
-                                <label class="form-label">Isi Pengaduan <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="isi" rows="6" required placeholder="Jelaskan pengaduan Anda secara detail..."><?= old('isi') ?></textarea>
-                            </div>
-                            
-                            <div class="col-12">
-                                <label class="form-label">Foto Pendukung (Opsional)</label>
-                                <input type="file" class="form-control" name="foto" accept="image/*">
-                                <div class="form-text">Format: JPG, PNG, JPEG. Maksimal 2MB.</div>
+                            <h5 class="fw-bold mb-2"><?= esc($item['judul']) ?></h5>
+                            <p class="text-muted mb-0" style="font-size: 0.9rem; line-height: 1.6;">
+                                <?= esc(word_limiter(strip_tags($item['isi']), 20)) ?>
+                            </p>
+                        </div>
+                        <?php if (!empty($item['isi'])): ?>
+                        <div class="card-footer bg-transparent border-0 px-4 pb-4">
+                            <a href="#pengumuman-<?= $item['id'] ?>" class="text-primary text-decoration-none small fw-semibold" data-bs-toggle="collapse">
+                                Baca selengkapnya <i class="bi bi-chevron-down ms-1"></i>
+                            </a>
+                            <div class="collapse mt-3" id="pengumuman-<?= $item['id'] ?>">
+                                <p class="text-muted mb-0" style="font-size: 0.9rem; line-height: 1.7;">
+                                    <?= nl2br(esc($item['isi'])) ?>
+                                </p>
                             </div>
                         </div>
-
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-send me-2"></i> Kirim Pengaduan
-                            </button>
-                        </div>
-                    </form>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="bi bi-megaphone text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                    <p class="text-muted mt-3">Belum ada pengumuman yang tersedia saat ini.</p>
                 </div>
             </div>
-
-            <div class="alert alert-info mt-4">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Catatan:</strong> Pengaduan Anda akan ditinjau oleh petugas desa. Pastikan informasi yang Anda berikan akurat dan lengkap.
-            </div>
-        </div>
+        <?php endif; ?>
     </div>
 </div>
 <?= $this->endSection() ?>
