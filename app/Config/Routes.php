@@ -18,6 +18,8 @@ $routes->get('/pengumuman', 'Guest\LandingController::pengumuman');
 $routes->get('/pengumuman/(:num)', 'Guest\LandingController::detailPengumuman/$1');
 $routes->get('/pengaduan', 'Guest\LandingController::pengaduan');
 $routes->post('/pengaduan', 'Guest\LandingController::submitPengaduan');
+$routes->get('/pengaduan/captcha', 'Guest\LandingController::captcha');
+$routes->post('/pengaduan/captcha/verify', 'Guest\LandingController::verifyCaptcha');
 $routes->get('/umkm', 'Guest\LandingController::umkm');
 $routes->get('/umkm/(:num)', 'Guest\LandingController::umkmDetail/$1');
 $routes->get('/umkm/produk/(:num)', 'Guest\LandingController::umkmProdukDetail/$1');

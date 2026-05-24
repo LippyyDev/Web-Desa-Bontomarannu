@@ -1,5 +1,10 @@
 <?= $this->extend('Guest/layout') ?>
 
+<?= $this->section('styles') ?>
+<!-- AOS (Animate On Scroll) ~7KB — ringan, mobile-optimized, jsdelivr sudah di CSP -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?php
 $mapsEmbed = $desaProfile['maps_embed_url'] ?? null;
@@ -43,9 +48,38 @@ $heroImages = [
         </div>
     </div>
     
-    <div class="hero-footer-stats w-100 pb-5 text-center z-2 position-relative">
-        <span class="stats-number">900+</span>
-        <span class="stats-text">orang telah mengunjungi desa ini</span>
+    <div class="hero-footer-weather w-100 pb-5 text-center z-2 position-relative">
+        <div class="d-flex justify-content-center align-items-center gap-3 gap-md-4 flex-wrap px-3" style="color: #ffffff; opacity: 0.95; font-size: 0.9rem; font-weight: 500;">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>Bantaeng</span>
+            </div>
+            <div class="d-none d-md-block opacity-50">|</div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-clock"></i>
+                <span id="current-time">--:-- WITA</span>
+            </div>
+            <div class="d-none d-md-block opacity-50">|</div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-cloud-sun" id="weather-icon"></i>
+                <span id="weather-temp">--°C</span>
+            </div>
+            <div class="d-none d-md-block opacity-50">|</div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-droplet"></i>
+                <span id="weather-humidity">--%</span>
+            </div>
+            <div class="d-none d-md-block opacity-50">|</div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-wind"></i>
+                <span id="weather-wind">-- km/h</span>
+            </div>
+            <div class="d-none d-md-block opacity-50">|</div>
+            <div class="d-flex align-items-center gap-2" title="Kualitas Udara (US AQI)">
+                <i class="bi bi-lungs"></i>
+                <span id="weather-aqi">AQI: --</span>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -54,23 +88,23 @@ $heroImages = [
         <div class="about-grid">
             <!-- Left Column -->
             <div class="about-left">
-                <div class="about-kicker">&mdash; TENTANG DESA</div>
-                <h2 class="about-title">Jelajahi <strong class="fw-bold" style="color: #166534;">Kehidupan Otentik</strong> dan <strong class="fw-bold" style="color: #166534;">Pesona Desa</strong> Bonto Marannu</h2>
-                <div class="about-checks mt-4 mb-4">
+                <div class="about-kicker" data-aos="fade-up">&mdash; TENTANG DESA</div>
+                <h2 class="about-title" data-aos="fade-up" data-aos-delay="100">Jelajahi <strong class="fw-bold" style="color: #166534;">Kehidupan Otentik</strong> dan <strong class="fw-bold" style="color: #166534;">Pesona Desa</strong> Bonto Marannu</h2>
+                <div class="about-checks mt-4 mb-4" data-aos="fade-up" data-aos-delay="200">
                     <span class="me-3"><i class="bi bi-check2 text-primary"></i> Alam Asri</span>
                     <span class="me-3"><i class="bi bi-check2 text-primary"></i> Budaya Lokal</span>
                     <span><i class="bi bi-check2 text-primary"></i> Ramah</span>
                 </div>
-                <p class="about-desc text-muted mb-5" style="line-height: 1.6;">
+                <p class="about-desc text-muted mb-5" style="line-height: 1.6;" data-aos="fade-up" data-aos-delay="300">
                     Desa Bonto Marannu adalah sebuah desa wisata yang terletak di dataran tinggi Kecamatan Uluere, Kabupaten Bantaeng. Menawarkan kesejukan pegunungan dengan panorama perbukitan hijau, desa ini kaya akan hasil bumi seperti kopi dan sayur-sayuran, serta menjadi daya tarik ekowisata peternakan sapi perah yang otentik.
                 </p>
-                <a href="<?= base_url('/profil') ?>" class="about-cta-link fw-bold text-dark text-decoration-none d-inline-flex align-items-center hover-arrow">
+                <a href="<?= base_url('/profil') ?>" class="about-cta-link fw-bold text-dark text-decoration-none d-inline-flex align-items-center hover-arrow" data-aos="fade-up" data-aos-delay="400">
                     Profil Desa <span class="icon-circle ms-3"><i class="bi bi-arrow-right"></i></span>
                 </a>
             </div>
 
             <!-- Center Column (Carousel) -->
-            <div class="about-center d-flex justify-content-center">
+            <div class="about-center d-flex justify-content-center" data-aos="zoom-in" data-aos-delay="150">
                 <div class="about-image-card">
                     
                     <div id="aboutCarousel" class="carousel slide carousel-fade h-100" data-bs-ride="carousel">
@@ -104,7 +138,7 @@ $heroImages = [
             </div>
 
             <!-- Right Column -->
-            <div class="about-right">
+            <div class="about-right" data-aos="fade-up" data-aos-delay="200">
                 <div class="about-info-list">
                     <div class="info-item d-flex justify-content-between align-items-center py-3 border-bottom">
                         <span class="info-label text-muted">Profil Desa</span>
@@ -121,7 +155,8 @@ $heroImages = [
                 </div>
 
                 <div class="about-map-card p-0 bg-white rounded-4 shadow-sm border border-light w-100 position-relative overflow-hidden">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7943.595994392008!2d119.91249047356614!3d-5.447609309467859!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbeb0e2a1e219d5%3A0x964855ec2fd33e44!2sBonto%20Marannu%2C%20Kec.%20Uluere%2C%20Kabupaten%20Bantaeng%2C%20Sulawesi%20Selatan!5e0!3m2!1sid!2sid!4v1768373212743!5m2!1sid!2sid" style="border:0; position:absolute; top:0; left:0; width:100%; height:100%;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <!-- data-src: lazy loaded via IntersectionObserver di home.js -->
+                    <iframe data-src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7943.595994392008!2d119.91249047356614!3d-5.447609309467859!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbeb0e2a1e219d5%3A0x964855ec2fd33e44!2sBonto%20Marannu%2C%20Kec.%20Uluere%2C%20Kabupaten%20Bantaeng%2C%20Sulawesi%20Selatan!5e0!3m2!1sid!2sid!4v1768373212743!5m2!1sid!2sid" style="border:0; position:absolute; top:0; left:0; width:100%; height:100%;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
         </div>
@@ -131,19 +166,19 @@ $heroImages = [
 <section class="home-pengumuman-section py-5">
     <div style="max-width: 1400px; margin: 0 auto; width: 100%; padding: 0 1rem;">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5">
-            <div class="mb-4 mb-md-0">
+            <div class="mb-4 mb-md-0" data-aos="fade-up">
                 <span class="section-kicker text-start d-block" style="color: #a7f3d0;">Informasi Publik</span>
                 <h2 class="section-title text-start mb-0 text-white">Pengumuman <span style="color: #4ade80;">Terbaru</span></h2>
             </div>
-            <div>
+            <div data-aos="fade-up" data-aos-delay="150">
                 <a href="<?= base_url('/pengumuman') ?>" class="btn btn-light rounded-pill px-4 fw-bold" style="color: #166534;">Lihat Semua</a>
             </div>
         </div>
         
         <?php if (!empty($pengumuman)): ?>
             <div class="row g-4">
-                <?php foreach ($pengumuman as $item): ?>
-                    <div class="col-md-6 col-lg-3">
+                <?php foreach ($pengumuman as $index => $item): ?>
+                    <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="<?= min($index * 100, 400) ?>">
                         <div class="pengumuman-card h-100">
                             <div class="pengumuman-img-wrapper">
                                 <div class="pengumuman-date-pill">
@@ -179,7 +214,7 @@ $heroImages = [
 
 <section class="home-berita-section py-5">
     <div style="max-width: 1400px; margin: 0 auto; width: 100%; padding: 0 1rem;">
-        <div class="text-center mb-5">
+        <div class="text-center mb-5" data-aos="fade-up">
             <span class="section-kicker d-block mx-auto text-dark">Warta Desa</span>
             <h2 class="section-title mb-3 text-dark">Informasi <span style="color: #166534;">Terkini</span></h2>
             <p class="text-muted mx-auto" style="max-width: 600px;">Dapatkan berbagai kabar, perkembangan, dan pemberitahuan terbaru seputar kegiatan kemasyarakatan dan pemerintahan desa kami.</p>
@@ -189,8 +224,8 @@ $heroImages = [
             <div class="berita-magazine-grid">
                 <!-- Large Card (Left) -->
                 <?php $mainNews = $news[0]; ?>
-                <div class="berita-float-wrapper" style="animation-delay: 0s;">
-                    <a href="<?= base_url('/berita/' . $mainNews['id']) ?>" class="berita-card berita-main-card" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.5" data-tilt-scale="1.03">
+                <div class="berita-float-wrapper" style="animation-delay: 0s;" data-aos="zoom-in">
+                    <a href="<?= base_url('/berita/' . $mainNews['id']) ?>" class="berita-card berita-main-card" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.5" data-tilt-scale="1.03" data-tilt-gyroscope="false">
                         <div class="berita-main-img-wrapper">
                             <?php if (!empty($mainNews['thumbnail'])): ?>
                                 <img src="<?= base_url($mainNews['thumbnail']) ?>" alt="<?= esc($mainNews['judul']) ?>" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'berita-placeholder\'><i class=\'bi bi-newspaper\'></i></div>'">
@@ -213,8 +248,8 @@ $heroImages = [
                 <div class="berita-side-cards">
                     <?php for ($i = 1; $i < min(5, count($news)); $i++): ?>
                         <?php $item = $news[$i]; ?>
-                        <div class="berita-float-wrapper" style="animation-delay: <?= $i * 0.4 ?>s;">
-                            <a href="<?= base_url('/berita/' . $item['id']) ?>" class="berita-card berita-small-card" data-tilt data-tilt-max="12" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.5" data-tilt-scale="1.04">
+                        <div class="berita-float-wrapper" style="animation-delay: <?= $i * 0.4 ?>s;" data-aos="zoom-in" data-aos-delay="<?= min($i * 120, 400) ?>">
+                            <a href="<?= base_url('/berita/' . $item['id']) ?>" class="berita-card berita-small-card" data-tilt data-tilt-max="12" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.5" data-tilt-scale="1.04" data-tilt-gyroscope="false">
                                 <div class="berita-small-img-wrapper">
                                     <?php if (!empty($item['thumbnail'])): ?>
                                         <img src="<?= base_url($item['thumbnail']) ?>" alt="<?= esc($item['judul']) ?>" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'berita-placeholder\'><i class=\'bi bi-newspaper\'></i></div>'">
@@ -255,12 +290,12 @@ $heroImages = [
         <div class="row align-items-center">
             <!-- Left Column: Text & Controls -->
             <div class="col-lg-4 mb-5 mb-lg-0 pe-lg-4">
-                <span class="section-kicker text-start d-block" style="color: #a7f3d0;">Galeri Desa</span>
-                <h2 class="section-title text-start mb-3 text-white">Koleksi <span style="color: #4ade80;">Foto</span></h2>
-                <p class="text-white-50 mb-4" style="line-height: 1.6;">
+                <span class="section-kicker text-start d-block" style="color: #a7f3d0;" data-aos="fade-up">Galeri Desa</span>
+                <h2 class="section-title text-start mb-3 text-white" data-aos="fade-up" data-aos-delay="100">Koleksi <span style="color: #4ade80;">Foto</span></h2>
+                <p class="text-white-50 mb-4" style="line-height: 1.6;" data-aos="fade-up" data-aos-delay="200">
                     Temukan berbagai momen dan keindahan desa kami. Jelajahi galeri untuk melihat kegiatan dan pemandangan terbaik dari Desa.
                 </p>
-                <div class="d-flex align-items-center mb-4">
+                <div class="d-flex align-items-center mb-4" data-aos="fade-up" data-aos-delay="300">
                     <a href="<?= base_url('/galeri') ?>" class="btn btn-light rounded-pill px-4 fw-bold" style="color: #166534;">Lihat Semua</a>
                 </div>
                 
@@ -277,7 +312,7 @@ $heroImages = [
             </div>
 
             <!-- Right Column: Slider -->
-            <div class="col-lg-8">
+            <div class="col-lg-8" data-aos="fade-up" data-aos-delay="150">
                 <?php if (!empty($albums) && count($albums) > 0): ?>
                     <?php $galeriItems = array_slice($albums, 0, 5); ?>
                     <div class="galeri-slider-container" id="galeri-slider-container">
@@ -388,24 +423,27 @@ $heroImages = [
             const cardWidth = lastCard.offsetWidth;
             const gap = parseFloat(window.getComputedStyle(track).gap) || 24;
             
-            // Instantly move last item to front and offset track left
+            // Baca layout properties DULU sebelum ada write DOM (hindari forced reflow)
+            // cardWidth & gap sudah dibaca di atas — aman
+
+            // Lakukan semua DOM writes sekaligus
             track.style.transition = 'none';
             track.prepend(lastCard);
             track.style.transform = `translateX(-${cardWidth + gap}px)`;
-            
-            // Force reflow
-            track.offsetHeight;
-            
-            // Update background right before sliding it in
             updateBackground(lastCard);
-            
-            // Animate moving back to 0
-            track.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
-            track.style.transform = 'translateX(0)';
-            
-            setTimeout(() => {
-                isAnimating = false;
-            }, 500);
+
+            // Gunakan double requestAnimationFrame sebagai pengganti forced reflow:
+            // rAF pertama: pastikan frame dengan transition:none sudah di-commit
+            // rAF kedua: baru tambahkan transition untuk animasi slide-in
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    track.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+                    track.style.transform = 'translateX(0)';
+                    setTimeout(() => {
+                        isAnimating = false;
+                    }, 500);
+                });
+            });
         });
     });
 </script>
@@ -501,7 +539,7 @@ $heroImages = [
         <!-- 10 Cards Grid with Left Title -->
         <div class="row g-4 align-items-stretch">
             <!-- Title Section (Takes 2 cards width = col-lg-6) -->
-            <div class="col-12 col-lg-6 d-flex flex-column justify-content-center align-items-start pe-lg-5 mb-4 mb-lg-0">
+            <div class="col-12 col-lg-6 d-flex flex-column justify-content-center align-items-start pe-lg-5 mb-4 mb-lg-0" data-aos="fade-up">
                 <span class="section-kicker text-dark d-block">UMKM Desa</span>
                 <h2 class="section-title text-dark mb-4" style="font-size: 3.5rem; line-height: 1.1;">Produk <br/><span style="color: #166534;">Unggulan</span></h2>
                 <p class="text-muted mb-5" style="font-size: 1.1rem; line-height: 1.6;">Dukung pertumbuhan ekonomi lokal dengan membeli dan menikmati berbagai produk unggulan hasil karya warga Desa Bonto Marannu.</p>
@@ -514,7 +552,7 @@ $heroImages = [
             // 6 product slots (2 cards row 1, 4 cards row 2)
             for ($i = 0; $i < 6; $i++): 
             ?>
-                <div class="col-6 col-md-4 col-lg-3">
+                <div class="col-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="<?= min($i * 100, 500) ?>">
                     <?php if (isset($umkmProducts[$i])): ?>
                         <?php $produk = $umkmProducts[$i]; ?>
                         <a href="<?= base_url('/umkm/' . $produk['umkm_id']) ?>" class="umkm-card">
@@ -561,7 +599,7 @@ $heroImages = [
 
     <div style="max-width: 1400px; margin: 0 auto; width: 100%; padding: 0 1rem; position:relative; z-index:1;">
         <!-- Header -->
-        <div class="text-center mb-5 mt-3">
+        <div class="text-center mb-5 mt-3" data-aos="fade-up">
             <span class="section-kicker text-light d-block mb-2" style="opacity: 0.9; letter-spacing: 2px;">Jelajahi Keindahan Alam</span>
             <h2 class="section-title text-white mb-3" style="font-size: 3.5rem;">Destinasi <span style="color: #4ade80;">Wisata</span></h2>
             <p class="text-white-50 mx-auto" style="max-width: 600px; font-size: 1.1rem; line-height: 1.6;">
@@ -679,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div style="max-width: 1400px; margin: 0 auto; width: 100%; padding: 0 1rem;">
         <div class="row align-items-center">
             <!-- Text Content -->
-            <div class="col-lg-7 py-5 pe-lg-5 text-start">
+            <div class="col-lg-7 py-5 pe-lg-5 text-start" data-aos="fade-up">
                 <div class="me-lg-5 my-3">
                     <span class="section-kicker text-dark d-block mb-3">Layanan Masyarakat</span>
                     <h2 class="section-title text-dark mb-4" style="font-size: 3rem; line-height: 1.2;">Ada Pertanyaan atau <br/><span style="color: #166534;">Laporan?</span></h2>
@@ -692,8 +730,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
             <!-- Illustration -->
-            <div class="col-lg-5 d-none d-lg-flex justify-content-center align-items-center position-relative" style="min-height: 400px;">
-                <img src="<?= base_url('assets/img/laporan-illustration.png') ?>" alt="Laporan Masyarakat" class="img-fluid" style="object-fit: contain; max-height: 500px; mix-blend-mode: multiply;">
+            <div class="col-lg-5 d-none d-lg-flex justify-content-center align-items-center position-relative" style="min-height: 400px;" data-aos="fade-up" data-aos-delay="200">
+                <img src="<?= base_url('assets/img/laporan-illustration.png') ?>" alt="Laporan Masyarakat" class="img-fluid" loading="lazy" style="object-fit: contain; max-height: 500px; mix-blend-mode: multiply;">
             </div>
         </div>
     </div>
@@ -733,35 +771,100 @@ document.addEventListener('DOMContentLoaded', () => {
         typeHTML(title, tHTML, 50);
     }
 
-    // 2. Number Counter Animation
-    const statsNumber = document.querySelector('.stats-number');
-    if (statsNumber) {
-        // Find the number in the text
-        const textStr = statsNumber.innerText;
-        const numMatch = textStr.match(/\d+/);
-        if (numMatch) {
-            const target = parseInt(numMatch[0], 10);
-            const suffix = textStr.replace(numMatch[0], '');
-            let count = 0;
-            const duration = 2000;
-            const interval = 20;
-            const increment = target / (duration / interval);
+    // 2. Clock & Weather Logic
+    const timeEl = document.getElementById('current-time');
+    if (timeEl) {
+        const updateTime = () => {
+            const now = new Date();
+            timeEl.textContent = `${now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit' })} WITA`;
+        };
+        updateTime();
+        setInterval(updateTime, 1000);
+    }
+
+    function applyWeatherData(current) {
+        document.getElementById('weather-temp').textContent = `${Math.round(current.temperature_2m)}°C`;
+        document.getElementById('weather-humidity').textContent = `${current.relative_humidity_2m}%`;
+        document.getElementById('weather-wind').textContent = `${current.wind_speed_10m} km/h`;
+        if (current.us_aqi !== undefined) {
+            document.getElementById('weather-aqi').textContent = `AQI: ${current.us_aqi}`;
+        }
+        
+        const code = current.weather_code;
+        const iconEl = document.getElementById('weather-icon');
+        if (code === 0) iconEl.className = 'bi bi-sun';
+        else if (code >= 1 && code <= 3) iconEl.className = 'bi bi-cloud-sun';
+        else if (code >= 45 && code <= 48) iconEl.className = 'bi bi-cloud-fog';
+        else if (code >= 51 && code <= 67) iconEl.className = 'bi bi-cloud-drizzle';
+        else if (code >= 71 && code <= 77) iconEl.className = 'bi bi-cloud-snow';
+        else if (code >= 80 && code <= 82) iconEl.className = 'bi bi-cloud-rain';
+        else if (code >= 95 && code <= 99) iconEl.className = 'bi bi-cloud-lightning-rain';
+    }
+
+    async function fetchWeather() {
+        const cacheKey = 'bantaeng_weather_data_v3';
+        const cacheTimeKey = 'bantaeng_weather_time_v3';
+        const cacheDuration = 2 * 60 * 60 * 1000; // 2 hours in ms
+
+        const cachedData = localStorage.getItem(cacheKey);
+        const cachedTime = localStorage.getItem(cacheTimeKey);
+        const now = new Date().getTime();
+
+        if (cachedData && cachedTime && (now - cachedTime < cacheDuration)) {
+            applyWeatherData(JSON.parse(cachedData));
+            return;
+        }
+
+        try {
+            const apiUrl = "<?= esc(env('OPEN_METEO_URL', 'https://api.open-meteo.com/v1/forecast')) ?>";
+            const aqiUrl = "<?= esc(env('OPEN_METEO_AQI_URL', 'https://air-quality-api.open-meteo.com/v1/air-quality')) ?>";
+
+            // Bantaeng Coordinates
+            const res = await fetch(`${apiUrl}?latitude=-5.5491&longitude=119.9431&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=Asia%2FMakassar`);
+            const data = await res.json();
             
-            const timer = setInterval(() => {
-                count += increment;
-                if (count >= target) {
-                    statsNumber.innerText = target + suffix;
-                    clearInterval(timer);
-                } else {
-                    statsNumber.innerText = Math.floor(count) + suffix;
-                }
-            }, interval);
+            const aqiRes = await fetch(`${aqiUrl}?latitude=-5.5491&longitude=119.9431&current=us_aqi&timezone=Asia%2FMakassar`);
+            const aqiData = await aqiRes.json();
+
+            if (data && data.current) {
+                const combinedData = {
+                    ...data.current,
+                    us_aqi: aqiData && aqiData.current ? aqiData.current.us_aqi : '--'
+                };
+                localStorage.setItem(cacheKey, JSON.stringify(combinedData));
+                localStorage.setItem(cacheTimeKey, now.toString());
+                applyWeatherData(combinedData);
+            }
+        } catch (error) {
+            console.error('Failed to fetch weather:', error);
+            if (cachedData) {
+                applyWeatherData(JSON.parse(cachedData));
+            }
         }
     }
+    fetchWeather();
 });
 </script>
 
 <!-- Vanilla Tilt JS for 3D Parallax Effect -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" integrity="sha512-wC/g5368cx2Owt1xO16tH0jE4ZkhR5J5XGlYn1Xv+H3F/xR/7x55B0xQ5C14N17g5nEw/wT+sC6aT+uQYw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" integrity="sha512-wC/cunGGDjXSl9OHUH0RuqSyW4YNLlsPwhcLxwWW1CR4OeC2E1xpcdZz2DeQkEmums41laI+eGMw95IJ15SS3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- AOS JS — dijadwalkan setelah semua konten dimuat -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({
+        once: true,        // animasi hanya sekali (tidak repeat saat scroll balik)
+        duration: 700,     // durasi animasi (ms)
+        offset: 70,        // jarak dari edge viewport sebelum trigger
+        easing: 'ease-out-quad', // easing ringan, tidak berat di CPU
+        disable: function() {
+            // Nonaktifkan di perangkat sangat kecil atau jika user minta kurangi gerak
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+    });
+</script>
+
+<!-- Lazy Loading iframe Maps (native IntersectionObserver — no CDN) -->
+<script src="<?= base_url('assets/js/guest/home.js') ?>"></script>
 
 <?= $this->endSection() ?>

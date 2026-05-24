@@ -49,7 +49,7 @@ class AuthController extends BaseController
             return redirect()->to('/dashboard');
         }
 
-        return view('Guest/auth/login');
+        return view('Guest/auth/login', ['title' => 'Login | Website Desa Bonto Marannu']);
     }
 
     public function doLogin()
@@ -110,7 +110,7 @@ class AuthController extends BaseController
 
     public function register()
     {
-        return view('Guest/auth/register');
+        return view('Guest/auth/register', ['title' => 'Daftar Akun | Website Desa Bonto Marannu']);
     }
 
     public function doRegister()
@@ -170,6 +170,7 @@ class AuthController extends BaseController
         $pendingEmail = session()->get('pending_verification');
 
         return view('Guest/auth/verify', [
+            'title'        => 'Verifikasi Akun | Website Desa Bonto Marannu',
             'pendingEmail' => $pendingEmail,
             'previewOtp'   => session()->getFlashdata('otp_preview'),
         ]);
@@ -346,7 +347,7 @@ class AuthController extends BaseController
 
     public function forgotPassword()
     {
-        return view('Guest/auth/forgot');
+        return view('Guest/auth/forgot', ['title' => 'Lupa Password | Website Desa Bonto Marannu']);
     }
 
     public function sendReset()
@@ -389,6 +390,7 @@ class AuthController extends BaseController
     public function resetPassword()
     {
         return view('Guest/auth/reset', [
+            'title'        => 'Reset Password | Website Desa Bonto Marannu',
             'pendingEmail' => session()->get('pending_reset'),
             'previewOtp'   => session()->getFlashdata('otp_preview'),
         ]);

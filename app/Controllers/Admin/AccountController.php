@@ -15,6 +15,7 @@ class AccountController extends ProtectedController
         }
 
         return view('Admin/users/index', [
+            'title'         => 'Kelola Pengguna | Website Desa Bonto Marannu',
             'currentUserId' => $this->currentUser['id'] ?? 0,
         ]);
     }
@@ -113,7 +114,7 @@ class AccountController extends ProtectedController
             return $redirect;
         }
 
-        return view('Admin/users/create');
+        return view('Admin/users/create', ['title' => 'Tambah Pengguna | Website Desa Bonto Marannu']);
     }
 
     public function edit($id)
@@ -131,6 +132,7 @@ class AccountController extends ProtectedController
         }
 
         return view('Admin/users/edit', [
+            'title'   => 'Edit Pengguna | Website Desa Bonto Marannu',
             'user'    => $user,
             'profile' => $profileModel->find($id),
         ]);

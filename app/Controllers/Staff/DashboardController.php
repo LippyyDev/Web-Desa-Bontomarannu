@@ -122,6 +122,7 @@ class DashboardController extends ProtectedController
             'chartPengaduan'  => $chartPengaduan,
         ];
 
+        $data['title'] = 'Dashboard Staf | Website Desa Bonto Marannu';
         return view('Staff/dashboard/index', $data);
     }
 }

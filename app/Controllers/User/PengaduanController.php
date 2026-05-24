@@ -32,7 +32,7 @@ class PengaduanController extends ProtectedController
         $profile      = $profileModel->find($this->currentUser['id']);
 
         return view('User/pengaduan/index', [
-            'title'           => 'Buat Pengaduan',
+            'title'           => 'Buat Pengaduan | Website Desa Bonto Marannu',
             'profile'         => $profile,
             'cooldownSeconds' => $this->getCooldownSeconds(),
         ]);

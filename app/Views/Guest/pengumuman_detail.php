@@ -67,6 +67,19 @@
                 <article class="article-content">
                     <?= $item['isi'] ?> <!-- Raw HTML support if from editor -->
                 </article>
+
+                <?php if (!empty($item['foto'])): ?>
+                    <h4 class="fw-bold mt-5 mb-4">Foto Pendukung</h4>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                                <a href="<?= base_url($item['foto']) ?>" target="_blank" class="d-block">
+                                    <img src="<?= base_url($item['foto']) ?>" class="card-img-top w-100 object-fit-cover" style="height: 180px;" alt="Foto Pendukung">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 

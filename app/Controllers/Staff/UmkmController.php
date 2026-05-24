@@ -25,7 +25,7 @@ class UmkmController extends ProtectedController
         $totalRejected = $umkmModel->where('status', 'rejected')->countAllResults();
 
         return view('Staff/umkm/index', [
-            'title'         => 'Kelola UMKM',
+            'title'         => 'Kelola UMKM | Website Desa Bonto Marannu',
             'totalPending'  => $totalPending,
             'totalApproved' => $totalApproved,
             'totalRejected' => $totalRejected,
@@ -155,7 +155,7 @@ class UmkmController extends ProtectedController
         }
 
         return view('Staff/umkm/create', [
-            'title' => 'Tambah UMKM',
+            'title' => 'Tambah UMKM | Website Desa Bonto Marannu',
         ]);
     }
 
@@ -261,7 +261,7 @@ class UmkmController extends ProtectedController
             return redirect()->to('/staff/umkm')->with('error', 'UMKM tidak ditemukan.');
         }
 
-        return view('Staff/umkm/show', array_merge($data, ['title' => 'Detail UMKM']));
+        return view('Staff/umkm/show', array_merge($data, ['title' => 'Detail UMKM | Website Desa Bonto Marannu']));
     }
 
     public function edit($id)
@@ -294,7 +294,7 @@ class UmkmController extends ProtectedController
         $ecommerce = $ecomModel->where('umkm_id', $id)->findAll();
 
         return view('Staff/umkm/edit', [
-            'title'     => 'Edit UMKM',
+            'title'     => 'Edit UMKM | Website Desa Bonto Marannu',
             'umkm'      => $umkm,
             'ecommerce' => $ecommerce,
         ]);
@@ -610,7 +610,7 @@ class UmkmController extends ProtectedController
         $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
 
         return view('Staff/umkm/show_produk', [
-            'title'   => 'Detail Produk',
+            'title'   => 'Detail Produk | Website Desa Bonto Marannu',
             'produk'  => $produk,
             'umkm'    => $umkm,
             'pemilik' => $pemilik,
@@ -637,7 +637,7 @@ class UmkmController extends ProtectedController
         $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
 
         return view('Staff/umkm/edit_produk', [
-            'title'  => 'Edit Produk',
+            'title'  => 'Edit Produk | Website Desa Bonto Marannu',
             'produk' => $produk,
         ]);
     }

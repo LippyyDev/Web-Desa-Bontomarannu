@@ -39,7 +39,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/desa_profile/index', [
-            'title' => 'Profil Desa',
+            'title' => 'Profil Desa | Website Desa Bonto Marannu',
             'profile' => $profile
         ]);
     }
@@ -60,7 +60,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/geografi/index', [
-            'title' => 'Geografi Desa',
+            'title' => 'Geografi Desa | Website Desa Bonto Marannu',
             'geografi' => $geografi
         ]);
     }
@@ -164,7 +164,7 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
-        return view('Staff/gallery/index');
+        return view('Staff/gallery/index', ['title' => 'Kelola Galeri | Website Desa Bonto Marannu']);
     }
 
     public function galleryApi()
@@ -235,7 +235,7 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
-        return view('Staff/gallery/create');
+        return view('Staff/gallery/create', ['title' => 'Tambah Album Galeri | Website Desa Bonto Marannu']);
     }
 
     public function editGallery($id)
@@ -259,6 +259,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/gallery/edit', [
+            'title' => 'Edit Album Galeri | Website Desa Bonto Marannu',
             'album' => $album,
             'media' => $media,
         ]);
@@ -556,7 +557,7 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
-        return view('Staff/news/index');
+        return view('Staff/news/index', ['title' => 'Kelola Berita | Website Desa Bonto Marannu']);
     }
 
     public function newsApi()
@@ -615,7 +616,7 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
-        return view('Staff/news/create');
+        return view('Staff/news/create', ['title' => 'Tulis Berita Baru | Website Desa Bonto Marannu']);
     }
 
     public function editNews($id)
@@ -639,6 +640,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/news/edit', [
+            'title' => 'Edit Berita | Website Desa Bonto Marannu',
             'item'  => $news,
             'media' => $media,
         ]);
@@ -947,7 +949,7 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
-        return view('Staff/perangkat_desa/index');
+        return view('Staff/perangkat_desa/index', ['title' => 'Kelola Perangkat Desa | Website Desa Bonto Marannu']);
     }
 
     public function perangkatDesaApi()
@@ -1008,7 +1010,7 @@ class ContentController extends ProtectedController
             return $redirect;
         }
 
-        return view('Staff/perangkat_desa/create');
+        return view('Staff/perangkat_desa/create', ['title' => 'Tambah Perangkat Desa | Website Desa Bonto Marannu']);
     }
 
     public function editPerangkatDesa($id)
@@ -1025,6 +1027,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/perangkat_desa/edit', [
+            'title' => 'Edit Perangkat Desa | Website Desa Bonto Marannu',
             'item' => $item,
         ]);
     }
@@ -1169,7 +1172,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/inventaris/index', [
-            'title' => 'Inventaris Aset Desa',
+            'title' => 'Kelola Inventaris | Website Desa Bonto Marannu',
         ]);
     }
 
@@ -1236,7 +1239,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/inventaris/create', [
-            'title' => 'Tambah Inventaris'
+            'title' => 'Tambah Inventaris | Website Desa Bonto Marannu'
         ]);
     }
 
@@ -1254,7 +1257,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/inventaris/edit', [
-            'title' => 'Edit Inventaris',
+            'title' => 'Edit Inventaris | Website Desa Bonto Marannu',
             'item'  => $item,
         ]);
     }
@@ -1366,7 +1369,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/pengumuman/index', [
-            'title' => 'Pengumuman'
+            'title' => 'Kelola Pengumuman | Website Desa Bonto Marannu'
         ]);
     }
 
@@ -1427,7 +1430,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/pengumuman/create', [
-            'title' => 'Tambah Pengumuman'
+            'title' => 'Tambah Pengumuman | Website Desa Bonto Marannu'
         ]);
     }
 
@@ -1496,7 +1499,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/pengumuman/edit', [
-            'title' => 'Edit Pengumuman',
+            'title' => 'Edit Pengumuman | Website Desa Bonto Marannu',
             'pengumuman' => $pengumuman
         ]);
     }
@@ -1608,7 +1611,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/pengaduan/index', [
-            'title' => 'Pengaduan Masyarakat'
+            'title' => 'Kelola Pengaduan | Website Desa Bonto Marannu'
         ]);
     }
 
@@ -1626,7 +1629,7 @@ class ContentController extends ProtectedController
         }
 
         return view('Staff/pengaduan/detail', [
-            'title' => 'Detail Pengaduan',
+            'title' => 'Detail Pengaduan | Website Desa Bonto Marannu',
             'pengaduan' => $pengaduan
         ]);
     }

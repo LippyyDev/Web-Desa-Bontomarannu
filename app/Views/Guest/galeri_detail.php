@@ -47,15 +47,15 @@
                     <h4 class="fw-bold mt-5 mb-4">Media Album</h4>
                     <div class="row g-3">
                         <?php foreach ($media as $m): ?>
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-6 col-md-4 col-lg-3">
                                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
                                     <?php if (isset($m['media_type']) && $m['media_type'] === 'video_link' && isset($m['embed_url'])): ?>
-                                        <div class="ratio ratio-16x9 h-100">
+                                        <div class="ratio ratio-16x9">
                                             <iframe src="<?= esc($m['embed_url']) ?>" allowfullscreen></iframe>
                                         </div>
                                     <?php else: ?>
-                                        <a href="<?= base_url($m['media_path']) ?>" target="_blank" class="d-block h-100">
-                                            <img src="<?= base_url($m['media_path']) ?>" class="card-img-top h-100 w-100 object-fit-cover" style="aspect-ratio: 16/10;" alt="Media">
+                                        <a href="<?= base_url($m['media_path']) ?>" target="_blank" class="d-block">
+                                            <img src="<?= base_url($m['media_path']) ?>" class="card-img-top w-100 object-fit-cover" style="height: 180px;" alt="Media">
                                         </a>
                                     <?php endif; ?>
                                 </div>

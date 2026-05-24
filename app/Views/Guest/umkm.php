@@ -11,7 +11,6 @@
         <div class="profil-desa-header mt-5 mb-4 text-center reveal-up">
             <span class="profil-desa-subtitle">Informasi UMKM</span>
             <h2 class="profil-desa-title">UMKM <span>Desa</span></h2>
-            <p class="text-muted mt-3 mb-0" style="max-width: 600px; margin-left: auto; margin-right: auto;">Produk dan usaha unggulan dari warga desa kami</p>
         </div>
 
         <!-- Search Bar -->

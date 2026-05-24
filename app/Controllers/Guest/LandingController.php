@@ -60,6 +60,7 @@ class LandingController extends BaseController
         }
 
         $data = [
+            'title'          => 'Beranda | Website Desa Bonto Marannu',
             'desaProfile'    => $profile,
             'albums'         => $albumModel->orderBy('tanggal_waktu', 'DESC')->findAll(6),
             'news'           => $newsModel->orderBy('tanggal_waktu', 'DESC')->findAll(6),
@@ -84,6 +85,7 @@ class LandingController extends BaseController
         }
 
         return view('Guest/profil', [
+            'title'       => 'Profil Desa | Website Desa Bonto Marannu',
             'desaProfile' => $profile,
             'geografi'    => $geografi,
         ]);
@@ -102,6 +104,7 @@ class LandingController extends BaseController
         }
 
         return view('Guest/perangkat_desa', [
+            'title'         => 'Perangkat Desa | Website Desa Bonto Marannu',
             'perangkatDesa' => $perangkatDesa,
         ]);
     }
@@ -112,7 +115,7 @@ class LandingController extends BaseController
         $inventaris = $inventarisModel->orderBy('created_at', 'DESC')->findAll();
 
         return view('Guest/inventaris', [
-            'title' => 'Inventaris Aset Desa - Desa Bontomarannu',
+            'title' => 'Inventaris Aset Desa | Website Desa Bonto Marannu',
             'inventaris' => $inventaris
         ]);
     }
@@ -122,7 +125,10 @@ class LandingController extends BaseController
         $pengumumanModel = new PengumumanModel();
         $pengumuman = $pengumumanModel->orderBy('created_at', 'DESC')->findAll();
 
-        return view('Guest/pengumuman', ['pengumuman' => $pengumuman]);
+        return view('Guest/pengumuman', [
+            'title'      => 'Pengumuman | Website Desa Bonto Marannu',
+            'pengumuman' => $pengumuman
+        ]);
     }
 
     public function detailPengumuman($id)
@@ -137,6 +143,7 @@ class LandingController extends BaseController
         $other_pengumuman = $pengumumanModel->where('id !=', $id)->orderBy('created_at', 'DESC')->findAll(3);
 
         return view('Guest/pengumuman_detail', [
+            'title'            => 'Detail Pengumuman | Website Desa Bonto Marannu',
             'item'             => $pengumuman,
             'other_pengumuman' => $other_pengumuman,
         ]);
@@ -144,11 +151,95 @@ class LandingController extends BaseController
 
     public function pengaduan()
     {
-        return view('Guest/pengaduan');
+        return view('Guest/pengaduan', ['title' => 'Layanan Pengaduan | Website Desa Bonto Marannu']);
+    }
+
+    public function captcha()
+    {
+        $answer = $this->generateCaptchaString(5);
+        session()->set('captcha_answer', strtolower($answer));
+        session()->set('captcha_verified', false);
+
+        $width  = 160;
+        $height = 50;
+        $img    = imagecreatetruecolor($width, $height);
+
+        $bg        = imagecolorallocate($img, 245, 247, 250);
+        $textColor = imagecolorallocate($img, 30, 80, 30);
+        $noiseColor = imagecolorallocate($img, 180, 200, 180);
+
+        imagefilledrectangle($img, 0, 0, $width - 1, $height - 1, $bg);
+
+        for ($i = 0; $i < 400; $i++) {
+            imagesetpixel($img, rand(0, $width), rand(0, $height), $noiseColor);
+        }
+        for ($i = 0; $i < 4; $i++) {
+            imageline(
+                $img,
+                rand(0, $width / 2), rand(0, $height),
+                rand($width / 2, $width), rand(0, $height),
+                $noiseColor
+            );
+        }
+
+        $fontPath  = $this->getCaptchaFontPath();
+        $charWidth = (int) ($width / (5 + 1));
+        for ($i = 0; $i < strlen($answer); $i++) {
+            $x     = $charWidth * $i + rand(8, 14);
+            $y     = rand(28, $height - 6);
+            $angle = rand(-12, 12);
+            if ($fontPath !== null && function_exists('imagettftext')) {
+                imagettftext($img, rand(20, 24), $angle, $x, $y, $textColor, $fontPath, $answer[$i]);
+            } else {
+                imagestring($img, 5, $x, (int) ($height / 2) - 8, $answer[$i], $textColor);
+            }
+        }
+
+        $border = imagecolorallocate($img, 200, 220, 200);
+        imagerectangle($img, 0, 0, $width - 1, $height - 1, $border);
+
+        $this->response->setHeader('Content-Type', 'image/png');
+        $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+        $this->response->setHeader('Pragma', 'no-cache');
+        $this->response->setHeader('Expires', '0');
+
+        ob_start();
+        imagepng($img);
+        $imageData = ob_get_clean();
+        imagedestroy($img);
+
+        return $this->response->setBody($imageData);
+    }
+
+    public function verifyCaptcha()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['success' => false]);
+        }
+
+        $userAnswer = strtolower(trim($this->request->getPost('answer') ?? ''));
+        $correct    = session()->get('captcha_answer') ?? '';
+
+        if ($userAnswer === '' || $correct === '') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Jawaban tidak boleh kosong.']);
+        }
+
+        if ($userAnswer === $correct) {
+            session()->set('captcha_verified', true);
+            return $this->response->setJSON(['success' => true]);
+        }
+
+        session()->set('captcha_answer', '');
+        session()->set('captcha_verified', false);
+        return $this->response->setJSON(['success' => false, 'message' => 'Kode CAPTCHA salah. Silakan coba lagi.']);
     }
 
     public function submitPengaduan()
     {
+        if (!session()->get('captcha_verified')) {
+            return redirect()->back()->withInput()->with('error', 'Verifikasi CAPTCHA diperlukan sebelum mengirim pengaduan.');
+        }
+
         $pengaduanModel = new PengaduanModel();
 
         $data = [
@@ -178,6 +269,10 @@ class LandingController extends BaseController
         }
 
         $pengaduanId = $pengaduanModel->insert($data, true);
+
+        // Reset CAPTCHA session setelah berhasil kirim
+        session()->set('captcha_verified', false);
+        session()->set('captcha_answer', '');
 
         // Buat notifikasi untuk semua staff
         $userModel = new \App\Models\UserModel();
@@ -220,7 +315,7 @@ class LandingController extends BaseController
         $geografi = $geografiModel->first();
         
         return view('Guest/geografis', [
-            'title' => 'Geografi Desa - Desa Bonto Marannu',
+            'title' => 'Geografi Desa | Website Desa Bonto Marannu',
             'geografi' => $geografi
         ]);
     }
@@ -238,6 +333,7 @@ class LandingController extends BaseController
         }
 
         return view('Guest/galeri', [
+            'title'      => 'Galeri | Website Desa Bonto Marannu',
             'albums'     => $albums,
             'albumMedia' => $albumMedia,
         ]);
@@ -261,6 +357,7 @@ class LandingController extends BaseController
         }
 
         return view('Guest/galeri_detail', [
+            'title'  => 'Detail Galeri | Website Desa Bonto Marannu',
             'album'  => $album,
             'media'  => $media,
         ]);
@@ -271,7 +368,8 @@ class LandingController extends BaseController
         $newsModel = new NewsModel();
 
         return view('Guest/berita', [
-            'news' => $newsModel->orderBy('tanggal_waktu', 'DESC')->findAll(),
+            'title' => 'Berita | Website Desa Bonto Marannu',
+            'news'  => $newsModel->orderBy('tanggal_waktu', 'DESC')->findAll(),
         ]);
     }
 
@@ -295,6 +393,7 @@ class LandingController extends BaseController
         $other_news = $newsModel->where('id !=', $id)->orderBy('tanggal_waktu', 'DESC')->findAll(3);
 
         return view('Guest/berita_detail', [
+            'title'      => 'Detail Berita | Website Desa Bonto Marannu',
             'item'       => $news,
             'media'      => $media,
             'other_news' => $other_news,
@@ -330,7 +429,7 @@ class LandingController extends BaseController
         unset($item);
 
         return view('Guest/umkm', [
-            'title'  => 'UMKM Desa Padang Loang',
+            'title'  => 'UMKM | Website Desa Bonto Marannu',
             'list'   => $list,
             'search' => $search,
         ]);
@@ -360,7 +459,7 @@ class LandingController extends BaseController
         unset($produk);
 
         return view('Guest/umkm_detail', [
-            'title'     => $umkm['nama_toko'] . ' - UMKM Desa Padang Loang',
+            'title'     => esc($umkm['nama_toko']) . ' - UMKM | Website Desa Bonto Marannu',
             'umkm'      => $umkm,
             'ecommerce' => $ecommerce,
             'produk'    => $produkList,
@@ -390,7 +489,7 @@ class LandingController extends BaseController
         $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
 
         return view('Guest/produk_detail', [
-            'title'  => esc($produk['nama_produk']) . ' - ' . esc($umkm['nama_toko']),
+            'title'  => esc($produk['nama_produk']) . ' - ' . esc($umkm['nama_toko']) . ' | Website Desa Bonto Marannu',
             'produk' => $produk,
             'umkm'   => $umkm,
         ]);
@@ -422,7 +521,7 @@ class LandingController extends BaseController
         unset($item);
 
         return view('Guest/pariwisata', [
-            'title'  => 'Pariwisata Desa Padang Loang',
+            'title'  => 'Pariwisata | Website Desa Bonto Marannu',
             'list'   => $list,
             'search' => $search,
         ]);
@@ -441,7 +540,7 @@ class LandingController extends BaseController
         $gambar = $gambarModel->where('pariwisata_id', $id)->findAll();
 
         return view('Guest/pariwisata_detail', [
-            'title'  => $item['nama_tempat'] . ' - Pariwisata Desa Padang Loang',
+            'title'  => esc($item['nama_tempat']) . ' - Pariwisata | Website Desa Bonto Marannu',
             'item'   => $item,
             'gambar' => $gambar,
         ]);
@@ -534,6 +633,39 @@ class LandingController extends BaseController
         // Return null agar view bisa handle dengan menampilkan link biasa
         return null;
     }
-}
 
+    private function generateCaptchaString(int $length): string
+    {
+        $chars  = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $result = '';
+        for ($i = 0; $i < $length; $i++) {
+            $result .= $chars[random_int(0, strlen($chars) - 1)];
+        }
+        return $result;
+    }
+
+    private function getCaptchaFontPath(): ?string
+    {
+        $candidates = [
+            FCPATH . 'assets/fonts/captcha.ttf',
+            'C:/Windows/Fonts/arialbd.ttf',
+            'C:/Windows/Fonts/arial.ttf',
+            'C:/Windows/Fonts/courbd.ttf',
+            'C:/Windows/Fonts/cour.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+            '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf',
+            '/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf',
+            '/System/Library/Fonts/Helvetica.ttc',
+        ];
+
+        foreach ($candidates as $path) {
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+}
 

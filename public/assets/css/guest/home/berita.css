@@ -52,7 +52,7 @@
     display: flex;
     flex-direction: column;
     height: max-content;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     padding: 1rem;
@@ -60,7 +60,8 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
     transition: box-shadow 0.3s ease, border-color 0.3s ease;
-    transform-style: preserve-3d;
+    /* FIX: Hapus transform-style:preserve-3d — membuat stacking context 3D
+       yang sangat mahal dikombinasikan dengan backdrop-filter */
 }
 .berita-main-card:hover {
     border-color: rgba(22, 101, 52, 0.3);
@@ -124,7 +125,7 @@
     grid-template-columns: 85px 1fr;
     gap: 1rem;
     align-items: center;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     padding: 0.85rem;
@@ -132,7 +133,7 @@
     border: 1px solid rgba(0, 0, 0, 0.05);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
     transition: box-shadow 0.3s ease, border-color 0.3s ease;
-    transform-style: preserve-3d;
+    /* FIX: Hapus transform-style:preserve-3d */
 }
 .berita-small-card:hover {
     border-color: rgba(22, 101, 52, 0.3);
@@ -225,14 +226,31 @@
 
 /* --- Floating Animation --- */
 @keyframes floatBerita {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-5px); }
+    0%   { transform: translateY(0px); }
+    50%  { transform: translateY(-5px); }
     100% { transform: translateY(0px); }
 }
 
 .berita-float-wrapper {
     animation: floatBerita 7s ease-in-out infinite;
     height: 100%;
+}
+
+/* FIX: Nonaktifkan float animation di mobile.
+   5 elemen dengan animasi infinite bersamaan sangat berat di GPU mobile. */
+@media (max-width: 768px) {
+    .berita-float-wrapper {
+        animation: none;
+    }
+
+    /* FIX: Hapus backdrop-filter di mobile — operasi GPU paling mahal.
+       Ganti dengan solid semi-transparent background. */
+    .berita-main-card,
+    .berita-small-card {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(255, 255, 255, 0.97);
+    }
 }
 
 @media (max-width: 575px) {

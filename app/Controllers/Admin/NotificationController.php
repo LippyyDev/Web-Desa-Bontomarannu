@@ -13,7 +13,7 @@ class NotificationController extends ProtectedController
             return $redirect;
         }
 
-        return view('Admin/notifications/index');
+        return view('Admin/notifications/index', ['title' => 'Notifikasi | Website Desa Bonto Marannu']);
     }
 
     public function data()

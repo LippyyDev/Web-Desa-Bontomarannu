@@ -55,6 +55,7 @@ class DashboardController extends ProtectedController
                                     ->limit(4)->findAll();
 
         return view('Admin/dashboard/index', [
+            'title'          => 'Dashboard Admin | Website Desa Bonto Marannu',
             'totalAkun'      => $totalAkun,
             'aktifAkun'      => $aktifAkun,
             'nonaktifAkun'   => $nonaktifAkun,

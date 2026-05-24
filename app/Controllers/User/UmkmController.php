@@ -20,7 +20,7 @@ class UmkmController extends ProtectedController
         }
 
         return view('User/umkm/index', [
-            'title' => 'UMKM Saya',
+            'title' => 'UMKM Saya | Website Desa Bonto Marannu',
         ]);
     }
 
@@ -142,7 +142,7 @@ class UmkmController extends ProtectedController
         }
 
         return view('User/umkm/create', [
-            'title' => 'Daftarkan Toko UMKM',
+            'title' => 'Daftar Toko UMKM | Website Desa Bonto Marannu',
         ]);
     }
 
@@ -251,7 +251,7 @@ class UmkmController extends ProtectedController
             return redirect()->to('/user/umkm')->with('error', 'UMKM tidak ditemukan.');
         }
 
-        return view('User/umkm/show', array_merge($data, ['title' => 'Detail Toko']));
+        return view('User/umkm/show', array_merge($data, ['title' => 'Detail Toko | Website Desa Bonto Marannu']));
     }
 
     public function edit($id)
@@ -271,7 +271,7 @@ class UmkmController extends ProtectedController
         $ecommerce = $ecomModel->where('umkm_id', $id)->findAll();
 
         return view('User/umkm/edit', [
-            'title'     => 'Edit Toko',
+            'title'     => 'Edit Toko UMKM | Website Desa Bonto Marannu',
             'umkm'      => $umkm,
             'ecommerce' => $ecommerce,
         ]);
@@ -451,7 +451,7 @@ class UmkmController extends ProtectedController
         $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
 
         return view('User/umkm/show_produk', [
-            'title'  => 'Detail Produk',
+            'title'  => 'Detail Produk | Website Desa Bonto Marannu',
             'produk' => $produk,
             'umkm'   => $umkm,
         ]);
@@ -484,7 +484,7 @@ class UmkmController extends ProtectedController
         $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
 
         return view('User/umkm/edit_produk', [
-            'title'  => 'Edit Produk',
+            'title'  => 'Edit Produk | Website Desa Bonto Marannu',
             'produk' => $produk,
             'umkm'   => $umkm,
         ]);

@@ -39,14 +39,15 @@
     rgba(4, 18, 38, 0.8) 55%,
     rgba(4, 18, 38, 0.98) 100%
   );
-  background-size: 100% 100%;
-  background-position: center;
+  /* FIX: Ganti background-size → transform:scale agar GPU-composited
+     background-size animation menyebabkan full repaint tiap frame */
   animation: breatheLight 6s ease-in-out infinite alternate;
+  transform-origin: center center;
 }
 
 @keyframes breatheLight {
-  0%   { background-size: 100% 100%; }
-  100% { background-size: 150% 150%; }
+  0%   { transform: scale(1);    opacity: 0.92; }
+  100% { transform: scale(1.08); opacity: 1;    }
 }
 
 /* --- Dot texture layer --- */

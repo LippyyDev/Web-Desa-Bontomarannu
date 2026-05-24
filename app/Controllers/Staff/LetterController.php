@@ -19,7 +19,7 @@ class LetterController extends ProtectedController
             return $redirect;
         }
 
-        return view('Staff/letters/index');
+        return view('Staff/letters/index', ['title' => 'Kelola Surat Masuk | Website Desa Bonto Marannu']);
     }
 
     public function api()
@@ -195,6 +195,7 @@ class LetterController extends ProtectedController
         }
 
         return view('Staff/letters/detail', [
+            'title'       => 'Detail Surat | Website Desa Bonto Marannu',
             'letter'           => $letter,
             'attachments'      => $attachmentModel->where('letter_id', $id)->findAll(),
             'replies'          => $replies,

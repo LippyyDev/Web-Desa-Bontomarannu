@@ -20,6 +20,7 @@ class ProfileController extends ProtectedController
         $user = $userModel->find($this->currentUser['id']);
 
         return view('User/profile/index', [
+            'title'   => 'Profil Saya | Website Desa Bonto Marannu',
             'profile' => $profile,
             'user' => $user,
         ]);

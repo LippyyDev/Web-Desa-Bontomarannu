@@ -101,8 +101,8 @@
                     <div class="row g-3">
                         <?php foreach ($gambar as $g): ?>
                             <div class="col-6 col-md-4 col-lg-3">
-                                <a href="<?= base_url($g['gambar_path']) ?>" target="_blank" class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 text-decoration-none d-block">
-                                    <img src="<?= base_url($g['gambar_path']) ?>" class="card-img-top h-100 object-fit-cover" style="height: 150px;" alt="Galeri">
+                                <a href="<?= base_url($g['gambar_path']) ?>" target="_blank" class="card border-0 shadow-sm rounded-4 overflow-hidden text-decoration-none d-block">
+                                    <img src="<?= base_url($g['gambar_path']) ?>" class="card-img-top w-100 object-fit-cover" style="height: 180px;" alt="Galeri">
                                 </a>
                             </div>
                         <?php endforeach; ?>

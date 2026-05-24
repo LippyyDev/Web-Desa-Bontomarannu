@@ -195,11 +195,14 @@
 
 /* Desktop Hover for Dropdowns */
 @media (min-width: 992px) {
-    .dropdown:hover .dropdown-menu {
+    .main-menu-nav .dropdown:hover .dropdown-menu {
         display: block;
         margin-top: 0;
     }
-    .dropdown-toggle::after {
+    .main-menu-nav .dropdown:not(:hover) .dropdown-menu {
+        display: none !important;
+    }
+    .main-menu-nav .dropdown-toggle::after {
         transition: transform 0.3s ease;
         vertical-align: middle;
         border-top: 0.4em solid;

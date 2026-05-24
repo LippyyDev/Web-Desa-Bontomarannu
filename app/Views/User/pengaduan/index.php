@@ -1,6 +1,28 @@
 <?= $this->extend('User/layout') ?>
 
 <?= $this->section('content') ?>
+<style>
+#btnRefreshCaptcha {
+    height: 50px;
+    width: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border-color: #cbd5e1;
+    color: #475569;
+    background-color: #ffffff;
+    transition: all 0.2s ease-in-out;
+}
+#btnRefreshCaptcha:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+#btnRefreshCaptcha i {
+    font-size: 1.25rem;
+}
+</style>
 <div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
         <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
@@ -85,7 +107,7 @@
                             <img id="captchaImg"
                                  src="<?= base_url('/user/pengaduan/captcha') ?>?t=<?= time() ?>"
                                  alt="CAPTCHA"
-                                 style="height:50px; border-radius:6px; border:1px solid #cbd5e1; cursor:default; user-select:none;"
+                                 style="height:50px; border-radius:12px; border:1px solid #cbd5e1; cursor:default; user-select:none;"
                                  draggable="false">
                             <button type="button" id="btnRefreshCaptcha"
                                     class="btn btn-sm btn-outline-secondary"
@@ -99,7 +121,7 @@
                             <input type="text"
                                    id="captchaInput"
                                    class="form-control"
-                                   placeholder="Ketik kode di atas..."
+                                   placeholder="Kode..."
                                    maxlength="6"
                                    autocomplete="off"
                                    spellcheck="false"

@@ -18,7 +18,7 @@ class LetterController extends ProtectedController
             return $redirect;
         }
 
-        return view('User/letters/index');
+        return view('User/letters/index', ['title' => 'Riwayat Surat | Website Desa Bonto Marannu']);
     }
 
     public function api()
@@ -112,7 +112,7 @@ class LetterController extends ProtectedController
             return $redirect;
         }
 
-        return view('User/letters/form');
+        return view('User/letters/form', ['title' => 'Ajukan Surat Baru | Website Desa Bonto Marannu']);
     }
 
     public function store()
@@ -257,6 +257,7 @@ class LetterController extends ProtectedController
         }
 
         return view('User/letters/detail', [
+            'title'       => 'Detail Surat | Website Desa Bonto Marannu',
             'letter'           => $letter,
             'attachments'      => $attachmentModel->where('letter_id', $id)->findAll(),
             'replies'          => $replies,
@@ -281,7 +282,7 @@ class LetterController extends ProtectedController
         $attachmentModel = new LetterAttachmentModel();
         $attachments = $attachmentModel->where('letter_id', $id)->findAll();
 
-        return view('User/letters/form', ['letter' => $letter, 'attachments' => $attachments]);
+        return view('User/letters/form', ['letter' => $letter, 'attachments' => $attachments, 'title' => 'Edit Surat | Website Desa Bonto Marannu']);
     }
 
     public function update($id)

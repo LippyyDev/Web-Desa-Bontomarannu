@@ -1,0 +1,67 @@
+/* ================================================
+   HOME — Scroll Reveal Animations
+   Menggunakan IntersectionObserver (native browser API)
+   Tidak ada library eksternal — tidak butuh update CSP
+   ================================================ */
+
+/* Catatan: Animasi scroll sekarang ditangani oleh AOS library.
+   Selector [data-animate] tidak lagi aktif digunakan.
+   File ini dipertahankan sebagai referensi saja. */
+
+/* FIX: Hapus will-change — membuat GPU layer untuk SETIAP elemen
+   yang punya atribut ini, bahkan jika tidak ada animasi aktif.
+   Lebih baik biarkan browser yang memutuskan kapan perlu promote. */
+[data-animate] {
+    opacity: 0;
+    transition:
+        opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* -----------------------------------------------
+   Varian posisi awal
+   ----------------------------------------------- */
+[data-animate="fade-up"]    { transform: translateY(40px); }
+[data-animate="fade-down"]  { transform: translateY(-30px); }
+[data-animate="fade-left"]  { transform: translateX(-45px); }
+[data-animate="fade-right"] { transform: translateX(45px); }
+[data-animate="fade-scale"] { transform: scale(0.93); }
+[data-animate="fade-in"]    { transform: none; }
+
+/* -----------------------------------------------
+   State AKHIR (setelah masuk viewport)
+   Ditambahkan class .is-visible oleh IntersectionObserver
+   ----------------------------------------------- */
+[data-animate].is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* -----------------------------------------------
+   Delay stagger untuk children berturut-turut
+   Gunakan data-delay="100" / "200" / ... dst.
+   ----------------------------------------------- */
+[data-delay="100"]  { transition-delay: 0.10s; }
+[data-delay="150"]  { transition-delay: 0.15s; }
+[data-delay="200"]  { transition-delay: 0.20s; }
+[data-delay="250"]  { transition-delay: 0.25s; }
+[data-delay="300"]  { transition-delay: 0.30s; }
+[data-delay="350"]  { transition-delay: 0.35s; }
+[data-delay="400"]  { transition-delay: 0.40s; }
+[data-delay="450"]  { transition-delay: 0.45s; }
+[data-delay="500"]  { transition-delay: 0.50s; }
+[data-delay="600"]  { transition-delay: 0.60s; }
+[data-delay="700"]  { transition-delay: 0.70s; }
+
+/* -----------------------------------------------
+   Aksesibilitas: hormati prefers-reduced-motion
+   Nonaktifkan semua transisi untuk pengguna yang
+   mengatur OS untuk mengurangi gerak
+   ----------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    [data-animate] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}

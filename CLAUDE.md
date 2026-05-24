@@ -882,3 +882,254 @@ email.SMTPPort    = 587
 email.SMTPTimeout = 5
 email.SMTPCrypto  = tls
 ```
+
+---
+
+## 19. Scroll Animation Rules (Guest Pages)
+
+Panduan ini berlaku untuk semua halaman publik (`app/Views/Guest/`).
+Dibuat berdasarkan implementasi nyata di `home.php` — sudah diuji performa dan mobile-friendly.
+
+---
+
+### 19.1 Library yang Digunakan: AOS (Animate On Scroll)
+
+```
+# Library
+- Nama    : AOS (Animate On Scroll)
+- Versi   : 2.3.4
+- Ukuran  : ~7KB (sangat ringan)
+- CDN     : https://cdn.jsdelivr.net/npm/aos@2.3.4/ (sudah di-whitelist CSP)
+- Docs    : https://michaelevans.org/aos.js/
+
+# Load di View (BUKAN di layout.php — hanya load di halaman yang perlu)
+  CSS → via section 'styles' di awal view:
+      <?= $this->section('styles') ?>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+      <?= $this->endSection() ?>
+
+  JS → di bagian bawah content section (setelah semua konten HTML):
+      <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+      <script>
+          AOS.init({
+              once: true,       // Animasi hanya sekali, tidak repeat saat scroll balik
+              duration: 700,    // Durasi animasi (ms) — jangan terlalu lama
+              offset: 70,       // Jarak dari viewport edge sebelum trigger
+              easing: 'ease-out-quad', // Easing ringan, tidak berat di CPU
+              disable: function() {
+                  // Nonaktifkan jika user minta kurangi gerak (aksesibilitas)
+                  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              }
+          });
+      </script>
+```
+
+---
+
+### 19.2 Cara Menambahkan Animasi Scroll ke Elemen
+
+```html
+<!-- Animasi dasar -->
+<div data-aos="fade-up">Konten</div>
+
+<!-- Dengan delay stagger (untuk elemen berurutan) -->
+<div data-aos="fade-up" data-aos-delay="100">Item 1</div>
+<div data-aos="fade-up" data-aos-delay="200">Item 2</div>
+<div data-aos="fade-up" data-aos-delay="300">Item 3</div>
+
+<!-- Animasi zoom untuk card/gambar -->
+<div data-aos="zoom-in">Card</div>
+
+<!-- Delay dinamis via PHP (untuk loop) -->
+<div data-aos="fade-up" data-aos-delay="<?= min($i * 100, 500) ?>">...</div>
+```
+
+**Animasi yang tersedia dan kapan digunakan:**
+
+| Animasi AOS | Gunakan Untuk |
+|---|---|
+| `fade-up` | Header section, teks, tombol, kartu — PALING AMAN di semua ukuran layar |
+| `zoom-in` | Kartu berita, gambar, card utama |
+| `fade-left` | HANYA desktop (elemen kecil, bukan full-width column) |
+| `fade-right` | HANYA desktop (elemen kecil, bukan full-width column) |
+
+---
+
+### 19.3 Aturan Mobile-Friendly — WAJIB Diikuti
+
+```
+# DILARANG di mobile (max-width: 768px):
+- fade-left dan fade-right pada elemen yang FULL WIDTH di mobile
+  → Menyebabkan translateX overflow → layout shift ke kiri/kanan saat load
+  → SOLUSI: Ganti ke fade-up untuk semua elemen yang col-12 di mobile
+
+# WAJIB di CSS:
+  html, body {
+      overflow-x: hidden; /* Cegah AOS translateX overflow */
+  }
+
+# Aturan delay:
+- Maksimal delay: 500ms (jangan lebih — terasa lambat di mobile)
+- Stagger kartu: max 100ms per kartu (bukan 200ms)
+- Limit delay: min($i * 100, 500) — setelah 5 kartu, delay tidak bertambah lagi
+
+# Animasi yang AMAN di mobile:
+  ✅ fade-up    → tidak ada horizontal overflow
+  ✅ zoom-in   → tidak ada overflow sama sekali
+  ✅ fade      → hanya opacity, paling ringan
+  ❌ fade-left  → bisa overflow di mobile jika elemen lebar
+  ❌ fade-right → sama seperti fade-left
+```
+
+---
+
+### 19.4 CSS Performance Checklist — Sebelum Menambah Animasi
+
+Sebelum menambah animasi CSS apapun, evaluasi dengan checklist ini:
+
+```
+✅ BOLEH — GPU Composited (tidak menyebabkan repaint):
+   - transform: translateX/Y/Z/scale/rotate  ← selalu pilih ini
+   - opacity
+
+❌ HINDARI — Menyebabkan Layout/Paint (berat):
+   - background-size     ← gunakan transform:scale() sebagai gantinya
+   - background-position ← gunakan transform:translate() sebagai gantinya
+   - width, height       ← gunakan transform:scale() sebagai gantinya
+   - top, left           ← gunakan transform:translate() sebagai gantinya
+   - padding, margin     ← tidak pernah dianimasi
+   - border-width        ← tidak dianimasi
+
+⚠️  HATI-HATI — Mahal di GPU, hindari berlebihan:
+   - backdrop-filter: blur()  → maksimal 3-4 elemen per halaman
+                               → NONAKTIFKAN di mobile via @media
+   - filter: blur()           → hindari pada elemen yang beranimasi
+   - transform-style: preserve-3d → hapus jika tidak benar-benar butuh 3D
+
+# Aturan will-change:
+   - JANGAN taruh will-change di semua elemen sekaligus
+   - Browser membuat GPU layer untuk setiap elemen dengan will-change
+   - Biarkan browser yang memutuskan, atau gunakan hanya saat animasi aktif
+```
+
+---
+
+### 19.5 Aturan Animasi CSS Infinite — Khusus Mobile
+
+```
+# Animasi infinite yang DIIZINKAN:
+   - Hero overlay breathe → WAJIB pakai transform:scale/opacity (GPU-composited)
+   - Floating/bounce kecil → HANYA di desktop, nonaktifkan di mobile
+
+# Animasi infinite yang DILARANG di mobile:
+   ❌ background-size animation        → full repaint tiap frame
+   ❌ background-position animation    → full repaint tiap frame
+   ❌ Banyak elemen float sekaligus   → beban GPU berganda
+
+# Template media query untuk nonaktifkan animasi berat di mobile:
+   @media (max-width: 768px) {
+       .elemen-dengan-animasi-infinite {
+           animation: none;
+       }
+       /* Fallback backdrop-filter → solid background */
+       .kartu-dengan-blur {
+           backdrop-filter: none;
+           -webkit-backdrop-filter: none;
+           background: rgba(255, 255, 255, 0.97);
+       }
+   }
+
+# background-attachment: fixed
+   - NONAKTIFKAN di mobile — tidak di-composited oleh browser mobile
+   - Menyebabkan repaint background setiap scroll event
+   @media (max-width: 768px) {
+       body { background-attachment: scroll; }
+   }
+```
+
+---
+
+### 19.6 Lazy Loading Iframe (Google Maps)
+
+Iframe Google Maps menghasilkan warning `touchstart/touchmove non-passive listener` saat load.
+Solusinya: jangan load iframe sampai user scroll mendekati section tersebut.
+
+```html
+<!-- Di view: gunakan data-src bukan src -->
+<iframe data-src="https://www.google.com/maps/embed?..." 
+        loading="lazy" 
+        style="border:0; width:100%; height:100%;" 
+        allowfullscreen referrerpolicy="no-referrer-when-downgrade">
+</iframe>
+```
+
+```javascript
+// Di JS: gunakan IntersectionObserver native (tidak perlu CDN tambahan)
+// Referensi implementasi: public/assets/js/guest/home.js
+
+function initLazyIframes() {
+    var lazyIframes = document.querySelectorAll('iframe[data-src]');
+    if (!lazyIframes.length) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                var iframe = entry.target;
+                iframe.src = iframe.getAttribute('data-src');
+                iframe.removeAttribute('data-src');
+                observer.unobserve(iframe);
+            }
+        });
+    }, { rootMargin: '0px 0px 300px 0px', threshold: 0 });
+
+    lazyIframes.forEach(function(iframe) {
+        observer.observe(iframe);
+    });
+}
+```
+
+---
+
+### 19.7 Fix Forced Reflow (Vanilla JS Slider)
+
+Jangan gunakan `element.offsetHeight` untuk memicu reflow setelah DOM write.
+Gunakan `double requestAnimationFrame` — cara yang direkomendasikan browser:
+
+```javascript
+// ❌ JANGAN — forced reflow, bisa muncul di DevTools sebagai Violation
+track.style.transition = 'none';
+track.prepend(lastCard);
+track.style.transform = `translateX(-${offset}px)`;
+track.offsetHeight; // ← Paksa browser recalc layout → violation
+
+// ✅ GUNAKAN — double rAF: browser commit transition:none dulu, baru tambah animasi
+track.style.transition = 'none';
+track.prepend(lastCard);
+track.style.transform = `translateX(-${offset}px)`;
+requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+        track.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+        track.style.transform = 'translateX(0)';
+    });
+});
+```
+
+---
+
+### 19.8 File yang Terkait (Home Page)
+
+```
+public/assets/css/guest/home/
+  ├── home.css          → @import semua partial, termasuk animations.css
+  ├── animations.css    → CSS [data-animate] (legacy, sudah digantikan AOS)
+  ├── base.css          → overflow-x:hidden, disable grid-pan & bg-fixed di mobile
+  ├── hero.css          → breatheLight pakai transform:scale (bukan background-size)
+  └── berita.css        → floatBerita & backdrop-filter nonaktif di mobile
+
+public/assets/js/guest/
+  └── home.js           → initLazyIframes() via IntersectionObserver
+
+app/Views/Guest/
+  └── home.php          → data-aos pada setiap section, AOS init di bawah konten
+```
+

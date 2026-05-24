@@ -15,7 +15,7 @@ class PariwisataController extends ProtectedController
         }
 
         return view('Staff/pariwisata/index', [
-            'title' => 'Kelola Pariwisata',
+            'title' => 'Kelola Pariwisata | Website Desa Bonto Marannu',
         ]);
     }
 
@@ -77,7 +77,7 @@ class PariwisataController extends ProtectedController
         }
 
         return view('Staff/pariwisata/create', [
-            'title' => 'Tambah Pariwisata',
+            'title' => 'Tambah Destinasi | Website Desa Bonto Marannu',
         ]);
     }
 
@@ -145,7 +145,7 @@ class PariwisataController extends ProtectedController
         $gambar = $gambarModel->where('pariwisata_id', $id)->findAll();
 
         return view('Staff/pariwisata/show', [
-            'title'  => 'Detail Pariwisata',
+            'title'  => 'Detail Destinasi | Website Desa Bonto Marannu',
             'item'   => $item,
             'gambar' => $gambar,
         ]);
@@ -168,7 +168,7 @@ class PariwisataController extends ProtectedController
         $gambar = $gambarModel->where('pariwisata_id', $id)->findAll();
 
         return view('Staff/pariwisata/edit', [
-            'title'  => 'Edit Pariwisata',
+            'title'  => 'Edit Destinasi | Website Desa Bonto Marannu',
             'item'   => $item,
             'gambar' => $gambar,
         ]);
