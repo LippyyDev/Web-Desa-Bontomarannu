@@ -6,82 +6,269 @@
 
 <?= $this->section('content') ?>
 <section class="profil-desa-section pt-0" style="margin-top: -2.5rem;">
-    <div class="container pb-5 mt-5">
-        
-        <div class="profil-desa-header mt-5 mb-4 text-center reveal-up">
+    <div class="container pb-5">
+
+        <div class="profil-desa-header mt-5 mb-4 text-center reveal-up active">
             <span class="profil-desa-subtitle">Informasi Desa</span>
             <h2 class="profil-desa-title">Pengumuman <span>Desa</span></h2>
         </div>
 
-        <div class="row g-4 mb-5">
-            <?php if (!empty($pengumuman)): ?>
-                <?php 
-                $delay = 100;
-                foreach ($pengumuman as $item): 
-                ?>
-                    <div class="col-md-6 col-lg-4 reveal-up" style="transition-delay: <?= $delay ?>ms;">
-                        <div class="pengumuman-card">
-                            <div class="pengumuman-img-wrapper">
-                                <div class="pengumuman-date-pill">
-                                    <i class="bi bi-calendar-event"></i> <?= date('d M Y', strtotime($item['created_at'])) ?>
-                                </div>
-                                <?php if (!empty($item['thumbnail'])): ?>
-                                    <img src="<?= esc(base_url($item['thumbnail'])) ?>" alt="<?= esc($item['judul']) ?>" onerror="this.onerror=null; this.outerHTML='<div class=\'pengumuman-placeholder\'><i class=\'bi bi-megaphone\'></i></div>';">
-                                <?php else: ?>
-                                    <div class="pengumuman-placeholder">
-                                        <i class="bi bi-megaphone"></i>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <div class="pengumuman-card-body">
-                                <h5 class="pengumuman-title"><?= esc($item['judul']) ?></h5>
-                                <div class="pengumuman-excerpt">
-                                    <?= esc(word_limiter(strip_tags($item['isi']), 20)) ?>
-                                </div>
-                                
-                                <a href="<?= base_url('/pengumuman/' . $item['id']) ?>" class="pengumuman-read-more stretched-link mt-2">Baca selengkapnya</a>
-                            </div>
-                        </div>
-                    </div>
-                <?php 
-                $delay += 100;
-                endforeach; 
-                ?>
-            <?php else: ?>
-                <div class="col-12 reveal-up">
-                    <div class="text-center py-5">
-                        <i class="bi bi-megaphone text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-                        <p class="text-muted mt-3">Belum ada pengumuman yang tersedia saat ini.</p>
+        <!-- Search Box -->
+        <div class="pengumuman-search-box reveal-up active delay-100">
+            <i class="bi bi-search text-muted ms-2"></i>
+            <input type="text" id="searchInput" placeholder="Cari judul pengumuman...">
+            <button type="button" class="btn-reset" id="clearSearchBtn" style="display:none;" title="Hapus pencarian">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <button type="button" class="btn-search" id="btnCari">Cari</button>
+        </div>
+
+        <!-- Data Container -->
+        <div id="pengumumanContainer" class="row g-4">
+            <!-- Loaded via AJAX -->
+        </div>
+
+        <!-- Skeleton Loader -->
+        <div id="loadingIndicator" class="row g-4">
+            <?php for ($s = 0; $s < 9; $s++): ?>
+            <div class="col-md-6 col-lg-4">
+                <div class="skeleton-pengumuman-card">
+                    <div class="skeleton-img-block"></div>
+                    <div class="skeleton-body">
+                        <div class="skeleton-line" style="width:70%;"></div>
+                        <div class="skeleton-line" style="width:55%;"></div>
+                        <div class="skeleton-line" style="width:85%;"></div>
+                        <div class="skeleton-line" style="width:40%;"></div>
                     </div>
                 </div>
-            <?php endif; ?>
+            </div>
+            <?php endfor; ?>
         </div>
+
+        <!-- Empty State -->
+        <div id="emptyMessage" class="text-center text-muted py-5" style="display:none;">
+            <i class="bi bi-megaphone fs-1 d-block mb-3" style="color:#cbd5e1;"></i>
+            <p class="mb-0 fs-5">Belum ada pengumuman.</p>
+        </div>
+
+        <!-- No Results State -->
+        <div id="noResultsMessage" class="text-center text-muted py-5" style="display:none;">
+            <i class="bi bi-search fs-1 d-block mb-3" style="color:#cbd5e1;"></i>
+            <p class="mb-0 fs-5">Tidak ada pengumuman yang cocok dengan pencarian.</p>
+        </div>
+
+        <!-- Pagination -->
+        <div id="customPagination" class="custom-pagination mt-5" style="display:none;"></div>
+
     </div>
 </section>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const reveals = document.querySelectorAll(".reveal-up");
-    const revealOptions = {
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px"
-    };
+document.addEventListener('DOMContentLoaded', function () {
+    let currentPage   = 1;
+    let isLoading     = false;
+    let currentSearch = '';
+    let totalPages    = 1;
+    const limit       = 9;
 
-    const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+    const csrfHeaderName = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+    const getCsrfHash    = () => document.querySelector(`meta[name="${csrfHeaderName}"]`)?.content || '';
+
+    const pengumumanContainer = document.getElementById('pengumumanContainer');
+    const loadingIndicator    = document.getElementById('loadingIndicator');
+    const customPagination    = document.getElementById('customPagination');
+    const emptyMessage        = document.getElementById('emptyMessage');
+    const noResultsMessage    = document.getElementById('noResultsMessage');
+    const searchInput         = document.getElementById('searchInput');
+    const clearSearchBtn      = document.getElementById('clearSearchBtn');
+    const btnCari             = document.getElementById('btnCari');
+
+    function escapeHtml(str) {
+        return (str || '').toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function truncate(str, max) {
+        if (!str) return '';
+        return str.length > max ? str.substring(0, max) + '...' : str;
+    }
+
+    function loadData(page, search) {
+        if (isLoading) return;
+        isLoading = true;
+
+        loadingIndicator.style.display  = '';
+        pengumumanContainer.innerHTML   = '';
+        customPagination.style.display  = 'none';
+        emptyMessage.style.display      = 'none';
+        noResultsMessage.style.display  = 'none';
+
+        const formData = new URLSearchParams();
+        formData.append('page', page);
+        formData.append('limit', limit);
+        formData.append('search', search);
+        formData.append(csrfHeaderName, getCsrfHash());
+
+        fetch('<?= base_url('/pengumuman/api') ?>', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(response => {
+            loadingIndicator.style.display = 'none';
+
+            if (!response.success) {
+                noResultsMessage.style.display = 'block';
+                return;
+            }
+
+            if (!response.data || response.data.length === 0) {
+                if (search !== '') {
+                    noResultsMessage.style.display = 'block';
+                } else {
+                    emptyMessage.style.display = 'block';
+                }
+                return;
+            }
+
+            let html = '';
+            response.data.forEach(function (item) {
+                const imgHtml = item.thumbnail
+                    ? `<img src="${escapeHtml(item.thumbnail)}"
+                            alt="${escapeHtml(item.judul)}"
+                            loading="lazy"
+                            onerror="this.onerror=null;this.outerHTML='<div class=\\'pengumuman-placeholder\\'><i class=\\'bi bi-megaphone\\'></i></div>'">`
+                    : `<div class="pengumuman-placeholder"><i class="bi bi-megaphone"></i></div>`;
+
+                html += `
+                <div class="col-md-6 col-lg-4 reveal-up">
+                    <div class="pengumuman-card">
+                        <div class="pengumuman-img-wrapper">
+                            <div class="pengumuman-date-pill">
+                                <i class="bi bi-calendar-event"></i> ${escapeHtml(item.tanggal)}
+                            </div>
+                            ${imgHtml}
+                        </div>
+                        <div class="pengumuman-card-body">
+                            <h5 class="pengumuman-title">${escapeHtml(item.judul)}</h5>
+                            <p class="pengumuman-excerpt">${escapeHtml(truncate(item.isi, 140))}</p>
+                            <a href="<?= base_url('/pengumuman/') ?>${item.id}" class="pengumuman-read-more stretched-link">
+                                Baca selengkapnya <span class="arrow">→</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            pengumumanContainer.innerHTML = html;
+
+            currentPage   = page;
+            totalPages    = response.total_pages;
+            currentSearch = search;
+
+            renderPagination();
+            if (totalPages > 1) customPagination.style.display = 'block';
+
+            /* Observe newly inserted cards for reveal-up animation */
+            pengumumanContainer.querySelectorAll('.reveal-up').forEach(el => revealObserver.observe(el));
+        })
+        .catch(() => {
+            loadingIndicator.style.display = 'none';
+            noResultsMessage.style.display = 'block';
+        })
+        .finally(() => {
+            isLoading = false;
+        });
+    }
+
+    function renderPagination() {
+        customPagination.innerHTML = '';
+        if (totalPages <= 1) {
+            customPagination.style.display = 'none';
+            return;
+        }
+
+        let html = '<div class="pagination-wrapper">';
+
+        html += currentPage > 1
+            ? `<button class="pagination-btn" data-page="${currentPage - 1}"><i class="bi bi-chevron-left"></i></button>`
+            : `<button class="pagination-btn disabled" disabled><i class="bi bi-chevron-left"></i></button>`;
+
+        let startPage = Math.max(1, currentPage - 1);
+        let endPage   = Math.min(totalPages, startPage + 2);
+        if (endPage - startPage < 2) startPage = Math.max(1, endPage - 2);
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += i === currentPage
+                ? `<button class="pagination-btn active">${i}</button>`
+                : `<button class="pagination-btn" data-page="${i}">${i}</button>`;
+        }
+
+        html += currentPage < totalPages
+            ? `<button class="pagination-btn" data-page="${currentPage + 1}"><i class="bi bi-chevron-right"></i></button>`
+            : `<button class="pagination-btn disabled" disabled><i class="bi bi-chevron-right"></i></button>`;
+
+        html += '</div>';
+        customPagination.innerHTML = html;
+    }
+
+    /* Pagination click */
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.pagination-btn:not(.disabled):not(.active)');
+        if (btn && customPagination.contains(btn)) {
+            const page = parseInt(btn.getAttribute('data-page'));
+            if (page && page !== currentPage) {
+                loadData(page, currentSearch);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    });
+
+    /* Search: only fire on button click or Enter */
+    function doSearch() {
+        const val = searchInput.value.trim();
+        loadData(1, val);
+    }
+
+    searchInput.addEventListener('input', function () {
+        clearSearchBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+    });
+
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+    });
+
+    btnCari.addEventListener('click', doSearch);
+
+    clearSearchBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        this.style.display = 'none';
+        loadData(1, '');
+        searchInput.focus();
+    });
+
+    /* Reveal-up IntersectionObserver */
+    const revealObserver = new IntersectionObserver(function (entries, observer) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add("active");
+                entry.target.classList.add('active');
                 observer.unobserve(entry.target);
             }
         });
-    }, revealOptions);
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    reveals.forEach(reveal => {
-        revealOnScroll.observe(reveal);
-    });
+    /* Observe static elements that already have reveal-up */
+    document.querySelectorAll('.reveal-up:not(.active)').forEach(el => revealObserver.observe(el));
+
+    /* Initial load */
+    loadData(1, '');
 });
 </script>
 <?= $this->endSection() ?>

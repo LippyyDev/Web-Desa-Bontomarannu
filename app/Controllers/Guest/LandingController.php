@@ -93,19 +93,54 @@ class LandingController extends BaseController
 
     public function perangkatDesa()
     {
-        $perangkatDesaModel = new PerangkatDesaModel();
-        $perangkatDesa = $perangkatDesaModel->orderBy('id', 'ASC')->findAll();
-        
-        // Format foto URL
-        foreach ($perangkatDesa as &$perangkat) {
-            $perangkat['foto_url'] = !empty($perangkat['foto']) 
-                ? base_url($perangkat['foto']) 
-                : null;
+        return view('Guest/perangkat_desa', [
+            'title' => 'Perangkat Desa | Website Desa Bonto Marannu',
+        ]);
+    }
+
+    public function perangkatDesaApi()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
         }
 
-        return view('Guest/perangkat_desa', [
-            'title'         => 'Perangkat Desa | Website Desa Bonto Marannu',
-            'perangkatDesa' => $perangkatDesa,
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 12;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
+
+        $model = new PerangkatDesaModel();
+
+        if ($search !== '') {
+            $model->groupStart()
+                ->like('nama', $search)
+                ->orLike('jabatan', $search)
+                ->orLike('kontak', $search)
+                ->groupEnd();
+        }
+
+        $total = $model->countAllResults(false);
+
+        $list = $model->orderBy('id', 'ASC')
+            ->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($list as $item) {
+            $data[] = [
+                'id'      => $item['id'],
+                'nama'    => $item['nama'],
+                'jabatan' => $item['jabatan'],
+                'kontak'  => $item['kontak'] ?? '',
+                'foto_url' => !empty($item['foto']) ? base_url($item['foto']) : null,
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
 
@@ -122,12 +157,53 @@ class LandingController extends BaseController
 
     public function pengumuman()
     {
-        $pengumumanModel = new PengumumanModel();
-        $pengumuman = $pengumumanModel->orderBy('created_at', 'DESC')->findAll();
-
         return view('Guest/pengumuman', [
-            'title'      => 'Pengumuman | Website Desa Bonto Marannu',
-            'pengumuman' => $pengumuman
+            'title' => 'Pengumuman | Website Desa Bonto Marannu',
+        ]);
+    }
+
+    public function pengumumanApi()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 9;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
+
+        $model = new PengumumanModel();
+
+        if ($search !== '') {
+            $model->groupStart()
+                ->like('judul', $search)
+                ->orLike('isi', $search)
+                ->groupEnd();
+        }
+
+        $total = $model->countAllResults(false);
+
+        $list = $model->orderBy('created_at', 'DESC')
+            ->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($list as $item) {
+            $data[] = [
+                'id'        => $item['id'],
+                'judul'     => $item['judul'],
+                'isi'       => strip_tags($item['isi']),
+                'tanggal'   => date('d M Y', strtotime($item['created_at'])),
+                'thumbnail' => !empty($item['thumbnail']) ? base_url($item['thumbnail']) : null,
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
 
@@ -365,11 +441,53 @@ class LandingController extends BaseController
 
     public function berita()
     {
-        $newsModel = new NewsModel();
-
         return view('Guest/berita', [
             'title' => 'Berita | Website Desa Bonto Marannu',
-            'news'  => $newsModel->orderBy('tanggal_waktu', 'DESC')->findAll(),
+        ]);
+    }
+
+    public function beritaApi()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 9;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
+
+        $model = new NewsModel();
+
+        if ($search !== '') {
+            $model->groupStart()
+                ->like('judul', $search)
+                ->orLike('isi', $search)
+                ->groupEnd();
+        }
+
+        $total = $model->countAllResults(false);
+
+        $list = $model->orderBy('tanggal_waktu', 'DESC')
+            ->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($list as $item) {
+            $data[] = [
+                'id'            => $item['id'],
+                'judul'         => $item['judul'],
+                'isi'           => strip_tags($item['isi']),
+                'tanggal_waktu' => date('d M Y', strtotime($item['tanggal_waktu'])),
+                'thumbnail'     => !empty($item['thumbnail']) ? base_url($item['thumbnail']) : null,
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
 

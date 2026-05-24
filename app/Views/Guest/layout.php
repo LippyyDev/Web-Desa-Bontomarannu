@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $title ?? 'Website Desa Bonto Marannu' ?></title>
+    <meta name="<?= csrf_header() ?>" content="<?= csrf_hash() ?>">
     <link rel="icon" type="image/png" href="<?= base_url('assets/img/logo.png') ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

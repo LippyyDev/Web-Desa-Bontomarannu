@@ -294,6 +294,9 @@ Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Re
 - User UMKM          → POST /user/umkm/api          (limit: dari filter Tampilkan, filter status & tanggal)
 - User UMKM Produk   → POST /user/umkm/{id}/produk-api   (limit: 8 fixed, infinite scroll di tab edit)
 - Admin Akun         → POST /admin/akun/api         (limit: dari filter Tampilkan, filter role & status)
+- Guest Perangkat Desa → POST /perangkat-desa/api  (limit: 12 fixed, search nama/jabatan/kontak, no auth)
+- Guest Berita       → POST /berita/api             (limit: 9 fixed, search judul/isi, pagination, lazy loading, no auth)
+- Guest Pengumuman   → POST /pengumuman/api         (limit: 9 fixed, search judul/isi, pagination, lazy loading, no auth)
 ```
 
 ---
