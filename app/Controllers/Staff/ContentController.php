@@ -84,6 +84,12 @@ class ContentController extends ProtectedController
             'sejarah_desa'        => $this->request->getPost('sejarah_desa'),
             'visi'                => $this->request->getPost('visi'),
             'misi'                => $this->request->getPost('misi'),
+            'alamat_kantor'       => $this->request->getPost('alamat_kantor'),
+            'kontak_wa'           => $this->request->getPost('kontak_wa'),
+            'kontak_email'        => $this->request->getPost('kontak_email'),
+            'kontak_facebook'     => $this->request->getPost('kontak_facebook'),
+            'kontak_instagram'    => $this->request->getPost('kontak_instagram'),
+            'kontak_youtube'      => $this->request->getPost('kontak_youtube'),
             'deskripsi_lokasi'    => $this->request->getPost('deskripsi_lokasi'),
             'updated_by'          => $this->currentUser['id'],
         ];

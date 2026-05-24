@@ -58,7 +58,56 @@
         </div>
     </div>
 
-    <!-- CARD 2: Visi & Misi -->
+    <!-- CARD 2: Kontak Desa -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-4 fw-bold">Kontak Desa</h5>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label fw-medium">Alamat Kantor</label>
+                    <textarea class="form-control" name="alamat_kantor" rows="2" placeholder="Jl. Contoh No. 1, Desa Bontomarannu..."><?= esc($profile['alamat_kantor'] ?? '') ?></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Nomor WhatsApp</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-whatsapp text-success"></i></span>
+                        <input type="text" class="form-control" name="kontak_wa" value="<?= esc($profile['kontak_wa'] ?? '') ?>" placeholder="628xxxxxxxxxx">
+                    </div>
+                    <div class="form-text">Format: 628xxxxxxxxxx (tanpa +, tanpa spasi)</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope text-primary"></i></span>
+                        <input type="email" class="form-control" name="kontak_email" value="<?= esc($profile['kontak_email'] ?? '') ?>" placeholder="email@desa.go.id">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Facebook</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="color:#1877F2;"><i class="bi bi-facebook"></i></span>
+                        <input type="text" class="form-control" name="kontak_facebook" value="<?= esc($profile['kontak_facebook'] ?? '') ?>" placeholder="https://facebook.com/...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">Instagram</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="color:#E1306C;"><i class="bi bi-instagram"></i></span>
+                        <input type="text" class="form-control" name="kontak_instagram" value="<?= esc($profile['kontak_instagram'] ?? '') ?>" placeholder="https://instagram.com/...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">YouTube</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="color:#FF0000;"><i class="bi bi-youtube"></i></span>
+                        <input type="text" class="form-control" name="kontak_youtube" value="<?= esc($profile['kontak_youtube'] ?? '') ?>" placeholder="https://youtube.com/@...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD 3: Visi & Misi -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title mb-4 fw-bold">Visi & Misi</h5>

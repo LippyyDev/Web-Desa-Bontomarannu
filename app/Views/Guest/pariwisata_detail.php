@@ -1,114 +1,144 @@
 <?= $this->extend('Guest/layout') ?>
 
+<?= $this->section('styles') ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/guest/pariwisata.css?v=' . time()) ?>">
+<style>
+.pariwisata-thumbnail-wrapper {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+.pariwisata-thumbnail-wrapper img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 500px;
+}
+.pariwisata-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #334155;
+}
+.pariwisata-content p {
+    margin-bottom: 1.5rem;
+}
+#heroCarousel .carousel-item img {
+    height: 500px;
+    object-fit: cover;
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
-<div class="container mt-4">
-
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="<?= base_url('/') ?>">Home</a></li>
-            <li class="breadcrumb-item"><a href="<?= base_url('/pariwisata') ?>">Pariwisata</a></li>
-            <li class="breadcrumb-item active"><?= esc($item['nama_tempat']) ?></li>
-        </ol>
-    </nav>
-
-    <!-- Thumbnail / Galeri Hero -->
-    <?php if (!empty($gambar)): ?>
-    <div id="heroCarousel" class="carousel slide mb-4 rounded overflow-hidden shadow" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            <?php foreach ($gambar as $gi => $g): ?>
-            <div class="carousel-item <?= $gi === 0 ? 'active' : '' ?>">
-                <img src="<?= base_url($g['gambar_path']) ?>" class="d-block w-100" style="height:400px;object-fit:cover;" alt="<?= esc($item['nama_tempat']) ?>">
-            </div>
-            <?php endforeach; ?>
-        </div>
-        <?php if (count($gambar) > 1): ?>
-        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
-        <div class="carousel-indicators">
-            <?php foreach ($gambar as $gi => $g): ?>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="<?= $gi ?>" <?= $gi === 0 ? 'class="active"' : '' ?>></button>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
-    </div>
-    <?php elseif ($item['thumbnail']): ?>
-    <img src="<?= base_url($item['thumbnail']) ?>" class="img-fluid w-100 rounded mb-4 shadow" style="max-height:400px;object-fit:cover;">
-    <?php endif; ?>
-
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body">
-                    <h2 class="fw-bold"><?= esc($item['nama_tempat']) ?></h2>
+<section class="profil-desa-section pt-0" style="margin-top: -2.5rem;">
+    <div class="container pb-5 mt-5">
+        
+        <div class="row">
+            <div class="col-12 reveal-up">
+                <a href="<?= base_url('/pariwisata') ?>" class="btn btn-outline-success btn-sm mb-4 rounded-pill px-3 fw-medium">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Pariwisata
+                </a>
+                
+                <h1 class="fw-bold mb-3" style="color: #111827; font-size: 2.5rem; line-height: 1.3;"><?= esc($item['nama_tempat']) ?></h1>
+                
+                <div class="d-flex align-items-center gap-3 text-muted mb-4 pb-3 border-bottom">
                     <?php if ($item['alamat']): ?>
-                    <p class="text-muted"><i class="bi bi-geo-alt me-1"></i><?= esc($item['alamat']) ?></p>
-                    <?php endif; ?>
-                    <?php if ($item['deskripsi']): ?>
-                    <hr>
-                    <h5>Tentang Destinasi Ini</h5>
-                    <p class="text-body"><?= nl2br(esc($item['deskripsi'])) ?></p>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-geo-alt-fill text-success"></i>
+                        <span><?= esc($item['alamat']) ?></span>
+                    </div>
                     <?php endif; ?>
                 </div>
-            </div>
 
-            <!-- Galeri thumbnail kecil -->
-            <?php if (count($gambar) > 1): ?>
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header fw-semibold"><i class="bi bi-images me-2"></i>Galeri Foto</div>
-                <div class="card-body">
-                    <div class="row g-2">
-                        <?php foreach ($gambar as $g): ?>
-                        <div class="col-4 col-md-3">
-                            <img src="<?= base_url($g['gambar_path']) ?>" class="img-fluid rounded" style="height:90px;width:100%;object-fit:cover;cursor:pointer;" onclick="viewImage('<?= base_url($g['gambar_path']) ?>')">
+                <div class="pariwisata-thumbnail-wrapper">
+                    <?php if (!empty($gambar)): ?>
+                        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <?php foreach ($gambar as $gi => $g): ?>
+                                <div class="carousel-item <?= $gi === 0 ? 'active' : '' ?>">
+                                    <img src="<?= base_url($g['gambar_path']) ?>" class="d-block w-100" alt="<?= esc($item['nama_tempat']) ?>">
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php if (count($gambar) > 1): ?>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                            <div class="carousel-indicators">
+                                <?php foreach ($gambar as $gi => $g): ?>
+                                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="<?= $gi ?>" <?= $gi === 0 ? 'class="active"' : '' ?>></button>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
                         </div>
+                    <?php elseif ($item['thumbnail']): ?>
+                        <img src="<?= base_url($item['thumbnail']) ?>" class="img-fluid w-100" alt="<?= esc($item['nama_tempat']) ?>">
+                    <?php else: ?>
+                        <div class="py-5" style="height: 400px; background-color: #f8fafc; display: flex; align-items: center; justify-content: center; color: #cbd5e1;">
+                            <i class="bi bi-image" style="font-size: 4rem;"></i>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <article class="pariwisata-content">
+                    <?php if ($item['deskripsi']): ?>
+                        <?= nl2br(esc($item['deskripsi'])) ?>
+                    <?php else: ?>
+                        <p class="text-muted fst-italic">Belum ada deskripsi untuk destinasi pariwisata ini.</p>
+                    <?php endif; ?>
+                </article>
+
+                <?php if (!empty($item['maps_embed_url'])): ?>
+                    <h4 class="fw-bold mt-5 mb-4">Lokasi di Peta</h4>
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                        <iframe src="<?= esc($item['maps_embed_url']) ?>" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (count($gambar) > 1): ?>
+                    <h4 class="fw-bold mt-5 mb-4">Galeri Foto</h4>
+                    <div class="row g-3">
+                        <?php foreach ($gambar as $g): ?>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <a href="<?= base_url($g['gambar_path']) ?>" target="_blank" class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 text-decoration-none d-block">
+                                    <img src="<?= base_url($g['gambar_path']) ?>" class="card-img-top h-100 object-fit-cover" style="height: 150px;" alt="Galeri">
+                                </a>
+                            </div>
                         <?php endforeach; ?>
                     </div>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <?php if (!empty($item['maps_embed_url'])): ?>
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header fw-semibold"><i class="bi bi-geo-alt me-2"></i>Lokasi</div>
-                <div class="card-body p-0">
-                    <iframe src="<?= esc($item['maps_embed_url']) ?>" width="100%" height="260" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-                </div>
-                <?php if ($item['alamat']): ?>
-                <div class="card-footer text-muted small"><?= esc($item['alamat']) ?></div>
                 <?php endif; ?>
             </div>
-            <?php endif; ?>
-
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <a href="<?= base_url('/pariwisata') ?>" class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar Wisata
-                    </a>
-                </div>
-            </div>
         </div>
+        
     </div>
-</div>
+</section>
 
-<!-- Lightbox simple -->
-<div class="modal fade" id="imageModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content bg-transparent border-0">
-            <div class="modal-body p-0 text-center">
-                <img id="lightboxImg" src="" class="img-fluid rounded shadow" style="max-height:80vh;">
-            </div>
-        </div>
-    </div>
-</div>
 
+
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
 <script>
-function viewImage(src) {
-    document.getElementById('lightboxImg').src = src;
-    new bootstrap.Modal(document.getElementById('imageModal')).show();
-}
+document.addEventListener("DOMContentLoaded", function() {
+    const reveals = document.querySelectorAll(".reveal-up");
+    const revealOptions = {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px"
+    };
+
+    const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("active");
+                observer.unobserve(entry.target);
+            }
+        });
+    }, revealOptions);
+
+    reveals.forEach(reveal => {
+        revealOnScroll.observe(reveal);
+    });
+});
 </script>
 <?= $this->endSection() ?>

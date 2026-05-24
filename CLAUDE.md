@@ -320,7 +320,7 @@ Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Re
 - letter_attachments     → LetterAttachmentModel
 - letter_replies         → LetterReplyModel
 - reply_attachments      → ReplyAttachmentModel
-- desa_profiles          → DesaProfileModel
+- desa_profiles          → DesaProfileModel   (kolom: nama_desa, kecamatan, kabupaten, provinsi, kode_pos, luas_wilayah, jumlah_penduduk, jumlah_kk, tahun_berdiri, sejarah_desa, visi, misi, alamat_kantor, kontak_wa, kontak_email, kontak_facebook, kontak_instagram, kontak_youtube, deskripsi_lokasi, updated_by)
 - geografi_desa          → GeografiDesaModel
 - perangkat_desa         → PerangkatDesaModel  (Kepala Desa: TIDAK BISA DIHAPUS — tombol hapus disembunyikan di UI & diblok di controller)
 - gallery_albums         → GalleryAlbumModel
@@ -749,7 +749,7 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] Staff profile management (incl. jenis_kelamin dropdown)
 - [x] Staff letter inbox (view, reply with attachment, delete)
 - [x] Staff letter Word generation from letter data (penandatangan & jenis kelamin dari DB)
-- [x] Staff village profile management (visi, misi, population stats, contact, location)
+- [x] Staff village profile management (visi, misi, population stats, location, kontak: alamat_kantor/wa/email/facebook/instagram/youtube)
 - [x] Staff geographic data management
 - [x] Staff gallery CRUD (album + multi-photo/video) — AJAX listing via POST /staff/galeri/api
 - [x] Staff news CRUD (multi-photo)
@@ -770,6 +770,7 @@ refactor: extract email queue processing into EmailQueueProcessor library
 - [x] Jenis Kelamin field di profil User & Staff (ENUM: Laki-laki/Perempuan, tersimpan di DB)
 - [x] Word export surat: jenis_kelamin dari DB pengaju, penandatangan dari Kepala Desa (perangkat_desa)
 - [x] Kepala Desa lock: tidak bisa dihapus dari kelola perangkat desa (UI & controller)
+- [x] Kontak Desa section di Staff Profil Desa: alamat kantor, WA, email, Facebook, Instagram, YouTube — tersimpan di desa_profile, tampil di halaman publik /profil
 
 # In Progress — DO NOT modify without confirmation
 - [ ] (none currently identified — confirm with user before adding here)

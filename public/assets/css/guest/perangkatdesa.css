@@ -1,0 +1,166 @@
+/* public/assets/css/guest/perangkatdesa.css */
+
+.profil-desa-section {
+    font-family: 'Poppins', sans-serif;
+    color: #111827;
+    padding-bottom: 0;
+}
+
+/* Page Header */
+.profil-desa-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.profil-desa-subtitle {
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2E7D32;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    position: relative;
+}
+
+.profil-desa-subtitle::before,
+.profil-desa-subtitle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 30px;
+    height: 1px;
+    background-color: #2E7D32;
+}
+
+.profil-desa-subtitle::before {
+    left: -40px;
+}
+
+.profil-desa-subtitle::after {
+    right: -40px;
+}
+
+.profil-desa-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.profil-desa-title span {
+    color: #2E7D32;
+}
+
+/* Lightweight Scroll Animation */
+.reveal-up {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.reveal-up.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.delay-100 { transition-delay: 100ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-500 { transition-delay: 500ms; }
+
+/* Bento Team Card */
+.bento-team-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(46, 125, 50, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    height: 100%;
+}
+
+.bento-team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+}
+
+.team-img-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.team-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 4px solid rgba(46, 125, 50, 0.15);
+    border-radius: 50%;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+}
+
+.bento-team-card:hover .team-img {
+    transform: scale(1.05);
+    border-color: rgba(46, 125, 50, 0.3);
+}
+
+.team-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.team-role {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #2E7D32;
+    background: rgba(46, 125, 50, 0.1);
+    padding: 5px 14px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.team-contact {
+    margin-top: auto;
+    font-size: 0.95rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.team-contact i {
+    color: #2E7D32;
+    font-size: 1.25rem;
+}
+
+.team-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    border: 4px solid rgba(46, 125, 50, 0.15);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    transition: transform 0.3s ease;
+    font-size: 3.5rem;
+}
+
+.bento-team-card:hover .team-placeholder {
+    transform: scale(1.05);
+    border-color: rgba(46, 125, 50, 0.3);
+}

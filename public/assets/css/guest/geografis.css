@@ -1,4 +1,4 @@
-/* public/assets/css/guest/profildesa.css */
+/* public/assets/css/guest/geografis.css */
 
 .profil-desa-section {
     font-family: 'Poppins', sans-serif;
@@ -244,120 +244,6 @@
     border: none;
 }
 
-/* Kontak Desa */
-.kontak-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
-
-.kontak-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem;
-    border-radius: 12px;
-    background: #f9fafb;
-    border: 1px solid rgba(0,0,0,0.04);
-    transition: background 0.2s ease;
-}
-
-.kontak-item:hover {
-    background: #f0fdf4;
-}
-
-.kontak-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-}
-
-.kontak-detail {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    min-width: 0;
-}
-
-.kontak-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #9ca3af;
-}
-
-.kontak-value {
-    font-size: 0.9rem;
-    color: #374151;
-    font-weight: 500;
-    line-height: 1.5;
-}
-
-.kontak-link {
-    font-size: 0.9rem;
-    color: #2E7D32;
-    font-weight: 500;
-    text-decoration: none;
-    word-break: break-all;
-    transition: color 0.2s ease;
-}
-
-.kontak-link:hover {
-    color: #1a5c1e;
-    text-decoration: underline;
-}
-
-@media (max-width: 576px) {
-    .kontak-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Glassify Styles for Data Profil Desa Grid */
-.data-profil-bg {
-    position: relative;
-    border-radius: 32px; 
-    background-image: 
-        linear-gradient(rgba(20, 83, 45, 0.85), rgba(20, 83, 45, 0.85)),
-        url('../../img/section-pengumuman.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: scroll;
-}
-
-/* Exact CSS from Hype4 Academy Generator */
-.glass-card {
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.12) !important;
-  backdrop-filter: blur(11px);
-  -webkit-backdrop-filter: blur(11px);
-  border-radius: 20px !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
-  color: #ffffff;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45) !important;
-}
-
-.glass-card h1, .glass-card h2, .glass-card h3, .glass-card h4, .glass-card h5, .glass-card h6 {
-    color: #ffffff !important;
-}
-
-.glass-text-muted {
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
 /* Lightweight Scroll Animation */
 .reveal-up {
     opacity: 0;
@@ -378,4 +264,50 @@
 /* Monochrome Subtle Green-Gray Map Filter */
 .map-tint-green {
     filter: grayscale(100%) sepia(35%) hue-rotate(90deg) contrast(1.1) brightness(0.95) !important;
+}
+
+/* Glassmorphism Popup */
+.glass-popup {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(11px);
+  -webkit-backdrop-filter: blur(11px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 22px 11px rgba(255, 255, 255, 1.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-popup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+}
+
+.glass-popup::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.8),
+    transparent,
+    rgba(255, 255, 255, 0.3)
+  );
 }

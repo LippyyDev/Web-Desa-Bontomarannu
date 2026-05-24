@@ -14,10 +14,10 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/components/guest-footer.css') ?>">
     <?= $this->renderSection('styles') ?>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 <?= $this->include('Components/GuestNavbar') ?>
 
-<main class="page-wrapper">
+<main class="page-wrapper flex-grow-1 min-vh-100">
     <div class="pt-5"></div>
     <div class="container mt-4">
         <?php if (session()->getFlashdata('error')): ?>
@@ -39,6 +39,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= base_url('assets/js/components/guest-navbar.js') ?>"></script>
 <script src="<?= base_url('assets/js/guest/main.js') ?>"></script>
+<?= $this->renderSection('scripts') ?>
 </body>
 </html>
 

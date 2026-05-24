@@ -1,3 +1,20 @@
+<?php 
+if (! $desaProfile = cache('footer_desa_profile')) {
+    $desaProfile = model('App\Models\DesaProfileModel')->first() ?? [];
+    // Cache for 24 hours (86400 seconds), will be cleared when profile is updated
+    cache()->save('footer_desa_profile', $desaProfile, 86400); 
+}
+
+$fbLink = !empty($desaProfile['kontak_facebook']) ? esc($desaProfile['kontak_facebook']) : '#';
+$igLink = !empty($desaProfile['kontak_instagram']) ? esc($desaProfile['kontak_instagram']) : '#';
+$ytLink = !empty($desaProfile['kontak_youtube']) ? esc($desaProfile['kontak_youtube']) : '#';
+$waLink = !empty($desaProfile['kontak_wa']) ? 'https://wa.me/' . esc($desaProfile['kontak_wa']) : '#';
+
+$alamatText = !empty($desaProfile['alamat_kantor']) ? esc($desaProfile['alamat_kantor']) : 'Kantor Desa Bonto Marannu, Kab. Bantaeng, Sulawesi Selatan';
+$emailText = !empty($desaProfile['kontak_email']) ? esc($desaProfile['kontak_email']) : 'bontomarannu@bantaeng.go.id';
+$emailLink = !empty($desaProfile['kontak_email']) ? 'mailto:' . esc($desaProfile['kontak_email']) : '#';
+$waText = !empty($desaProfile['kontak_wa']) ? '+'.esc($desaProfile['kontak_wa']) : '+62 812-3456-7890';
+?>
 <footer class="guest-footer">
     <div class="container">
         <div class="row gy-5 d-none d-md-flex">
@@ -11,16 +28,16 @@
                     Pusat informasi dan layanan digital terpadu Desa Bonto Marannu, Kabupaten Bantaeng. Memudahkan masyarakat dalam mengakses layanan dan informasi secara cepat dan transparan.
                 </p>
                 <div class="d-flex gap-3">
-                    <a href="#" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-color: rgba(255,255,255,0.2);">
+                    <a href="<?= $fbLink ?>" target="<?= $fbLink !== '#' ? '_blank' : '_self' ?>" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-color: rgba(255,255,255,0.2);">
                         <i class="bi bi-facebook"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-color: rgba(255,255,255,0.2);">
+                    <a href="<?= $igLink ?>" target="<?= $igLink !== '#' ? '_blank' : '_self' ?>" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-color: rgba(255,255,255,0.2);">
                         <i class="bi bi-instagram"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-color: rgba(255,255,255,0.2);">
+                    <a href="<?= $ytLink ?>" target="<?= $ytLink !== '#' ? '_blank' : '_self' ?>" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-color: rgba(255,255,255,0.2);">
                         <i class="bi bi-youtube"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-color: rgba(255,255,255,0.2);">
+                    <a href="<?= $waLink ?>" target="<?= $waLink !== '#' ? '_blank' : '_self' ?>" class="btn btn-outline-light rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-color: rgba(255,255,255,0.2);">
                         <i class="bi bi-whatsapp"></i>
                     </a>
                 </div>
@@ -67,19 +84,21 @@
                         <div style="width: 24px; text-align: center; margin-right: 12px; margin-top: 2px;">
                             <i class="bi bi-geo-alt-fill" style="color: #4ade80; font-size: 1.1rem;"></i>
                         </div>
-                        <span style="color: #a7f3d0; font-size: 0.95rem;">Kantor Desa Bonto Marannu, Kab. Bantaeng, Sulawesi Selatan</span>
+                        <span style="color: #a7f3d0; font-size: 0.95rem;"><?= $alamatText ?></span>
                     </li>
+                    
                     <li class="d-flex align-items-start mb-3">
                         <div style="width: 24px; text-align: center; margin-right: 12px; margin-top: 2px;">
                             <i class="bi bi-envelope-fill" style="color: #4ade80; font-size: 1.1rem;"></i>
                         </div>
-                        <span style="color: #a7f3d0; font-size: 0.95rem;">bontomarannu@bantaeng.go.id</span>
+                        <a href="<?= $emailLink ?>" style="color: #a7f3d0; font-size: 0.95rem; text-decoration: none;"><?= $emailText ?></a>
                     </li>
+                    
                     <li class="d-flex align-items-start">
                         <div style="width: 24px; text-align: center; margin-right: 12px; margin-top: 2px;">
                             <i class="bi bi-whatsapp" style="color: #4ade80; font-size: 1.1rem;"></i>
                         </div>
-                        <span style="color: #a7f3d0; font-size: 0.95rem;">+62 812-3456-7890</span>
+                        <a href="<?= $waLink ?>" target="<?= $waLink !== '#' ? '_blank' : '_self' ?>" style="color: #a7f3d0; font-size: 0.95rem; text-decoration: none;"><?= $waText ?></a>
                     </li>
                 </ul>
             </div>

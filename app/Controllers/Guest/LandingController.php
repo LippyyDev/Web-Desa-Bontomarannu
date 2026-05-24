@@ -74,8 +74,10 @@ class LandingController extends BaseController
     public function profil()
     {
         $profileModel = new DesaProfileModel();
+        $geografiModel = new \App\Models\GeografiDesaModel();
         
         $profile = $profileModel->first();
+        $geografi = $geografiModel->first();
         
         if ($profile && !empty($profile['maps_url'])) {
             $profile['maps_embed_url'] = $this->convertToMapsEmbed($profile['maps_url']);
@@ -83,6 +85,7 @@ class LandingController extends BaseController
 
         return view('Guest/profil', [
             'desaProfile' => $profile,
+            'geografi'    => $geografi,
         ]);
     }
 
@@ -93,9 +96,9 @@ class LandingController extends BaseController
         
         // Format foto URL
         foreach ($perangkatDesa as &$perangkat) {
-            $perangkat['foto_url'] = $perangkat['foto'] 
+            $perangkat['foto_url'] = !empty($perangkat['foto']) 
                 ? base_url($perangkat['foto']) 
-                : base_url('assets/img/guest.webp');
+                : null;
         }
 
         return view('Guest/perangkat_desa', [
@@ -120,6 +123,23 @@ class LandingController extends BaseController
         $pengumuman = $pengumumanModel->orderBy('created_at', 'DESC')->findAll();
 
         return view('Guest/pengumuman', ['pengumuman' => $pengumuman]);
+    }
+
+    public function detailPengumuman($id)
+    {
+        $pengumumanModel = new PengumumanModel();
+        $pengumuman = $pengumumanModel->find($id);
+
+        if (!$pengumuman) {
+            return redirect()->to('/pengumuman')->with('error', 'Pengumuman tidak ditemukan.');
+        }
+
+        $other_pengumuman = $pengumumanModel->where('id !=', $id)->orderBy('created_at', 'DESC')->findAll(3);
+
+        return view('Guest/pengumuman_detail', [
+            'item'             => $pengumuman,
+            'other_pengumuman' => $other_pengumuman,
+        ]);
     }
 
     public function pengaduan()
@@ -272,9 +292,12 @@ class LandingController extends BaseController
             }
         }
 
+        $other_news = $newsModel->where('id !=', $id)->orderBy('tanggal_waktu', 'DESC')->findAll(3);
+
         return view('Guest/berita_detail', [
-            'item'  => $news,
-            'media' => $media,
+            'item'       => $news,
+            'media'      => $media,
+            'other_news' => $other_news,
         ]);
     }
 
@@ -320,7 +343,10 @@ class LandingController extends BaseController
         $produkModel = new UmkmProdukModel();
         $gambarModel = new UmkmProdukGambarModel();
 
-        $umkm = $umkmModel->where('status', 'approved')->find($id);
+        $umkm = $umkmModel->select('umkm.*, users.username as pemilik_username, users.role as pemilik_role')
+                          ->join('users', 'users.id = umkm.user_id', 'left')
+                          ->where('umkm.status', 'approved')
+                          ->find($id);
         if (!$umkm) {
             return redirect()->to('/umkm')->with('error', 'UMKM tidak ditemukan.');
         }
@@ -338,6 +364,35 @@ class LandingController extends BaseController
             'umkm'      => $umkm,
             'ecommerce' => $ecommerce,
             'produk'    => $produkList,
+        ]);
+    }
+
+    public function umkmProdukDetail($produkId)
+    {
+        $umkmModel   = new UmkmModel();
+        $produkModel = new UmkmProdukModel();
+        $gambarModel = new UmkmProdukGambarModel();
+
+        $produk = $produkModel->find($produkId);
+        if (!$produk) {
+            return redirect()->to('/umkm')->with('error', 'Produk tidak ditemukan.');
+        }
+
+        // Pastikan UMKM-nya sudah approved
+        $umkm = $umkmModel->select('umkm.*, users.username as pemilik_username, users.role as pemilik_role')
+                          ->join('users', 'users.id = umkm.user_id', 'left')
+                          ->where('umkm.status', 'approved')
+                          ->find($produk['umkm_id']);
+        if (!$umkm) {
+            return redirect()->to('/umkm')->with('error', 'UMKM tidak ditemukan atau belum disetujui.');
+        }
+
+        $produk['gambar'] = $gambarModel->where('produk_id', $produkId)->findAll();
+
+        return view('Guest/produk_detail', [
+            'title'  => esc($produk['nama_produk']) . ' - ' . esc($umkm['nama_toko']),
+            'produk' => $produk,
+            'umkm'   => $umkm,
         ]);
     }
 

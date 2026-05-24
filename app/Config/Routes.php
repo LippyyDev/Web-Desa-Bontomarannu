@@ -15,10 +15,12 @@ $routes->get('/geografis', 'Guest\LandingController::geografis');
 $routes->get('/perangkat-desa', 'Guest\LandingController::perangkatDesa');
 $routes->get('/inventaris', 'Guest\LandingController::inventaris');
 $routes->get('/pengumuman', 'Guest\LandingController::pengumuman');
+$routes->get('/pengumuman/(:num)', 'Guest\LandingController::detailPengumuman/$1');
 $routes->get('/pengaduan', 'Guest\LandingController::pengaduan');
 $routes->post('/pengaduan', 'Guest\LandingController::submitPengaduan');
 $routes->get('/umkm', 'Guest\LandingController::umkm');
 $routes->get('/umkm/(:num)', 'Guest\LandingController::umkmDetail/$1');
+$routes->get('/umkm/produk/(:num)', 'Guest\LandingController::umkmProdukDetail/$1');
 $routes->get('/pariwisata', 'Guest\LandingController::pariwisata');
 $routes->get('/pariwisata/(:num)', 'Guest\LandingController::pariwisataDetail/$1');
 
