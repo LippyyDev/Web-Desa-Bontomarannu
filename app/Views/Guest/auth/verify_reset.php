@@ -1,7 +1,7 @@
 <?= $this->extend('Guest/auth_layout') ?>
 
 <?= $this->section('styles') ?>
-<link rel="stylesheet" href="<?= base_url('assets/css/guest/auth/login.css?v=' . time()) ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/guest/auth/verify_reset.css?v=' . time()) ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -38,33 +38,33 @@ $heroImages = [
                 <a href="<?= base_url('/') ?>">
                     <img src="<?= base_url('assets/img/logo.png') ?>" alt="Logo Desa" width="60" class="mb-3 drop-shadow">
                 </a>
-                <h4 class="fw-bold mb-1 text-white">Selamat Datang</h4>
-                <p class="text-white-50 small">Masuk dengan email atau username Anda.</p>
+                <h4 class="fw-bold mb-1 text-white">Verifikasi OTP</h4>
+                <p class="text-white-50 small">Masukkan email dan kode OTP yang kami kirimkan.</p>
             </div>
             
-            <form method="post" action="<?= base_url('/login') ?>">
+            <?php if (!empty($previewOtp)): ?>
+                <div class="alert alert-info text-center small py-2 mb-3" style="background: rgba(13, 202, 240, 0.2); border-color: rgba(13, 202, 240, 0.3); color: #fff;">
+                    OTP: <strong><?= esc($previewOtp) ?></strong>
+                </div>
+            <?php endif; ?>
+            
+            <form method="post" action="<?= base_url('/verify-reset') ?>">
                 <?= csrf_field() ?>
                 <div class="mb-3">
-                    <label class="form-label text-white-50 small mb-1">Email atau Username</label>
-                    <input type="text" class="form-control glass-input" name="identity" value="<?= old('identity') ?>" required placeholder="Masukkan username atau email">
+                    <label class="form-label text-white-50 small mb-1">Email</label>
+                    <input type="email" class="form-control glass-input" name="email" value="<?= $pendingEmail ?? old('email') ?>" required placeholder="Masukkan email">
                 </div>
                 <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <label class="form-label text-white-50 small mb-0">Password</label>
-                        <a class="small text-white-50 text-decoration-none hover-white" href="<?= base_url('/forgot-password') ?>">Lupa password?</a>
-                    </div>
-                    <input type="password" class="form-control glass-input" name="password" required placeholder="Masukkan password">
+                    <label class="form-label text-white-50 small mb-1">Kode OTP</label>
+                    <input type="text" class="form-control glass-input" name="otp" maxlength="6" required placeholder="XXXXXX">
                 </div>
-                <button class="btn glass-btn w-100 fw-bold" type="submit">Masuk</button>
+                
+                <button class="btn glass-btn w-100 fw-bold" type="submit">Verifikasi Kode</button>
             </form>
             
-            <div class="text-center small mt-4 text-white-50">
-                Belum punya akun? <a href="<?= base_url('/register') ?>" class="text-white fw-semibold text-decoration-none hover-white">Daftar sekarang</a>
-            </div>
-            
             <div class="mt-4 pt-3 border-top border-secondary border-opacity-50 text-center">
-                <a href="<?= base_url('/') ?>" class="text-white-50 text-decoration-none hover-white small">
-                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Beranda
+                <a href="<?= base_url('/login') ?>" class="text-white-50 text-decoration-none hover-white small">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali ke Login
                 </a>
             </div>
         </div>

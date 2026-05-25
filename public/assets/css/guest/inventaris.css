@@ -67,7 +67,127 @@
 .delay-200 { transition-delay: 200ms; }
 .delay-300 { transition-delay: 300ms; }
 
-/* Inventaris Card (Adapted from News Card) */
+/* ── Search Box ── */
+.inv-search-box {
+    background: #ffffff;
+    border-radius: 50px;
+    padding: 6px 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #edf2f7;
+    margin: 0 auto 3rem auto;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    transition: box-shadow 0.3s ease;
+}
+.inv-search-box:focus-within {
+    box-shadow: 0 4px 20px rgba(46, 125, 50, 0.15);
+    border-color: #a5d6a7;
+}
+.inv-search-box input {
+    border: none;
+    box-shadow: none !important;
+    background: transparent;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    flex: 1;
+    outline: none;
+}
+.inv-search-box input::placeholder { color: #94a3b8; }
+.inv-search-box .btn-search {
+    border-radius: 50px;
+    padding: 8px 24px;
+    background: #2E7D32;
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.inv-search-box .btn-search:hover { background: #1b5e20; }
+.inv-search-box .btn-reset {
+    background: #f1f5f9;
+    color: #64748b;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.inv-search-box .btn-reset:hover { background: #e2e8f0; color: #ef4444; }
+
+/* ── Skeleton Loader ── */
+.skeleton-inv-card {
+    border-radius: 24px;
+    background: #fff;
+    border: 1px solid #edf2f7;
+    overflow: hidden;
+    height: 100%;
+}
+.skeleton-img-block {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+.skeleton-body { padding: 1.25rem; }
+.skeleton-line {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    margin-bottom: 10px;
+}
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Pagination ── */
+.custom-pagination { text-align: center; }
+.pagination-wrapper { display: inline-flex; align-items: center; gap: 6px; }
+.pagination-btn {
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background: #f0fdf4;
+    border-color: #16a34a;
+    color: #16a34a;
+}
+.pagination-btn.active {
+    background: #16a34a;
+    border-color: #16a34a;
+    color: #fff;
+}
+.pagination-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f8fafc;
+}
+
+/* ── Inventaris Card ── */
 .inv-card {
     border: 1px solid #edf2f7;
     border-radius: 24px;
@@ -122,19 +242,18 @@
     align-items: center;
     gap: 6px;
 }
-.inv-status-pill.status-baik { 
-    background: rgba(22, 163, 74, 0.7); /* Vibrant Green */
-    border-color: rgba(134, 239, 172, 0.4); 
+.inv-status-pill.status-baik {
+    background: rgba(22, 163, 74, 0.7);
+    border-color: rgba(134, 239, 172, 0.4);
 }
-.inv-status-pill.status-rusak-ringan { 
-    background: rgba(245, 158, 11, 0.7); /* Vibrant Amber/Yellow */
-    border-color: rgba(253, 224, 71, 0.4); 
+.inv-status-pill.status-rusak-ringan {
+    background: rgba(245, 158, 11, 0.7);
+    border-color: rgba(253, 224, 71, 0.4);
 }
-.inv-status-pill.status-rusak-berat { 
-    background: rgba(220, 38, 38, 0.7); /* Vibrant Red */
-    border-color: rgba(252, 165, 165, 0.4); 
+.inv-status-pill.status-rusak-berat {
+    background: rgba(220, 38, 38, 0.7);
+    border-color: rgba(252, 165, 165, 0.4);
 }
-
 .inv-placeholder {
     width: 100%;
     height: 100%;
@@ -144,9 +263,7 @@
     color: #cbd5e1;
     background-color: #f8fafc;
 }
-.inv-placeholder i {
-    font-size: 3rem;
-}
+.inv-placeholder i { font-size: 3rem; }
 .inv-card-body {
     padding: 1.25rem 0 0 0;
     display: flex;
@@ -165,9 +282,7 @@
     line-height: 1.4;
     transition: color 0.2s ease;
 }
-.inv-card:hover .inv-title {
-    color: #2E7D32;
-}
+.inv-card:hover .inv-title { color: #2E7D32; }
 .inv-type {
     font-size: 0.85rem;
     color: #64748b;

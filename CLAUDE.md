@@ -297,6 +297,10 @@ Semua endpoint data yang diakses via AJAX **WAJIB** menggunakan pola berikut. Re
 - Guest Perangkat Desa → POST /perangkat-desa/api  (limit: 12 fixed, search nama/jabatan/kontak, no auth)
 - Guest Berita       → POST /berita/api             (limit: 9 fixed, search judul/isi, pagination, lazy loading, no auth)
 - Guest Pengumuman   → POST /pengumuman/api         (limit: 9 fixed, search judul/isi, pagination, lazy loading, no auth)
+- Guest Inventaris   → POST /inventaris/api         (limit: 9 fixed, search nama_barang/jenis, pagination, lazy loading, no auth)
+- Guest Galeri       → POST /galeri/api             (limit: 9 fixed, search nama_album/deskripsi, pagination, lazy loading, no auth)
+- Guest UMKM         → POST /umkm/api               (limit: 9 fixed, search nama_toko/deskripsi, pagination, only approved, no auth)
+- Guest Pariwisata   → POST /pariwisata/api         (limit: 9 fixed, search nama_tempat/deskripsi, pagination, lazy loading, no auth)
 ```
 
 ---

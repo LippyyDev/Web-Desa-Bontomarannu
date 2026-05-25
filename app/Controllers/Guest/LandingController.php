@@ -146,12 +146,60 @@ class LandingController extends BaseController
 
     public function inventaris()
     {
-        $inventarisModel = new InventarisDesaModel();
-        $inventaris = $inventarisModel->orderBy('created_at', 'DESC')->findAll();
-
         return view('Guest/inventaris', [
             'title' => 'Inventaris Aset Desa | Website Desa Bonto Marannu',
-            'inventaris' => $inventaris
+        ]);
+    }
+
+    public function inventarisApi()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 9;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
+
+        $model = new InventarisDesaModel();
+
+        if ($search !== '') {
+            $model->groupStart()
+                ->like('nama_barang', $search)
+                ->orLike('jenis', $search)
+                ->groupEnd();
+        }
+
+        $total = $model->countAllResults(false);
+
+        $list = $model->orderBy('created_at', 'DESC')
+            ->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($list as $item) {
+            $statusClass = 'status-baik';
+            $status = strtolower($item['status']);
+            if ($status === 'rusak ringan') $statusClass = 'status-rusak-ringan';
+            elseif ($status === 'rusak berat') $statusClass = 'status-rusak-berat';
+
+            $data[] = [
+                'id'          => $item['id'],
+                'nama_barang' => $item['nama_barang'],
+                'jenis'       => $item['jenis'],
+                'total'       => $item['total'],
+                'status'      => $item['status'],
+                'status_class'=> $statusClass,
+                'foto_url'    => !empty($item['foto']) ? base_url($item['foto']) : null,
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
 
@@ -398,20 +446,68 @@ class LandingController extends BaseController
 
     public function galeri()
     {
-        $albumModel   = new GalleryAlbumModel();
-        $mediaModel   = new GalleryMediaModel();
-        $albums       = $albumModel->orderBy('tanggal_waktu', 'DESC')->findAll();
-        $albumMedia   = [];
+        return view('Guest/galeri', [
+            'title' => 'Galeri | Website Desa Bonto Marannu',
+        ]);
+    }
 
-        foreach ($albums as $album) {
-            $firstMedia = $mediaModel->where('album_id', $album['id'])->first();
-            $albumMedia[$album['id']] = $firstMedia ? $firstMedia['media_path'] : $album['thumbnail'];
+    public function galeriApi()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
         }
 
-        return view('Guest/galeri', [
-            'title'      => 'Galeri | Website Desa Bonto Marannu',
-            'albums'     => $albums,
-            'albumMedia' => $albumMedia,
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 9;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
+
+        $albumModel = new GalleryAlbumModel();
+        $mediaModel = new GalleryMediaModel();
+
+        if ($search !== '') {
+            $albumModel->groupStart()
+                ->like('nama_album', $search)
+                ->orLike('deskripsi', $search)
+                ->groupEnd();
+        }
+
+        $total = $albumModel->countAllResults(false);
+
+        $albums = $albumModel->orderBy('tanggal_waktu', 'DESC')
+            ->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($albums as $album) {
+            // Ambil media pertama dari album (foto), fallback ke thumbnail album
+            $firstMedia = $mediaModel
+                ->where('album_id', $album['id'])
+                ->where('media_type', 'foto')
+                ->orderBy('id', 'ASC')
+                ->first();
+
+            $coverPath = null;
+            if ($firstMedia) {
+                $coverPath = base_url($firstMedia['media_path']);
+            } elseif (!empty($album['thumbnail'])) {
+                $coverPath = base_url($album['thumbnail']);
+            }
+
+            $data[] = [
+                'id'           => $album['id'],
+                'nama_album'   => $album['nama_album'],
+                'deskripsi'    => $album['deskripsi'] ?? '',
+                'tanggal_waktu'=> date('d M Y', strtotime($album['tanggal_waktu'])),
+                'cover_url'    => $coverPath,
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
 
@@ -521,37 +617,75 @@ class LandingController extends BaseController
 
     public function umkm()
     {
-        $umkmModel    = new UmkmModel();
-        $produkModel  = new UmkmProdukModel();
-        $gambarModel  = new UmkmProdukGambarModel();
-
-        $search = $this->request->getGet('search') ?? '';
-
-        $builder = $umkmModel->where('status', 'approved');
-        if (!empty($search)) {
-            $builder->like('nama_toko', $search);
-        }
-
-        $list = $builder->orderBy('approved_at', 'DESC')->findAll();
-
-        // Ambil produk pertama + thumbnail untuk tiap toko
-        foreach ($list as &$item) {
-            $produkPertama = $produkModel->where('umkm_id', $item['id'])->first();
-            if ($produkPertama) {
-                $gambar = $gambarModel->where('produk_id', $produkPertama['id'])->first();
-                $item['thumbnail'] = $gambar ? $gambar['gambar_path'] : null;
-            } else {
-                $item['thumbnail'] = null;
-            }
-        }
-        unset($item);
-
         return view('Guest/umkm', [
-            'title'  => 'UMKM | Website Desa Bonto Marannu',
-            'list'   => $list,
-            'search' => $search,
+            'title' => 'UMKM | Website Desa Bonto Marannu',
         ]);
     }
+
+    public function umkmApi()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 9;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
+
+        $umkmModel   = new UmkmModel();
+        $gambarModel = new UmkmProdukGambarModel();
+        $produkModel = new UmkmProdukModel();
+
+        $umkmModel->where('status', 'approved');
+
+        if ($search !== '') {
+            $umkmModel->groupStart()
+                ->like('nama_toko', $search)
+                ->orLike('deskripsi', $search)
+                ->groupEnd();
+        }
+
+        $total = $umkmModel->countAllResults(false);
+
+        $list = $umkmModel->orderBy('approved_at', 'DESC')
+            ->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($list as $item) {
+            // Cover: foto_toko utama, fallback ke gambar produk pertama
+            $coverUrl = null;
+            if (!empty($item['foto_toko'])) {
+                $coverUrl = base_url($item['foto_toko']);
+            } else {
+                $produkPertama = $produkModel->where('umkm_id', $item['id'])->first();
+                if ($produkPertama) {
+                    $gambar = $gambarModel->where('produk_id', $produkPertama['id'])->first();
+                    if ($gambar) {
+                        $coverUrl = base_url($gambar['gambar_path']);
+                    }
+                }
+            }
+
+            $data[] = [
+                'id'        => $item['id'],
+                'nama_toko' => $item['nama_toko'],
+                'deskripsi' => strip_tags($item['deskripsi'] ?? ''),
+                'alamat'    => $item['alamat'] ?? '',
+                'kontak'    => $item['kontak'] ?? '',
+                'cover_url' => $coverUrl,
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
+        ]);
+    }
+
 
     public function umkmDetail($id)
     {
@@ -615,35 +749,68 @@ class LandingController extends BaseController
 
     public function pariwisata()
     {
+        return view('Guest/pariwisata', [
+            'title' => 'Pariwisata | Website Desa Bonto Marannu',
+        ]);
+    }
+
+    public function pariwisataApi()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 9;
+        $search = trim($this->request->getPost('search') ?? '');
+        $offset = ($page - 1) * $limit;
+
         $pariwisataModel = new PariwisataModel();
         $gambarModel     = new PariwisataGambarModel();
 
-        $search = $this->request->getGet('search') ?? '';
-
-        $builder = $pariwisataModel;
-        if (!empty($search)) {
-            $builder->like('nama_tempat', $search);
+        if ($search !== '') {
+            $pariwisataModel->groupStart()
+                ->like('nama_tempat', $search)
+                ->orLike('deskripsi', $search)
+                ->groupEnd();
         }
 
-        $list = $builder->orderBy('created_at', 'DESC')->findAll();
+        $total = $pariwisataModel->countAllResults(false);
 
-        // Ambil gambar pertama jika tidak ada thumbnail
-        foreach ($list as &$item) {
-            if (empty($item['thumbnail'])) {
-                $gambar = $gambarModel->where('pariwisata_id', $item['id'])->first();
-                $item['thumbnail_display'] = $gambar ? $gambar['gambar_path'] : null;
+        $list = $pariwisataModel->orderBy('created_at', 'DESC')
+            ->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($list as $item) {
+            // Cover: thumbnail utama, fallback ke gambar pertama dari gallery
+            $coverUrl = null;
+            if (!empty($item['thumbnail'])) {
+                $coverUrl = base_url($item['thumbnail']);
             } else {
-                $item['thumbnail_display'] = $item['thumbnail'];
+                $gambar = $gambarModel->where('pariwisata_id', $item['id'])->first();
+                if ($gambar) {
+                    $coverUrl = base_url($gambar['gambar_path']);
+                }
             }
-        }
-        unset($item);
 
-        return view('Guest/pariwisata', [
-            'title'  => 'Pariwisata | Website Desa Bonto Marannu',
-            'list'   => $list,
-            'search' => $search,
+            $data[] = [
+                'id'          => $item['id'],
+                'nama_tempat' => $item['nama_tempat'],
+                'deskripsi'   => strip_tags($item['deskripsi'] ?? ''),
+                'alamat'      => $item['alamat'] ?? '',
+                'cover_url'   => $coverUrl,
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
+
 
     public function pariwisataDetail($id)
     {

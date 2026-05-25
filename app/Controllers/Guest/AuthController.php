@@ -381,37 +381,31 @@ class AuthController extends BaseController
         session()->set('pending_reset', $email);
 
         if ($emailSent) {
-            return redirect()->to('/reset-password')->with('info', 'Kode OTP telah dikirim ke email Anda. Silakan cek inbox email Anda.');
+            return redirect()->to('/verify-reset')->with('info', 'Kode OTP telah dikirim ke email Anda. Silakan cek inbox email Anda.');
         } else {
-            return redirect()->to('/reset-password')->with('warning', 'Gagal mengirim email. Silakan cek kode OTP di bawah ini atau coba lagi nanti.');
+            return redirect()->to('/verify-reset')->with('warning', 'Gagal mengirim email. Silakan cek kode OTP di bawah ini atau coba lagi nanti.');
         }
     }
 
-    public function resetPassword()
+    public function verifyReset()
     {
-        return view('Guest/auth/reset', [
-            'title'        => 'Reset Password | Website Desa Bonto Marannu',
+        return view('Guest/auth/verify_reset', [
+            'title'        => 'Verifikasi OTP | Website Desa Bonto Marannu',
             'pendingEmail' => session()->get('pending_reset'),
             'previewOtp'   => session()->getFlashdata('otp_preview'),
         ]);
     }
 
-    public function doResetPassword()
+    public function doVerifyReset()
     {
-        $email    = trim($this->request->getPost('email'));
-        $otp      = trim($this->request->getPost('otp'));
-        $password = $this->request->getPost('password');
-        $confirm  = $this->request->getPost('password_confirm');
+        $email = trim($this->request->getPost('email'));
+        $otp   = trim($this->request->getPost('otp'));
 
-        if ($password !== $confirm) {
-            return redirect()->back()->with('error', 'Password tidak sama.');
-        }
-
-        // Ambil data reset dari session (tidak perlu tabel)
+        // Ambil data reset dari session
         $resetData = session()->get('pending_password_reset');
 
         if (!$resetData) {
-            return redirect()->back()->with('error', 'Sesi reset password tidak ditemukan. Silakan request reset password lagi.');
+            return redirect()->back()->with('error', 'Sesi reset password tidak ditemukan. Silakan request ulang.');
         }
 
         // Cek email
@@ -427,8 +421,41 @@ class AuthController extends BaseController
         // Cek kadaluarsa
         if (strtotime($resetData['expires_at']) < time()) {
             session()->remove('pending_password_reset');
-            return redirect()->to('/forgot-password')->with('error', 'Kode OTP sudah kadaluarsa. Silakan request reset password lagi.');
+            return redirect()->to('/forgot-password')->with('error', 'Kode OTP kadaluarsa. Silakan request ulang.');
         }
+
+        // OTP Valid, ijinkan lanjut ke halaman form password baru
+        session()->set('reset_otp_verified', true);
+        
+        return redirect()->to('/new-password')->with('success', 'Kode OTP valid. Silakan buat password baru Anda.');
+    }
+
+    public function newPassword()
+    {
+        // Cek apakah user sudah memverifikasi OTP
+        if (!session()->get('reset_otp_verified') || !session()->get('pending_password_reset')) {
+            return redirect()->to('/forgot-password')->with('error', 'Akses ditolak. Silakan verifikasi OTP terlebih dahulu.');
+        }
+
+        return view('Guest/auth/new_password', [
+            'title' => 'Buat Password Baru | Website Desa Bonto Marannu'
+        ]);
+    }
+
+    public function doNewPassword()
+    {
+        if (!session()->get('reset_otp_verified') || !session()->get('pending_password_reset')) {
+            return redirect()->to('/forgot-password')->with('error', 'Sesi tidak valid.');
+        }
+
+        $password = $this->request->getPost('password');
+        $confirm  = $this->request->getPost('password_confirm');
+
+        if ($password !== $confirm) {
+            return redirect()->back()->with('error', 'Password tidak sama.');
+        }
+
+        $resetData = session()->get('pending_password_reset');
 
         // Update password
         $userModel = new UserModel();
@@ -439,8 +466,9 @@ class AuthController extends BaseController
         // Bersihkan session
         session()->remove('pending_password_reset');
         session()->remove('pending_reset');
+        session()->remove('reset_otp_verified');
 
-        return redirect()->to('/login')->with('success', 'Password berhasil direset.');
+        return redirect()->to('/login')->with('success', 'Password berhasil direset. Silakan login dengan password baru.');
     }
 
     public function logout()
