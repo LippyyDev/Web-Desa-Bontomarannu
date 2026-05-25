@@ -123,19 +123,6 @@
             <h2 class="profil-desa-title">Buat <span>Pengaduan</span></h2>
         </div>
 
-        <?php if (session()->getFlashdata('message')) : ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?= session()->getFlashdata('message'); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
-
-        <?php if (session()->getFlashdata('error')) : ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?= session()->getFlashdata('error'); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
 
         <div class="form-card mb-4">
             <form action="<?= base_url('/pengaduan') ?>" method="post" enctype="multipart/form-data" id="pengaduanForm">
@@ -299,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (DANGER_PATTERN.test(perihalVal) || DANGER_PATTERN.test(isiVal)) {
                 e.preventDefault();
-                alert('Input mengandung karakter atau pola yang tidak diizinkan. Silakan koreksi dan coba lagi.');
+                showError('Input mengandung karakter atau pola yang tidak diizinkan. Silakan koreksi dan coba lagi.');
                 return;
             }
 
@@ -360,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const file = fileInput.files[0];
             if (!file) return;
             if (!validateImageFile(file)) {
-                alert('Foto tidak valid. Hanya JPG/JPEG/PNG dan maksimal 1MB.');
+                showError('Foto tidak valid. Hanya JPG/JPEG/PNG dan maksimal 1MB.');
                 fileInput.value = '';
                 previewDiv.innerHTML = '';
                 return;
@@ -463,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(() => {
                 btnCek.disabled = false;
                 btnCek.innerHTML = '<i class="bi bi-check-lg me-1"></i> Cek';
-                alert('Terjadi kesalahan saat verifikasi. Silakan coba lagi.');
+                showError('Terjadi kesalahan saat verifikasi. Silakan coba lagi.');
             });
         });
     }

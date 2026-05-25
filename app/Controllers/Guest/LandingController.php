@@ -360,18 +360,64 @@ class LandingController extends BaseController
 
     public function submitPengaduan()
     {
+        // --- Cek CAPTCHA server-side ---
         if (!session()->get('captcha_verified')) {
             return redirect()->back()->withInput()->with('error', 'Verifikasi CAPTCHA diperlukan sebelum mengirim pengaduan.');
+        }
+
+        // --- Cek rate limit berbasis IP (3 per jam untuk guest) ---
+        $cooldown = $this->getGuestCooldownSeconds();
+        if ($cooldown > 0) {
+            $menit = ceil($cooldown / 60);
+            return redirect()->back()->withInput()->with('error', "Batas pengiriman tercapai. Coba lagi dalam {$menit} menit.");
+        }
+
+        // ----------------------------------------------------------------
+        // Sanitasi & validasi input
+        // ----------------------------------------------------------------
+        $nama    = trim(strip_tags($this->request->getPost('nama') ?? ''));
+        $kontak  = trim(strip_tags($this->request->getPost('kontak') ?? ''));
+        $perihal = trim(strip_tags($this->request->getPost('perihal') ?? ''));
+        $isi     = trim(strip_tags($this->request->getPost('isi') ?? ''));
+
+        // Hapus karakter < > dari perihal & isi (mencegah tag injection sisa strip_tags)
+        $perihal = preg_replace('/[<>]/', '', $perihal);
+        $isi     = preg_replace('/[<>]/', '', $isi);
+
+        // Nama: hanya huruf & spasi, maksimal 100 karakter
+        if (!preg_match('/^[\p{L}\s]{1,100}$/u', $nama)) {
+            return redirect()->back()->withInput()->with('error', 'Nama tidak valid. Hanya huruf dan spasi, maksimal 100 karakter.');
+        }
+
+        // Kontak: tidak boleh kosong, maksimal 50 karakter
+        if (mb_strlen($kontak) < 1 || mb_strlen($kontak) > 50) {
+            return redirect()->back()->withInput()->with('error', 'Kontak tidak boleh kosong dan maksimal 50 karakter.');
+        }
+
+        // Perihal: 3–200 karakter
+        if (mb_strlen($perihal) < 3 || mb_strlen($perihal) > 200) {
+            return redirect()->back()->withInput()->with('error', 'Perihal harus antara 3–200 karakter.');
+        }
+
+        // Isi: 10–2000 karakter
+        if (mb_strlen($isi) < 10 || mb_strlen($isi) > 2000) {
+            return redirect()->back()->withInput()->with('error', 'Isi pengaduan harus antara 10–2000 karakter.');
+        }
+
+        // Blok pola script berbahaya di perihal & isi
+        $dangerPattern = '/(javascript\s*:|vbscript\s*:|data\s*:|expression\s*\(|on\w+\s*=|<\s*script|\$\{|`[^`]*`)/i';
+        if (preg_match($dangerPattern, $perihal) || preg_match($dangerPattern, $isi)) {
+            return redirect()->back()->withInput()->with('error', 'Input mengandung karakter atau pola yang tidak diizinkan.');
         }
 
         $pengaduanModel = new PengaduanModel();
 
         $data = [
-            'user_id' => session()->get('user_id'), // Will be null if not logged in
-            'nama'    => $this->request->getPost('nama'),
-            'kontak'  => $this->request->getPost('kontak'),
-            'perihal' => $this->request->getPost('perihal'),
-            'isi'     => $this->request->getPost('isi')
+            'user_id' => null, // Guest tidak memiliki user_id
+            'nama'    => $nama,
+            'kontak'  => $kontak,
+            'perihal' => $perihal,
+            'isi'     => $isi,
         ];
 
         // Handle foto upload
@@ -394,16 +440,19 @@ class LandingController extends BaseController
 
         $pengaduanId = $pengaduanModel->insert($data, true);
 
+        // Catat pengiriman ke cache rate-limit IP
+        $this->recordGuestSubmission();
+
         // Reset CAPTCHA session setelah berhasil kirim
         session()->set('captcha_verified', false);
         session()->set('captcha_answer', '');
 
         // Buat notifikasi untuk semua staff
-        $userModel = new \App\Models\UserModel();
-        $staffList = $userModel->where('role', 'staf')->findAll();
-        $notifModel = new \App\Models\NotificationModel();
+        $userModel    = new \App\Models\UserModel();
+        $staffList    = $userModel->where('role', 'staf')->findAll();
+        $notifModel   = new \App\Models\NotificationModel();
         $emailService = new \App\Libraries\EmailService();
-        
+
         $pengaduanUrl = base_url('/staff/pengaduan/' . $pengaduanId);
 
         foreach ($staffList as $staff) {
@@ -416,8 +465,7 @@ class LandingController extends BaseController
                 'is_read'              => 0,
                 'created_at'           => date('Y-m-d H:i:s'),
             ]);
-            
-            // Kirim email notifikasi ke staff (masuk ke EmailQueue)
+
             $emailService->sendNotification(
                 $staff['email'],
                 $staff['username'],
@@ -514,24 +562,63 @@ class LandingController extends BaseController
     public function galeriDetail($id)
     {
         $albumModel = new GalleryAlbumModel();
-        $mediaModel = new GalleryMediaModel();
 
         $album = $albumModel->find($id);
         if (!$album) {
             return redirect()->to('/galeri')->with('error', 'Album tidak ditemukan.');
         }
 
-        $media = $mediaModel->where('album_id', $id)->findAll();
-        foreach ($media as &$item) {
-            if ($item['media_type'] === 'video_link') {
-                $item['embed_url'] = $this->toEmbedUrl($item['media_path']);
-            }
+        return view('Guest/galeri_detail', [
+            'title' => 'Detail Galeri | Website Desa Bonto Marannu',
+            'album' => $album,
+        ]);
+    }
+
+    public function galeriDetailMediaApi($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
         }
 
-        return view('Guest/galeri_detail', [
-            'title'  => 'Detail Galeri | Website Desa Bonto Marannu',
-            'album'  => $album,
-            'media'  => $media,
+        $albumModel = new GalleryAlbumModel();
+        $mediaModel = new GalleryMediaModel();
+
+        $album = $albumModel->find((int)$id);
+        if (!$album) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Album tidak ditemukan.'])->setStatusCode(404);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 8;
+        $offset = ($page - 1) * $limit;
+
+        $total     = $mediaModel->where('album_id', (int)$id)->countAllResults();
+        $mediaList = $mediaModel->where('album_id', (int)$id)->orderBy('id', 'ASC')->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($mediaList as $item) {
+            $entry = [
+                'id'         => $item['id'],
+                'media_type' => $item['media_type'],
+                'media_path' => null,
+                'embed_url'  => null,
+            ];
+
+            if ($item['media_type'] === 'video_link') {
+                $entry['embed_url'] = $this->toEmbedUrl($item['media_path']);
+            } else {
+                $entry['media_path'] = base_url($item['media_path']);
+            }
+
+            $data[] = $entry;
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
 
@@ -589,19 +676,11 @@ class LandingController extends BaseController
 
     public function detailBerita($id)
     {
-        $newsModel  = new NewsModel();
-        $mediaModel = new NewsMediaModel();
-        $news       = $newsModel->find($id);
+        $newsModel = new NewsModel();
+        $news      = $newsModel->find($id);
 
         if (!$news) {
             return redirect()->to('/berita')->with('error', 'Berita tidak ditemukan.');
-        }
-
-        $media = $mediaModel->where('news_id', $id)->findAll();
-        foreach ($media as &$item) {
-            if (isset($item['media_type']) && $item['media_type'] === 'video_link') {
-                $item['embed_url'] = $this->toEmbedUrl($item['media_path']);
-            }
         }
 
         $other_news = $newsModel->where('id !=', $id)->orderBy('tanggal_waktu', 'DESC')->findAll(3);
@@ -609,8 +688,47 @@ class LandingController extends BaseController
         return view('Guest/berita_detail', [
             'title'      => 'Detail Berita | Website Desa Bonto Marannu',
             'item'       => $news,
-            'media'      => $media,
             'other_news' => $other_news,
+        ]);
+    }
+
+    public function detailBeritaMediaApi($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $newsModel  = new NewsModel();
+        $mediaModel = new NewsMediaModel();
+
+        $news = $newsModel->find((int)$id);
+        if (!$news) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Berita tidak ditemukan.'])->setStatusCode(404);
+        }
+
+        $mediaList = $mediaModel->where('news_id', (int)$id)->findAll();
+
+        $data = [];
+        foreach ($mediaList as $item) {
+            $entry = [
+                'id'         => $item['id'],
+                'media_type' => $item['media_type'],
+                'media_path' => null,
+                'embed_url'  => null,
+            ];
+
+            if ($item['media_type'] === 'video_link') {
+                $entry['embed_url'] = $this->toEmbedUrl($item['media_path']);
+            } else {
+                $entry['media_path'] = base_url($item['media_path']);
+            }
+
+            $data[] = $entry;
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'data'    => $data,
         ]);
     }
 
@@ -689,10 +807,8 @@ class LandingController extends BaseController
 
     public function umkmDetail($id)
     {
-        $umkmModel   = new UmkmModel();
-        $ecomModel   = new UmkmEcommerceModel();
-        $produkModel = new UmkmProdukModel();
-        $gambarModel = new UmkmProdukGambarModel();
+        $umkmModel = new UmkmModel();
+        $ecomModel = new UmkmEcommerceModel();
 
         $umkm = $umkmModel->select('umkm.*, users.username as pemilik_username, users.role as pemilik_role')
                           ->join('users', 'users.id = umkm.user_id', 'left')
@@ -702,19 +818,58 @@ class LandingController extends BaseController
             return redirect()->to('/umkm')->with('error', 'UMKM tidak ditemukan.');
         }
 
-        $ecommerce  = $ecomModel->where('umkm_id', $id)->findAll();
-        $produkList = $produkModel->where('umkm_id', $id)->findAll();
-
-        foreach ($produkList as &$produk) {
-            $produk['gambar'] = $gambarModel->where('produk_id', $produk['id'])->findAll();
-        }
-        unset($produk);
+        $ecommerce = $ecomModel->where('umkm_id', $id)->findAll();
 
         return view('Guest/umkm_detail', [
             'title'     => esc($umkm['nama_toko']) . ' - UMKM | Website Desa Bonto Marannu',
             'umkm'      => $umkm,
             'ecommerce' => $ecommerce,
-            'produk'    => $produkList,
+        ]);
+    }
+
+    public function umkmProdukApi($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $umkmModel   = new UmkmModel();
+        $produkModel = new UmkmProdukModel();
+        $gambarModel = new UmkmProdukGambarModel();
+
+        $umkm = $umkmModel->where('status', 'approved')->find((int)$id);
+        if (!$umkm) {
+            return $this->response->setJSON(['success' => false, 'error' => 'UMKM tidak ditemukan.'])->setStatusCode(404);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 8;
+        $offset = ($page - 1) * $limit;
+
+        $total     = $produkModel->where('umkm_id', (int)$id)->countAllResults();
+        $produkList = $produkModel->where('umkm_id', (int)$id)->orderBy('id', 'ASC')->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($produkList as $produk) {
+            $gambars = $gambarModel->where('produk_id', $produk['id'])->findAll();
+            $gambarUrl = !empty($gambars) ? base_url($gambars[0]['gambar_path']) : null;
+
+            $data[] = [
+                'id'          => $produk['id'],
+                'nama_produk' => $produk['nama_produk'],
+                'deskripsi'   => $produk['deskripsi'] ?? '',
+                'harga'       => $produk['harga'] ?? 0,
+                'gambar_url'  => $gambarUrl,
+                'detail_url'  => base_url('/umkm/produk/' . $produk['id']),
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
 
@@ -815,19 +970,53 @@ class LandingController extends BaseController
     public function pariwisataDetail($id)
     {
         $pariwisataModel = new PariwisataModel();
-        $gambarModel     = new PariwisataGambarModel();
 
         $item = $pariwisataModel->find($id);
         if (!$item) {
             return redirect()->to('/pariwisata')->with('error', 'Data pariwisata tidak ditemukan.');
         }
 
-        $gambar = $gambarModel->where('pariwisata_id', $id)->findAll();
-
         return view('Guest/pariwisata_detail', [
-            'title'  => esc($item['nama_tempat']) . ' - Pariwisata | Website Desa Bonto Marannu',
-            'item'   => $item,
-            'gambar' => $gambar,
+            'title' => esc($item['nama_tempat']) . ' - Pariwisata | Website Desa Bonto Marannu',
+            'item'  => $item,
+        ]);
+    }
+
+    public function pariwisataGambarApi($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Bad Request'])->setStatusCode(400);
+        }
+
+        $pariwisataModel = new PariwisataModel();
+        $gambarModel     = new PariwisataGambarModel();
+
+        $item = $pariwisataModel->find((int)$id);
+        if (!$item) {
+            return $this->response->setJSON(['success' => false, 'error' => 'Data tidak ditemukan.'])->setStatusCode(404);
+        }
+
+        $page   = (int)($this->request->getPost('page') ?: 1);
+        $limit  = 8;
+        $offset = ($page - 1) * $limit;
+
+        $total   = $gambarModel->where('pariwisata_id', (int)$id)->countAllResults();
+        $gambarList = $gambarModel->where('pariwisata_id', (int)$id)->orderBy('id', 'ASC')->findAll($limit, $offset);
+
+        $data = [];
+        foreach ($gambarList as $g) {
+            $data[] = [
+                'id'          => $g['id'],
+                'gambar_path' => base_url($g['gambar_path']),
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'     => true,
+            'data'        => $data,
+            'total'       => $total,
+            'total_pages' => $limit > 0 ? (int)ceil($total / $limit) : 1,
+            'page'        => $page,
         ]);
     }
 
@@ -927,6 +1116,51 @@ class LandingController extends BaseController
             $result .= $chars[random_int(0, strlen($chars) - 1)];
         }
         return $result;
+    }
+
+    // ----------------------------------------------------------------
+    // Rate limit untuk Guest berbasis IP address
+    // Menggunakan CI4 file cache — max 3 pengaduan per jam.
+    // ----------------------------------------------------------------
+
+    /** Kembalikan sisa detik cooldown untuk IP saat ini. 0 = boleh kirim. */
+    private function getGuestCooldownSeconds(): int
+    {
+        $cache     = \Config\Services::cache();
+        $cacheKey  = 'guest_pengaduan_' . md5($this->request->getIPAddress());
+        $timestamps = $cache->get($cacheKey) ?? [];
+
+        // Buang entri yang sudah lebih dari 1 jam
+        $windowStart = time() - 3600;
+        $timestamps  = array_filter($timestamps, fn($t) => $t >= $windowStart);
+
+        if (count($timestamps) < 3) {
+            return 0;
+        }
+
+        // Urutkan ascending; entry ke-(count-3+1) menentukan kapan slot pertama expire
+        sort($timestamps);
+        $oldest   = $timestamps[count($timestamps) - 3];
+        $expireAt = $oldest + 3600;
+        $remaining = $expireAt - time();
+
+        return $remaining > 0 ? (int) $remaining : 0;
+    }
+
+    /** Catat satu pengiriman untuk IP saat ini ke dalam cache. */
+    private function recordGuestSubmission(): void
+    {
+        $cache     = \Config\Services::cache();
+        $cacheKey  = 'guest_pengaduan_' . md5($this->request->getIPAddress());
+        $timestamps = $cache->get($cacheKey) ?? [];
+
+        // Buang yang sudah expired sebelum menyimpan
+        $windowStart = time() - 3600;
+        $timestamps  = array_values(array_filter($timestamps, fn($t) => $t >= $windowStart));
+        $timestamps[] = time();
+
+        // Simpan cache selama 1 jam + sedikit margin
+        $cache->save($cacheKey, $timestamps, 3660);
     }
 
     private function getCaptchaFontPath(): ?string

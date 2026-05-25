@@ -25,6 +25,25 @@
 .article-content p {
     margin-bottom: 1.5rem;
 }
+
+/* ── Media skeleton ── */
+.skeleton-media-card {
+    border-radius: 16px;
+    background: #fff;
+    border: 1px solid #edf2f7;
+    overflow: hidden;
+}
+.skeleton-media-img {
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -68,26 +87,24 @@
                     <?= $item['isi'] ?>
                 </article>
 
-                <?php if (!empty($media)): ?>
+                <!-- ── Gambar Terkait — loaded via AJAX ── -->
+                <div id="mediaTerkaitSection" style="display:none;">
                     <h4 class="fw-bold mt-5 mb-4">Gambar Terkait</h4>
-                    <div class="row g-3">
-                        <?php foreach ($media as $m): ?>
-                            <div class="col-6 col-md-4 col-lg-3">
-                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                                    <?php if (isset($m['media_type']) && $m['media_type'] === 'video_link' && isset($m['embed_url'])): ?>
-                                        <div class="ratio ratio-16x9">
-                                            <iframe src="<?= esc($m['embed_url']) ?>" allowfullscreen></iframe>
-                                        </div>
-                                    <?php else: ?>
-                                        <a href="<?= base_url($m['media_path']) ?>" target="_blank" class="d-block">
-                                            <img src="<?= base_url($m['media_path']) ?>" class="card-img-top w-100 object-fit-cover" style="height: 180px;" alt="Media">
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
+
+                    <!-- Skeleton loader -->
+                    <div id="mediaSkeletonLoader" class="row g-3">
+                        <?php for ($s = 0; $s < 4; $s++): ?>
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="skeleton-media-card">
+                                <div class="skeleton-media-img"></div>
                             </div>
-                        <?php endforeach; ?>
+                        </div>
+                        <?php endfor; ?>
                     </div>
-                <?php endif; ?>
+
+                    <!-- Actual media container -->
+                    <div id="mediaContainer" class="row g-3" style="display:none;"></div>
+                </div>
             </div>
         </div>
 
@@ -141,25 +158,96 @@
 
 <?= $this->section('scripts') ?>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const reveals = document.querySelectorAll(".reveal-up");
-    const revealOptions = {
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px"
-    };
+document.addEventListener('DOMContentLoaded', function () {
 
-    const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+    /* ── CSRF helpers (standard project pattern) ── */
+    const csrfHeaderName = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+    const getCsrfHash    = () => document.querySelector(`meta[name="${csrfHeaderName}"]`)?.content || '';
+
+    function escapeHtml(str) {
+        return (str || '').toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    /* ── Reveal-up observer ── */
+    const revealObserver = new IntersectionObserver(function (entries, obs) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add("active");
-                observer.unobserve(entry.target);
+                entry.target.classList.add('active');
+                obs.unobserve(entry.target);
             }
         });
-    }, revealOptions);
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    reveals.forEach(reveal => {
-        revealOnScroll.observe(reveal);
+    document.querySelectorAll('.reveal-up').forEach(el => revealObserver.observe(el));
+
+    /* ── Load media terkait via AJAX POST ── */
+    const newsId              = <?= (int)$item['id'] ?>;
+    const mediaTerkaitSection = document.getElementById('mediaTerkaitSection');
+    const mediaSkeletonLoader = document.getElementById('mediaSkeletonLoader');
+    const mediaContainer      = document.getElementById('mediaContainer');
+
+    const formData = new URLSearchParams();
+    formData.append(csrfHeaderName, getCsrfHash());
+
+    /* Show the section + skeleton immediately */
+    mediaTerkaitSection.style.display = 'block';
+
+    fetch(`<?= base_url('/berita/') ?>${newsId}/media-api`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(res => res.json())
+    .then(response => {
+        mediaSkeletonLoader.style.display = 'none';
+
+        if (!response.success || !response.data || response.data.length === 0) {
+            /* No media → hide the whole section cleanly */
+            mediaTerkaitSection.style.display = 'none';
+            return;
+        }
+
+        let html = '';
+        response.data.forEach(function (m) {
+            if (m.media_type === 'video_link' && m.embed_url) {
+                html += `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <div class="ratio ratio-16x9">
+                            <iframe src="${escapeHtml(m.embed_url)}" allowfullscreen loading="lazy"></iframe>
+                        </div>
+                    </div>
+                </div>`;
+            } else if (m.media_path) {
+                html += `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <a href="${escapeHtml(m.media_path)}" target="_blank" class="d-block">
+                            <img src="${escapeHtml(m.media_path)}"
+                                 class="card-img-top w-100 object-fit-cover"
+                                 style="height: 180px;"
+                                 alt="Media"
+                                 loading="lazy"
+                                 onerror="this.onerror=null;this.style.display='none';">
+                        </a>
+                    </div>
+                </div>`;
+            }
+        });
+
+        mediaContainer.innerHTML = html;
+        mediaContainer.style.display = '';
+    })
+    .catch(() => {
+        /* On network error, silently hide the section */
+        mediaTerkaitSection.style.display = 'none';
     });
+
 });
 </script>
 <?= $this->endSection() ?>

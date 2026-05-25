@@ -5,7 +5,7 @@
 /* --- Layout --- */
 .hero-section {
   min-height: 100vh;
-  margin-top: calc(-90px - 4.5rem);
+  margin-top: calc(-90px - 3rem);
   padding: 8.5rem 0 0;
   background: #081d3c;
   color: #fff;

@@ -21,17 +21,7 @@
 
 <main class="page-wrapper flex-grow-1 min-vh-100">
     <div class="pt-5"></div>
-    <div class="container mt-4">
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="alert alert-danger shadow-sm"><?= session()->getFlashdata('error') ?></div>
-        <?php endif; ?>
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="alert alert-success shadow-sm"><?= session()->getFlashdata('success') ?></div>
-        <?php endif; ?>
-        <?php if (session()->getFlashdata('info')): ?>
-            <div class="alert alert-info shadow-sm"><?= session()->getFlashdata('info') ?></div>
-        <?php endif; ?>
-    </div>
+
 
     <?= $this->renderSection('content') ?>
 </main>
@@ -39,6 +29,9 @@
 <?= $this->include('Guest/footer') ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/js/components/sweetalert.js') ?>"></script>
+<?= $this->include('Components/FlashMessage') ?>
 <script src="<?= base_url('assets/js/components/guest-navbar.js') ?>"></script>
 <script src="<?= base_url('assets/js/guest/main.js') ?>"></script>
 <?= $this->renderSection('scripts') ?>

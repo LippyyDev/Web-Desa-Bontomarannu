@@ -3,12 +3,22 @@
  * FlashMessage Component
  * Listens for CI4 session flashdata and triggers SweetAlert2.
  * Requires sweetalert.js to be loaded beforehand.
+ *
+ * Supported keys:
+ *   - 'success'  → showSuccess()
+ *   - 'message'  → showSuccess()  (alias, dipakai pengaduan & beberapa controller lain)
+ *   - 'error'    → showError()
+ *   - 'info'     → showInfo()
  */
 ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     <?php if (session()->getFlashdata('success')): ?>
         showSuccess("<?= addslashes(session()->getFlashdata('success')) ?>");
+    <?php endif; ?>
+
+    <?php if (session()->getFlashdata('message')): ?>
+        showSuccess("<?= addslashes(session()->getFlashdata('message')) ?>");
     <?php endif; ?>
 
     <?php if (session()->getFlashdata('error')): ?>

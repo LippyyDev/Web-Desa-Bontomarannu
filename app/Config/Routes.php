@@ -10,9 +10,11 @@ $routes->get('/profil', 'Guest\LandingController::profil');
 $routes->get('/galeri', 'Guest\LandingController::galeri');
 $routes->post('/galeri/api', 'Guest\LandingController::galeriApi');
 $routes->get('/galeri/(:num)', 'Guest\LandingController::galeriDetail/$1');
+$routes->post('/galeri/(:num)/media-api', 'Guest\LandingController::galeriDetailMediaApi/$1');
 $routes->get('/berita', 'Guest\LandingController::berita');
 $routes->post('/berita/api', 'Guest\LandingController::beritaApi');
 $routes->get('/berita/(:num)', 'Guest\LandingController::detailBerita/$1');
+$routes->post('/berita/(:num)/media-api', 'Guest\LandingController::detailBeritaMediaApi/$1');
 $routes->get('/geografis', 'Guest\LandingController::geografis');
 $routes->get('/perangkat-desa', 'Guest\LandingController::perangkatDesa');
 $routes->post('/perangkat-desa/api', 'Guest\LandingController::perangkatDesaApi');
@@ -28,10 +30,12 @@ $routes->post('/pengaduan/captcha/verify', 'Guest\LandingController::verifyCaptc
 $routes->get('/umkm', 'Guest\LandingController::umkm');
 $routes->post('/umkm/api', 'Guest\LandingController::umkmApi');
 $routes->get('/umkm/(:num)', 'Guest\LandingController::umkmDetail/$1');
+$routes->post('/umkm/(:num)/produk-api', 'Guest\LandingController::umkmProdukApi/$1');
 $routes->get('/umkm/produk/(:num)', 'Guest\LandingController::umkmProdukDetail/$1');
 $routes->get('/pariwisata', 'Guest\LandingController::pariwisata');
 $routes->post('/pariwisata/api', 'Guest\LandingController::pariwisataApi');
 $routes->get('/pariwisata/(:num)', 'Guest\LandingController::pariwisataDetail/$1');
+$routes->post('/pariwisata/(:num)/gambar-api', 'Guest\LandingController::pariwisataGambarApi/$1');
 
 $routes->get('/login', 'Guest\AuthController::login');
 $routes->post('/login', 'Guest\AuthController::doLogin');
