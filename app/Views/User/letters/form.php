@@ -22,6 +22,17 @@ if (!function_exists('truncateFilename')) {
     }
 }
 ?>
+<?php
+// Cek apakah profil belum lengkap — dari controller (GET) atau dari flash setelah POST diblok
+$profileIncomplete = $profileIncomplete ?? false;
+$missingFields     = $missingFields ?? [];
+// Flash dari store() yang diblok
+if (session()->getFlashdata('profile_incomplete')) {
+    $profileIncomplete = true;
+    $missingFields     = session()->getFlashdata('missing_fields') ?: [];
+}
+?>
+
 <div class="mb-4 mt-2 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
     <div>
         <div class="text-uppercase fw-semibold mb-2" style="font-size: 0.75rem; letter-spacing: 2px; color: #64748b;">
@@ -39,7 +50,6 @@ if (!function_exists('truncateFilename')) {
         </a>
     </div>
 </div>
-
 
 
 <div class="card">
@@ -105,13 +115,37 @@ if (!function_exists('truncateFilename')) {
                 <div id="attachmentPreviewList" class="mt-2 d-flex flex-column gap-2"></div>
             </div>
             <div class="mt-4">
-                <button class="btn btn-success" type="submit">
+                <button class="btn btn-success" type="submit" id="btnSubmitSurat">
                     <?= isset($letter) ? '<i class="bi bi-floppy me-1"></i> Update Surat' : '<i class="bi bi-send me-1"></i> Kirim Surat' ?>
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+// -----------------------------------------------------------------------
+// SweetAlert — intercept submit jika profil belum lengkap
+// -----------------------------------------------------------------------
+<?php if ($profileIncomplete): ?>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            Swal.fire({
+                icon             : 'error',
+                title            : 'Profil Belum Lengkap',
+                text             : 'Harap lengkapi data profil Anda terlebih dahulu sebelum mengirim surat.',
+                timer            : 3000,
+                timerProgressBar : true,
+                showConfirmButton : false,
+            });
+        });
+    }
+});
+<?php endif; ?>
+</script>
 
 <script>
 // Pola karakter berbahaya

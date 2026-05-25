@@ -112,13 +112,32 @@ class LetterController extends ProtectedController
             return $redirect;
         }
 
-        return view('User/letters/form', ['title' => 'Ajukan Surat Baru | Website Desa Bonto Marannu']);
+        $profileModel    = new \App\Models\UserProfileModel();
+        $userProfile     = $profileModel->find($this->currentUser['id']);
+        $missingFields   = $this->getIncompleteProfileFields($userProfile);
+        $profileIncomplete = !empty($missingFields);
+
+        return view('User/letters/form', [
+            'title'             => 'Ajukan Surat Baru | Website Desa Bonto Marannu',
+            'profileIncomplete' => $profileIncomplete,
+            'missingFields'     => $missingFields,
+        ]);
     }
 
     public function store()
     {
         if ($redirect = $this->guard(['user'])) {
             return $redirect;
+        }
+
+        // Cek kelengkapan profil sebelum izinkan pengiriman surat
+        $profileModel  = new \App\Models\UserProfileModel();
+        $userProfile   = $profileModel->find($this->currentUser['id']);
+        $missingFields = $this->getIncompleteProfileFields($userProfile);
+        if (!empty($missingFields)) {
+            return redirect()->to('/user/surat/buat')
+                ->with('profile_incomplete', true)
+                ->with('missing_fields', $missingFields);
         }
 
         helper('upload');
@@ -496,6 +515,33 @@ class LetterController extends ProtectedController
         } while ($exists && $attempt < $maxAttempts);
 
         return $kodeUnik;
+    }
+
+    /**
+     * Periksa field profil yang belum dilengkapi.
+     * Mengembalikan array label field yang kosong.
+     * Array kosong berarti profil sudah lengkap.
+     */
+    private function getIncompleteProfileFields(?array $profile): array
+    {
+        $requiredFields = [
+            'nama_lengkap'   => 'Nama Lengkap',
+            'jenis_kelamin'  => 'Jenis Kelamin',
+            'tempat_lahir'   => 'Tempat Lahir',
+            'tanggal_lahir'  => 'Tanggal Lahir',
+            'agama'          => 'Agama',
+            'pekerjaan'      => 'Pekerjaan',
+            'nik'            => 'NIK',
+            'alamat'         => 'Alamat',
+        ];
+
+        $missing = [];
+        foreach ($requiredFields as $field => $label) {
+            if (empty($profile[$field])) {
+                $missing[] = $label;
+            }
+        }
+        return $missing;
     }
 }
 
