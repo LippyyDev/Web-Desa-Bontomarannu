@@ -160,18 +160,22 @@ class LetterController extends ProtectedController
             // Email notifikasi ke user
             $user = $userModel->find($letter['user_id']);
             if ($user) {
-                $emailService = new \App\Libraries\EmailService();
-                $letterUrl = base_url('/user/surat/' . $id);
-                $emailService->sendNotification(
-                    $user['email'],
-                    $user['username'],
-                    'Surat Anda telah dibaca',
-                    'Surat Anda: ' . $letter['judul_perihal'] . ' telah dibaca oleh ' . $staffName,
-                    'letter_read',
-                    $letterUrl,
-                    $letter['judul_perihal'],
-                    $letter['tipe_surat'] ?? null
-                );
+                try {
+                    $emailService = new \App\Libraries\EmailService();
+                    $letterUrl    = base_url('/user/surat/' . $id);
+                    $emailService->sendNotification(
+                        $user['email'],
+                        $user['username'],
+                        'Surat Anda telah dibaca',
+                        'Surat Anda: ' . $letter['judul_perihal'] . ' telah dibaca oleh ' . $staffName,
+                        'letter_read',
+                        $letterUrl,
+                        $letter['judul_perihal'],
+                        $letter['tipe_surat'] ?? null
+                    );
+                } catch (\Exception $e) {
+                    log_message('error', 'Gagal queue email surat dibaca: ' . $e->getMessage());
+                }
             }
         }
 
@@ -254,20 +258,24 @@ class LetterController extends ProtectedController
         
         // Email notifikasi ke user
         $userModel = new UserModel();
-        $user = $userModel->find($letter['user_id']);
+        $user      = $userModel->find($letter['user_id']);
         if ($user) {
-            $emailService = new \App\Libraries\EmailService();
-            $letterUrl = base_url('/user/surat/' . $id);
-            $emailService->sendNotification(
-                $user['email'],
-                $user['username'],
-                'Surat Anda dibalas',
-                'Balasan baru dari ' . $staffName . ' untuk surat: ' . $letter['judul_perihal'],
-                'letter_replied',
-                $letterUrl,
-                $letter['judul_perihal'],
-                $letter['tipe_surat'] ?? null
-            );
+            try {
+                $emailService = new \App\Libraries\EmailService();
+                $letterUrl    = base_url('/user/surat/' . $id);
+                $emailService->sendNotification(
+                    $user['email'],
+                    $user['username'],
+                    'Surat Anda dibalas',
+                    'Balasan baru dari ' . $staffName . ' untuk surat: ' . $letter['judul_perihal'],
+                    'letter_replied',
+                    $letterUrl,
+                    $letter['judul_perihal'],
+                    $letter['tipe_surat'] ?? null
+                );
+            } catch (\Exception $e) {
+                log_message('error', 'Gagal queue email balasan surat: ' . $e->getMessage());
+            }
         }
 
         return redirect()->to('/staff/surat/' . $id)->with('success', 'Balasan dikirim.');
@@ -342,20 +350,24 @@ class LetterController extends ProtectedController
 
         // Email notifikasi ke user
         $userModel = new UserModel();
-        $user = $userModel->find($letter['user_id']);
+        $user      = $userModel->find($letter['user_id']);
         if ($user) {
-            $emailService = new \App\Libraries\EmailService();
-            $letterUrl = base_url('/user/surat/' . $id);
-            $emailService->sendNotification(
-                $user['email'],
-                $user['username'],
-                'Surat Anda diterima',
-                'Surat Anda: ' . $letter['judul_perihal'] . ' telah diterima oleh ' . $staffName,
-                'letter_accepted',
-                $letterUrl,
-                $letter['judul_perihal'],
-                $letter['tipe_surat'] ?? null
-            );
+            try {
+                $emailService = new \App\Libraries\EmailService();
+                $letterUrl    = base_url('/user/surat/' . $id);
+                $emailService->sendNotification(
+                    $user['email'],
+                    $user['username'],
+                    'Surat Anda diterima',
+                    'Surat Anda: ' . $letter['judul_perihal'] . ' telah diterima oleh ' . $staffName,
+                    'letter_accepted',
+                    $letterUrl,
+                    $letter['judul_perihal'],
+                    $letter['tipe_surat'] ?? null
+                );
+            } catch (\Exception $e) {
+                log_message('error', 'Gagal queue email surat diterima: ' . $e->getMessage());
+            }
         }
 
         return redirect()->to('/staff/surat/' . $id)->with('success', 'Surat berhasil diterima.');
@@ -425,20 +437,24 @@ class LetterController extends ProtectedController
 
         // Email notifikasi ke user
         $userModel = new UserModel();
-        $user = $userModel->find($letter['user_id']);
+        $user      = $userModel->find($letter['user_id']);
         if ($user) {
-            $emailService = new \App\Libraries\EmailService();
-            $letterUrl = base_url('/user/surat/' . $id);
-            $emailService->sendNotification(
-                $user['email'],
-                $user['username'],
-                'Surat Anda ditolak',
-                'Surat Anda: ' . $letter['judul_perihal'] . ' ditolak. Alasan: ' . $catatanPenolakan,
-                'letter_rejected',
-                $letterUrl,
-                $letter['judul_perihal'],
-                $letter['tipe_surat'] ?? null
-            );
+            try {
+                $emailService = new \App\Libraries\EmailService();
+                $letterUrl    = base_url('/user/surat/' . $id);
+                $emailService->sendNotification(
+                    $user['email'],
+                    $user['username'],
+                    'Surat Anda ditolak',
+                    'Surat Anda: ' . $letter['judul_perihal'] . ' ditolak. Alasan: ' . $catatanPenolakan,
+                    'letter_rejected',
+                    $letterUrl,
+                    $letter['judul_perihal'],
+                    $letter['tipe_surat'] ?? null
+                );
+            } catch (\Exception $e) {
+                log_message('error', 'Gagal queue email surat ditolak: ' . $e->getMessage());
+            }
         }
 
         return redirect()->to('/staff/surat/' . $id)->with('success', 'Surat berhasil ditolak.');

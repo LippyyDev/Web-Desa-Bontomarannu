@@ -809,12 +809,20 @@ class UmkmController extends ProtectedController
         $notifModel   = new NotificationModel();
 
         $userProfile = $profileModel->find($this->currentUser['id']);
-        $userName = ($userProfile && !empty($userProfile['nama_lengkap']))
+        $userName    = ($userProfile && !empty($userProfile['nama_lengkap']))
             ? $userProfile['nama_lengkap']
             : $this->currentUser['username'];
 
         $staffList = $userModel->where('role', 'staf')->findAll();
         $umkmUrl   = base_url('/staff/umkm/' . $umkmId);
+
+        // Instantiate EmailService sekali di luar loop
+        try {
+            $emailService = new \App\Libraries\EmailService();
+        } catch (\Exception $e) {
+            log_message('error', 'Gagal init EmailService di User/UmkmController: ' . $e->getMessage());
+            $emailService = null;
+        }
 
         foreach ($staffList as $staff) {
             $notifModel->insert([
@@ -827,20 +835,21 @@ class UmkmController extends ProtectedController
                 'created_at'      => date('Y-m-d H:i:s'),
             ]);
 
-            try {
-                $emailService = new \App\Libraries\EmailService();
-                $emailService->sendNotification(
-                    $staff['email'],
-                    $staff['username'],
-                    'Pengajuan UMKM Baru',
-                    $userName . ' mengajukan toko UMKM: "' . $namaToko . '"',
-                    'new_umkm',
-                    $umkmUrl,
-                    $namaToko,
-                    'UMKM'
-                );
-            } catch (\Exception $e) {
-                log_message('error', 'Gagal kirim email notif UMKM: ' . $e->getMessage());
+            if ($emailService !== null) {
+                try {
+                    $emailService->sendNotification(
+                        $staff['email'],
+                        $staff['username'],
+                        'Pengajuan UMKM Baru',
+                        $userName . ' mengajukan toko UMKM: "' . $namaToko . '"',
+                        'new_umkm',
+                        $umkmUrl,
+                        $namaToko,
+                        'UMKM'
+                    );
+                } catch (\Exception $e) {
+                    log_message('error', 'Gagal queue email notif UMKM ke staff ' . $staff['email'] . ': ' . $e->getMessage());
+                }
             }
         }
     }

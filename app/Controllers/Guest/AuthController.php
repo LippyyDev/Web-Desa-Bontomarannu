@@ -10,6 +10,17 @@ use App\Models\UserProfileModel;
 
 class AuthController extends BaseController
 {
+    // ─── Konstanta Rate Limit ─────────────────────────────────────────────────
+
+    private const LOGIN_MAX_ATTEMPTS   = 3;
+    private const LOGIN_BLOCK_SECONDS  = 900;  // 15 menit
+    private const OTP_COOLDOWN_SECONDS = 60;   // 60 detik per request
+    private const OTP_MAX_REQUESTS     = 5;    // maks request dalam 1 jam
+    private const OTP_FREEZE_SECONDS   = 3600; // pembekuan 1 jam
+    private const OTP_WINDOW_SECONDS   = 3600; // jendela waktu 1 jam
+
+    // ─── Notifikasi Admin ─────────────────────────────────────────────────────
+
     /**
      * Kirim notifikasi ke semua akun admin ketika ada registrasi baru.
      */
@@ -33,6 +44,8 @@ class AuthController extends BaseController
         }
     }
 
+    // ─── Crypto Helpers ───────────────────────────────────────────────────────
+
     private function generateOtp(): string
     {
         return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -43,17 +56,191 @@ class AuthController extends BaseController
         return bin2hex(random_bytes(32));
     }
 
+    /**
+     * Buat signed token untuk magic link reset password.
+     * Format: base64(payload).hmac_sha256
+     * Tidak memerlukan tabel database — diverifikasi via HMAC.
+     */
+    private function generateSignedResetToken(string $email, string $otp): string
+    {
+        $payload = base64_encode(json_encode([
+            'email' => $email,
+            'otp'   => $otp,
+            'exp'   => time() + 3600,
+        ]));
+        $secret  = env('app.key', 'fallback-secret-key');
+        $sig     = hash_hmac('sha256', $payload, $secret);
+        return $payload . '.' . $sig;
+    }
+
+    /**
+     * Verifikasi signed token dari magic link.
+     * Return array payload jika valid, null jika tidak valid / kedaluwarsa.
+     */
+    private function verifySignedResetToken(string $token): ?array
+    {
+        $parts = explode('.', $token, 2);
+        if (count($parts) !== 2) {
+            return null;
+        }
+
+        [$payload, $sig] = $parts;
+        $secret   = env('app.key', 'fallback-secret-key');
+        $expected = hash_hmac('sha256', $payload, $secret);
+
+        if (!hash_equals($expected, $sig)) {
+            return null;
+        }
+
+        $data = json_decode(base64_decode($payload), true);
+        if (!$data || !isset($data['exp']) || $data['exp'] < time()) {
+            return null;
+        }
+
+        return $data;
+    }
+
+    // ─── Rate Limit: Login ────────────────────────────────────────────────────
+
+    /**
+     * Buat cache key berbasis IP yang di-hash untuk keamanan.
+     */
+    private function ipKey(string $prefix): string
+    {
+        return $prefix . '_' . md5($this->request->getIPAddress());
+    }
+
+    /**
+     * Cek status rate limit login untuk IP saat ini.
+     * Return: ['blocked' => true,  'seconds_left' => int]
+     *      or ['blocked' => false, 'fail_count'   => int]
+     */
+    private function getLoginRateLimit(): array
+    {
+        $blockKey = $this->ipKey('login_block');
+        $failsKey = $this->ipKey('login_fails');
+
+        $blockedUntil = cache($blockKey);
+        if ($blockedUntil && $blockedUntil > time()) {
+            return ['blocked' => true, 'seconds_left' => (int) ($blockedUntil - time())];
+        }
+
+        return ['blocked' => false, 'fail_count' => (int) (cache($failsKey) ?? 0)];
+    }
+
+    /**
+     * Catat satu kegagalan login. Blokir IP jika sudah >= LOGIN_MAX_ATTEMPTS.
+     * Return array berisi info hasil (blocked, fail_count, remaining).
+     */
+    private function recordLoginFailure(): array
+    {
+        $blockKey = $this->ipKey('login_block');
+        $failsKey = $this->ipKey('login_fails');
+
+        $count = (int) (cache($failsKey) ?? 0) + 1;
+        cache()->save($failsKey, $count, self::LOGIN_BLOCK_SECONDS);
+
+        if ($count >= self::LOGIN_MAX_ATTEMPTS) {
+            $blockedUntil = time() + self::LOGIN_BLOCK_SECONDS;
+            cache()->save($blockKey, $blockedUntil, self::LOGIN_BLOCK_SECONDS);
+            return ['blocked' => true, 'seconds_left' => self::LOGIN_BLOCK_SECONDS, 'fail_count' => $count];
+        }
+
+        return ['blocked' => false, 'fail_count' => $count, 'remaining' => self::LOGIN_MAX_ATTEMPTS - $count];
+    }
+
+    /**
+     * Reset counter kegagalan login (dipanggil setelah login berhasil).
+     */
+    private function clearLoginFailures(): void
+    {
+        cache()->delete($this->ipKey('login_block'));
+        cache()->delete($this->ipKey('login_fails'));
+    }
+
+    // ─── Rate Limit: OTP ─────────────────────────────────────────────────────
+
+    /**
+     * Cek status rate limit OTP untuk IP saat ini.
+     * Return salah satu dari:
+     *   ['ok'       => true, 'request_count' => int, 'requests' => array]
+     *   ['cooldown' => true, 'seconds_left'  => int]
+     *   ['frozen'   => true, 'seconds_left'  => int]
+     */
+    private function getOtpRateLimit(): array
+    {
+        $freezeKey   = $this->ipKey('otp_freeze');
+        $requestsKey = $this->ipKey('otp_requests');
+
+        // Cek pembekuan aktif
+        $frozenUntil = cache($freezeKey);
+        if ($frozenUntil && $frozenUntil > time()) {
+            return ['frozen' => true, 'seconds_left' => (int) ($frozenUntil - time())];
+        }
+
+        // Ambil log timestamp request OTP dalam 1 jam terakhir
+        $requests = cache($requestsKey) ?? [];
+        $now      = time();
+        $cutoff   = $now - self::OTP_WINDOW_SECONDS;
+        $requests = array_values(array_filter($requests, fn ($t) => $t > $cutoff));
+
+        // Cek cooldown 60 detik sejak request terakhir
+        if (!empty($requests)) {
+            $sinceLastRequest = $now - max($requests);
+            if ($sinceLastRequest < self::OTP_COOLDOWN_SECONDS) {
+                return ['cooldown' => true, 'seconds_left' => (int) (self::OTP_COOLDOWN_SECONDS - $sinceLastRequest)];
+            }
+        }
+
+        return ['ok' => true, 'request_count' => count($requests), 'requests' => $requests];
+    }
+
+    /**
+     * Catat satu request OTP. Bekukan IP jika >= OTP_MAX_REQUESTS dalam 1 jam.
+     */
+    private function recordOtpRequest(): void
+    {
+        $freezeKey   = $this->ipKey('otp_freeze');
+        $requestsKey = $this->ipKey('otp_requests');
+
+        $requests = cache($requestsKey) ?? [];
+        $now      = time();
+        $cutoff   = $now - self::OTP_WINDOW_SECONDS;
+        $requests = array_values(array_filter($requests, fn ($t) => $t > $cutoff));
+        $requests[] = $now;
+
+        cache()->save($requestsKey, $requests, self::OTP_WINDOW_SECONDS);
+
+        // Bekukan jika sudah >= 5 request dalam 1 jam
+        if (count($requests) >= self::OTP_MAX_REQUESTS) {
+            cache()->save($freezeKey, $now + self::OTP_FREEZE_SECONDS, self::OTP_FREEZE_SECONDS);
+        }
+    }
+
+    // ─── Login ────────────────────────────────────────────────────────────────
+
     public function login()
     {
         if ($this->currentUser) {
             return redirect()->to('/dashboard');
         }
 
-        return view('Guest/auth/login', ['title' => 'Login | Website Desa Bonto Marannu']);
+        $rateLimit = $this->getLoginRateLimit();
+
+        return view('Guest/auth/login', [
+            'title'     => 'Login | Website Desa Bonto Marannu',
+            'rateLimit' => $rateLimit,
+        ]);
     }
 
     public function doLogin()
     {
+        // Cek rate limit login sebelum memproses
+        $rateLimit = $this->getLoginRateLimit();
+        if ($rateLimit['blocked']) {
+            return redirect()->back()->with('error', 'Terlalu banyak percobaan login. Akses diblokir selama 15 menit.');
+        }
+
         $identity = trim($this->request->getPost('identity'));
         $password = $this->request->getPost('password');
 
@@ -63,7 +250,13 @@ class AuthController extends BaseController
             ->first();
 
         if (!$user || !password_verify($password, $user['password_hash'])) {
-            return redirect()->back()->withInput()->with('error', 'Kredensial tidak valid.');
+            $result = $this->recordLoginFailure();
+            if ($result['blocked']) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Terlalu banyak percobaan login. Akses login diblokir selama 15 menit.');
+            }
+            return redirect()->back()->withInput()
+                ->with('error', 'Kredensial tidak valid. Sisa percobaan: ' . $result['remaining'] . ' kali.');
         }
 
         if ($user['status'] !== 'aktif') {
@@ -71,10 +264,9 @@ class AuthController extends BaseController
         }
 
         if (!(bool) $user['is_verified']) {
-            $otp = $this->generateOtp();
+            $otp               = $this->generateOtp();
             $verificationToken = $this->generateVerificationToken();
-            
-            // Simpan data verifikasi di session (tidak perlu tabel)
+
             $verificationData = [
                 'user_id'    => $user['id'],
                 'email'      => $user['email'],
@@ -84,19 +276,24 @@ class AuthController extends BaseController
                 'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour')),
             ];
             session()->set('pending_user_verification', $verificationData);
-            
-            // Buat link verifikasi
+
             $verificationLink = base_url('/verify/' . $verificationToken);
-            
-            // Kirim email OTP dan link
-            $emailService = new EmailService();
-            $emailService->sendOtpRegister($user['email'], $user['username'], $otp, $verificationLink);
-            
-            session()->setFlashdata('otp_preview', $otp);
+
+            try {
+                $emailService = new EmailService();
+                $emailService->sendOtpRegister($user['email'], $user['username'], $otp, $verificationLink);
+            } catch (\Exception $e) {
+                log_message('error', 'Gagal queue OTP login: ' . $e->getMessage());
+            }
+
             session()->set('pending_verification', $user['email']);
 
-            return redirect()->to('/verify')->with('info', 'Silakan verifikasi akun terlebih dahulu. Kode OTP dan link verifikasi telah dikirim ke email Anda.');
+            return redirect()->to('/verify')
+                ->with('info', 'Silakan verifikasi akun terlebih dahulu. Kode OTP dan link verifikasi telah dikirim ke email Anda.');
         }
+
+        // Login berhasil — reset counter kegagalan
+        $this->clearLoginFailures();
 
         session()->set('user', [
             'id'       => $user['id'],
@@ -107,6 +304,8 @@ class AuthController extends BaseController
 
         return redirect()->to('/dashboard');
     }
+
+    // ─── Register ─────────────────────────────────────────────────────────────
 
     public function register()
     {
@@ -124,7 +323,6 @@ class AuthController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Password tidak sama.');
         }
 
-        // Cek apakah email atau username sudah digunakan
         $userModel = new UserModel();
         $exists    = $userModel->where('email', $email)->orWhere('username', $username)->first();
 
@@ -132,11 +330,9 @@ class AuthController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Username atau email sudah digunakan.');
         }
 
-        // JANGAN SIMPAN KE DATABASE DULU - Simpan data sementara di session
-        $otp = $this->generateOtp();
+        $otp               = $this->generateOtp();
         $verificationToken = $this->generateVerificationToken();
-        
-        // Simpan data registrasi di session
+
         $registrationData = [
             'username'      => $username,
             'email'         => $email,
@@ -145,25 +341,31 @@ class AuthController extends BaseController
             'token'         => $verificationToken,
             'expires_at'    => date('Y-m-d H:i:s', strtotime('+1 hour')),
         ];
-        
+
         session()->set('pending_registration', $registrationData);
-        
-        // Buat link verifikasi (token disimpan di session, tidak di database)
+
         $verificationLink = base_url('/verify/' . $verificationToken);
-        
-        // Kirim email dengan OTP dan link
-        $emailService = new EmailService();
-        $emailSent = $emailService->sendOtpRegister($email, $username, $otp, $verificationLink);
+
+        $emailSent = false;
+        try {
+            $emailService = new EmailService();
+            $emailSent    = $emailService->sendOtpRegister($email, $username, $otp, $verificationLink);
+        } catch (\Exception $e) {
+            log_message('error', 'Gagal queue OTP registrasi: ' . $e->getMessage());
+        }
 
         session()->set('pending_verification', $email);
-        session()->setFlashdata('otp_preview', $otp);
 
         if ($emailSent) {
-            return redirect()->to('/verify')->with('info', 'Registrasi berhasil! Silakan cek email Anda untuk kode OTP dan link verifikasi.');
+            return redirect()->to('/verify')
+                ->with('info', 'Registrasi berhasil! Silakan cek email Anda untuk kode OTP dan link verifikasi.');
         } else {
-            return redirect()->to('/verify')->with('warning', 'Registrasi berhasil, namun gagal mengirim email. Silakan cek kode OTP di bawah ini.');
+            return redirect()->to('/verify')
+                ->with('warning', 'Registrasi berhasil, namun gagal mengirim email. Silakan coba lagi atau hubungi admin.');
         }
     }
+
+    // ─── Verify (Registrasi) ──────────────────────────────────────────────────
 
     public function verify()
     {
@@ -172,7 +374,6 @@ class AuthController extends BaseController
         return view('Guest/auth/verify', [
             'title'        => 'Verifikasi Akun | Website Desa Bonto Marannu',
             'pendingEmail' => $pendingEmail,
-            'previewOtp'   => session()->getFlashdata('otp_preview'),
         ]);
     }
 
@@ -181,31 +382,26 @@ class AuthController extends BaseController
         $email = trim($this->request->getPost('email'));
         $otp   = trim($this->request->getPost('otp'));
 
-        // Cek apakah ini registrasi baru atau verifikasi user yang sudah ada
-        $registrationData = session()->get('pending_registration');
+        $registrationData     = session()->get('pending_registration');
         $userVerificationData = session()->get('pending_user_verification');
-        
+
         // Kasus 1: Registrasi baru
         if ($registrationData) {
-            // Cek apakah email cocok
             if ($registrationData['email'] !== $email) {
                 return redirect()->back()->with('error', 'Email tidak sesuai dengan data registrasi.');
             }
 
-            // Cek apakah OTP cocok
             if ($registrationData['otp'] !== $otp) {
                 return redirect()->back()->with('error', 'OTP tidak valid.');
             }
 
-            // Cek apakah sudah kadaluarsa
             if (strtotime($registrationData['expires_at']) < time()) {
                 session()->remove('pending_registration');
                 return redirect()->to('/register')->with('error', 'Kode verifikasi sudah kadaluarsa. Silakan daftar ulang.');
             }
 
-            // Verifikasi berhasil - SIMPAN KE DATABASE SEKARANG
             $userModel = new UserModel();
-            $userId = $userModel->insert([
+            $userId    = $userModel->insert([
                 'username'      => $registrationData['username'],
                 'email'         => $registrationData['email'],
                 'password_hash' => $registrationData['password_hash'],
@@ -214,21 +410,17 @@ class AuthController extends BaseController
                 'is_verified'   => 1,
             ], true);
 
-            // Buat profile
             $profileModel = new UserProfileModel();
             $profileModel->insert([
                 'user_id'      => $userId,
                 'nama_lengkap' => $registrationData['username'],
             ]);
 
-            // Bersihkan session
             session()->remove('pending_registration');
             session()->remove('pending_verification');
 
-            // Kirim notifikasi ke semua admin
             $this->notifyAdmins($registrationData['username'], $registrationData['email']);
 
-            // Set session user
             $user = $userModel->find($userId);
             session()->set('user', [
                 'id'       => $user['id'],
@@ -239,34 +431,28 @@ class AuthController extends BaseController
 
             return redirect()->to('/dashboard')->with('success', 'Akun berhasil diverifikasi dan dibuat.');
         }
-        
+
         // Kasus 2: Verifikasi user yang sudah ada (belum verified)
         if ($userVerificationData) {
-            // Cek email
             if ($userVerificationData['email'] !== $email) {
                 return redirect()->back()->with('error', 'Email tidak sesuai.');
-        }
+            }
 
-            // Cek OTP
             if ($userVerificationData['otp'] !== $otp) {
                 return redirect()->back()->with('error', 'OTP tidak valid.');
             }
 
-            // Cek kadaluarsa
             if (strtotime($userVerificationData['expires_at']) < time()) {
                 session()->remove('pending_user_verification');
                 return redirect()->to('/login')->with('error', 'Kode verifikasi sudah kadaluarsa. Silakan login lagi untuk mendapatkan kode baru.');
             }
 
-            // Update user menjadi verified
             $userModel = new UserModel();
             $userModel->update($userVerificationData['user_id'], ['is_verified' => 1]);
 
-            // Bersihkan session
             session()->remove('pending_user_verification');
             session()->remove('pending_verification');
-            
-            // Set session user
+
             $user = $userModel->find($userVerificationData['user_id']);
             session()->set('user', [
                 'id'       => $user['id'],
@@ -278,62 +464,50 @@ class AuthController extends BaseController
             return redirect()->to('/dashboard')->with('success', 'Akun berhasil diverifikasi.');
         }
 
-        // Tidak ada data verifikasi
         return redirect()->back()->with('error', 'Sesi verifikasi tidak ditemukan. Silakan daftar atau login ulang.');
     }
-    
+
     /**
-     * Verifikasi via link
+     * Verifikasi via link magic token.
      */
     public function verifyByLink(string $token)
     {
-        // Ambil data registrasi dari session
         $registrationData = session()->get('pending_registration');
-        
+
         if (!$registrationData) {
             return redirect()->to('/register')->with('error', 'Sesi registrasi tidak ditemukan. Silakan daftar ulang.');
         }
 
-        // Cek apakah token cocok dengan yang di session
-        // Tidak perlu cek di database karena token disimpan di session
         if ($registrationData['token'] !== $token) {
             return redirect()->to('/register')->with('error', 'Link verifikasi tidak valid atau sudah kadaluarsa.');
         }
 
-        // Cek apakah sudah kadaluarsa
         if (strtotime($registrationData['expires_at']) < time()) {
             session()->remove('pending_registration');
             return redirect()->to('/register')->with('error', 'Link verifikasi sudah kadaluarsa. Silakan daftar ulang.');
         }
 
-        // Verifikasi berhasil - SIMPAN KE DATABASE SEKARANG
         $userModel = new UserModel();
-        $userId = $userModel->insert([
+        $userId    = $userModel->insert([
             'username'      => $registrationData['username'],
             'email'         => $registrationData['email'],
             'password_hash' => $registrationData['password_hash'],
             'role'          => 'user',
             'status'        => 'aktif',
-            'is_verified'   => 1, // Langsung verified karena sudah verifikasi
+            'is_verified'   => 1,
         ], true);
 
-        // Buat profile
         $profileModel = new UserProfileModel();
         $profileModel->insert([
             'user_id'      => $userId,
             'nama_lengkap' => $registrationData['username'],
         ]);
 
-        // Tidak perlu update token di database karena token tidak disimpan di database untuk registrasi pending
-
-        // Bersihkan session
         session()->remove('pending_registration');
         session()->remove('pending_verification');
 
-        // Kirim notifikasi ke semua admin
         $this->notifyAdmins($registrationData['username'], $registrationData['email']);
 
-        // Set session user
         $user = $userModel->find($userId);
         session()->set('user', [
             'id'       => $user['id'],
@@ -345,13 +519,33 @@ class AuthController extends BaseController
         return redirect()->to('/dashboard')->with('success', 'Akun berhasil diverifikasi dan dibuat.');
     }
 
+    // ─── Forgot Password ──────────────────────────────────────────────────────
+
     public function forgotPassword()
     {
-        return view('Guest/auth/forgot', ['title' => 'Lupa Password | Website Desa Bonto Marannu']);
+        $otpRateLimit = $this->getOtpRateLimit();
+
+        return view('Guest/auth/forgot', [
+            'title'        => 'Lupa Password | Website Desa Bonto Marannu',
+            'otpRateLimit' => $otpRateLimit,
+        ]);
     }
 
     public function sendReset()
     {
+        // Cek OTP rate limit terlebih dahulu
+        $otpRateLimit = $this->getOtpRateLimit();
+
+        if (isset($otpRateLimit['frozen']) && $otpRateLimit['frozen']) {
+            return redirect()->back()
+                ->with('error', 'Terlalu banyak permintaan OTP. IP Anda dibekukan, coba lagi nanti.');
+        }
+
+        if (isset($otpRateLimit['cooldown']) && $otpRateLimit['cooldown']) {
+            return redirect()->back()
+                ->with('error', 'Mohon tunggu ' . $otpRateLimit['seconds_left'] . ' detik sebelum meminta OTP lagi.');
+        }
+
         $email     = trim($this->request->getPost('email'));
         $userModel = new UserModel();
         $user      = $userModel->where('email', $email)->first();
@@ -360,10 +554,10 @@ class AuthController extends BaseController
             return redirect()->back()->with('error', 'Email tidak terdaftar.');
         }
 
-        // Generate OTP untuk reset password - simpan di session (tidak perlu tabel)
-        $otp = $this->generateOtp();
-        
-        // Simpan data reset di session
+        $otp       = $this->generateOtp();
+        $token     = $this->generateSignedResetToken($email, $otp);
+        $directUrl = base_url('/reset-password/' . urlencode($token));
+
         $resetData = [
             'user_id'    => $user['id'],
             'email'      => $user['email'],
@@ -372,28 +566,155 @@ class AuthController extends BaseController
             'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour')),
         ];
         session()->set('pending_password_reset', $resetData);
-        
-        // Kirim email OTP
-        $emailService = new EmailService();
-        $emailSent = $emailService->sendOtpReset($email, $user['username'], $otp);
-        
-        session()->setFlashdata('otp_preview', $otp);
         session()->set('pending_reset', $email);
 
+        $emailSent = false;
+        try {
+            $emailService = new EmailService();
+            $emailSent    = $emailService->sendOtpReset($email, $user['username'], $otp, $directUrl);
+        } catch (\Exception $e) {
+            log_message('error', 'Gagal queue OTP reset password: ' . $e->getMessage());
+        }
+
+        // Catat request OTP (setelah proses, terlepas dari sukses email)
+        $this->recordOtpRequest();
+
         if ($emailSent) {
-            return redirect()->to('/verify-reset')->with('info', 'Kode OTP telah dikirim ke email Anda. Silakan cek inbox email Anda.');
+            return redirect()->to('/verify-reset')
+                ->with('info', 'Kode OTP telah dikirim ke email Anda. Silakan cek inbox email Anda.');
         } else {
-            return redirect()->to('/verify-reset')->with('warning', 'Gagal mengirim email. Silakan cek kode OTP di bawah ini atau coba lagi nanti.');
+            return redirect()->to('/verify-reset')
+                ->with('warning', 'Gagal mengirim email. Silakan coba lagi nanti atau hubungi admin.');
         }
     }
 
+    // ─── Verify Reset (OTP lupa password) ────────────────────────────────────
+
     public function verifyReset()
     {
+        $otpRateLimit = $this->getOtpRateLimit();
+
         return view('Guest/auth/verify_reset', [
             'title'        => 'Verifikasi OTP | Website Desa Bonto Marannu',
             'pendingEmail' => session()->get('pending_reset'),
-            'previewOtp'   => session()->getFlashdata('otp_preview'),
+            'otpRateLimit' => $otpRateLimit,
         ]);
+    }
+
+    /**
+     * Kirim ulang OTP reset password via AJAX.
+     * Endpoint: POST /resend-otp
+     */
+    public function resendOtp()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'Bad request.',
+            ]);
+        }
+
+        // Cek OTP rate limit
+        $otpRateLimit = $this->getOtpRateLimit();
+
+        if (isset($otpRateLimit['frozen']) && $otpRateLimit['frozen']) {
+            return $this->response->setJSON([
+                'success'      => false,
+                'frozen'       => true,
+                'seconds_left' => $otpRateLimit['seconds_left'],
+                'message'      => 'IP Anda dibekukan karena terlalu banyak permintaan OTP. Coba lagi nanti.',
+            ]);
+        }
+
+        if (isset($otpRateLimit['cooldown']) && $otpRateLimit['cooldown']) {
+            return $this->response->setJSON([
+                'success'      => false,
+                'cooldown'     => true,
+                'seconds_left' => $otpRateLimit['seconds_left'],
+                'message'      => 'Mohon tunggu ' . $otpRateLimit['seconds_left'] . ' detik sebelum meminta OTP lagi.',
+            ]);
+        }
+
+        // Cek sesi reset yang aktif
+        $resetData = session()->get('pending_password_reset');
+        if (!$resetData) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Sesi tidak ditemukan. Silakan mulai ulang proses lupa password.',
+            ]);
+        }
+
+        // Generate OTP & token baru
+        $otp   = $this->generateOtp();
+        $token = $this->generateSignedResetToken($resetData['email'], $otp);
+
+        // Update sesi dengan OTP baru
+        $resetData['otp']        = $otp;
+        $resetData['expires_at'] = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        session()->set('pending_password_reset', $resetData);
+
+        $directUrl = base_url('/reset-password/' . urlencode($token));
+
+        try {
+            $emailService = new EmailService();
+            $emailService->sendOtpReset($resetData['email'], $resetData['username'], $otp, $directUrl);
+        } catch (\Exception $e) {
+            log_message('error', 'Gagal resend OTP reset: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Gagal mengirim email. Silakan coba lagi.',
+            ]);
+        }
+
+        // Catat request OTP
+        $this->recordOtpRequest();
+
+        // Cek apakah setelah record sekarang IP langsung dibekukan
+        $newLimit  = $this->getOtpRateLimit();
+        $nowFrozen = isset($newLimit['frozen']) && $newLimit['frozen'];
+
+        return $this->response->setJSON([
+            'success'      => true,
+            'cooldown'     => true,
+            'seconds_left' => self::OTP_COOLDOWN_SECONDS,
+            'frozen_after' => $nowFrozen,
+            'message'      => 'Kode OTP baru telah dikirim ke email Anda.',
+        ]);
+    }
+
+    /**
+     * Magic link reset password.
+     * Dipanggil ketika user klik tombol/link di email.
+     * Token sudah berisi OTP yang terenkripsi dengan HMAC — tanpa perlu tabel DB.
+     */
+    public function resetByLink(string $token)
+    {
+        $data = $this->verifySignedResetToken(urldecode($token));
+
+        if (!$data) {
+            return redirect()->to('/forgot-password')
+                ->with('error', 'Tautan reset password tidak valid atau sudah kedaluwarsa. Silakan minta ulang.');
+        }
+
+        $userModel = new UserModel();
+        $user      = $userModel->where('email', $data['email'])->first();
+
+        if (!$user) {
+            return redirect()->to('/forgot-password')
+                ->with('error', 'Akun tidak ditemukan.');
+        }
+
+        session()->set('pending_password_reset', [
+            'user_id'    => $user['id'],
+            'email'      => $user['email'],
+            'username'   => $user['username'],
+            'otp'        => $data['otp'],
+            'expires_at' => date('Y-m-d H:i:s', $data['exp']),
+        ]);
+        session()->set('reset_otp_verified', true);
+
+        return redirect()->to('/new-password')
+            ->with('success', 'Tautan berhasil diverifikasi. Silakan buat password baru Anda.');
     }
 
     public function doVerifyReset()
@@ -401,44 +722,40 @@ class AuthController extends BaseController
         $email = trim($this->request->getPost('email'));
         $otp   = trim($this->request->getPost('otp'));
 
-        // Ambil data reset dari session
         $resetData = session()->get('pending_password_reset');
 
         if (!$resetData) {
             return redirect()->back()->with('error', 'Sesi reset password tidak ditemukan. Silakan request ulang.');
         }
 
-        // Cek email
         if ($resetData['email'] !== $email) {
             return redirect()->back()->with('error', 'Email tidak sesuai.');
         }
 
-        // Cek OTP
         if ($resetData['otp'] !== $otp) {
             return redirect()->back()->with('error', 'OTP tidak valid.');
         }
 
-        // Cek kadaluarsa
         if (strtotime($resetData['expires_at']) < time()) {
             session()->remove('pending_password_reset');
             return redirect()->to('/forgot-password')->with('error', 'Kode OTP kadaluarsa. Silakan request ulang.');
         }
 
-        // OTP Valid, ijinkan lanjut ke halaman form password baru
         session()->set('reset_otp_verified', true);
-        
+
         return redirect()->to('/new-password')->with('success', 'Kode OTP valid. Silakan buat password baru Anda.');
     }
 
+    // ─── New Password ─────────────────────────────────────────────────────────
+
     public function newPassword()
     {
-        // Cek apakah user sudah memverifikasi OTP
         if (!session()->get('reset_otp_verified') || !session()->get('pending_password_reset')) {
             return redirect()->to('/forgot-password')->with('error', 'Akses ditolak. Silakan verifikasi OTP terlebih dahulu.');
         }
 
         return view('Guest/auth/new_password', [
-            'title' => 'Buat Password Baru | Website Desa Bonto Marannu'
+            'title' => 'Buat Password Baru | Website Desa Bonto Marannu',
         ]);
     }
 
@@ -457,19 +774,19 @@ class AuthController extends BaseController
 
         $resetData = session()->get('pending_password_reset');
 
-        // Update password
         $userModel = new UserModel();
         $userModel->update($resetData['user_id'], [
             'password_hash' => password_hash($password, PASSWORD_DEFAULT),
         ]);
-        
-        // Bersihkan session
+
         session()->remove('pending_password_reset');
         session()->remove('pending_reset');
         session()->remove('reset_otp_verified');
 
         return redirect()->to('/login')->with('success', 'Password berhasil direset. Silakan login dengan password baru.');
     }
+
+    // ─── Logout ───────────────────────────────────────────────────────────────
 
     public function logout()
     {
@@ -478,5 +795,3 @@ class AuthController extends BaseController
         return redirect()->to('/login')->with('success', 'Berhasil logout.');
     }
 }
-
-

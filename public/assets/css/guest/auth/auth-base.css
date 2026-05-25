@@ -98,6 +98,43 @@
   transform: translateY(0);
 }
 
+.glass-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+  pointer-events: auto; /* keep cursor visible */
+}
+
+/* Tombol outline — digunakan untuk aksi sekunder (misal: Kirim Ulang OTP) */
+.glass-btn-outline {
+  background: transparent;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 12px;
+  padding: 0.55rem 1.5rem;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.glass-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.glass-btn-outline:active {
+  transform: translateY(0);
+}
+
+.glass-btn-outline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /* Utilities */
 .hover-white:hover {
   color: #fff !important;

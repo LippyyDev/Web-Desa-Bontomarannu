@@ -21,7 +21,7 @@ $heroImages = [
         <div id="heroBgCarousel" class="carousel slide carousel-fade h-100 w-100" data-bs-ride="carousel" data-bs-pause="false" data-bs-interval="4000">
             <div class="carousel-inner h-100 w-100">
                 <?php foreach ($heroImages as $index => $img): ?>
-                    <div class="carousel-item h-100 w-100 <?= $index === 0 ? 'active' : '' ?>" 
+                    <div class="carousel-item h-100 w-100 <?= $index === 0 ? 'active' : '' ?>"
                          style="background-image: url('<?= esc($img) ?>'); background-size: cover; background-position: center;">
                     </div>
                 <?php endforeach; ?>
@@ -39,28 +39,24 @@ $heroImages = [
                     <img src="<?= base_url('assets/img/logo.png') ?>" alt="Logo Desa" width="60" class="mb-3 drop-shadow">
                 </a>
                 <h4 class="fw-bold mb-1 text-white">Verifikasi Akun</h4>
-                <p class="text-white-50 small">Masukkan email dan kode OTP yang dikirim. Untuk pengujian, OTP juga ditampilkan di bawah.</p>
+                <p class="text-white-50 small">Masukkan email dan kode OTP yang telah dikirim ke email Anda.</p>
             </div>
-            
-            <?php if (!empty($previewOtp)): ?>
-                <div class="alert alert-info text-center small py-2 mb-3" style="background: rgba(13, 202, 240, 0.2); border-color: rgba(13, 202, 240, 0.3); color: #fff;">
-                    OTP: <strong><?= esc($previewOtp) ?></strong>
-                </div>
-            <?php endif; ?>
-            
+
             <form method="post" action="<?= base_url('/verify') ?>">
                 <?= csrf_field() ?>
                 <div class="mb-3">
                     <label class="form-label text-white-50 small mb-1">Email</label>
-                    <input type="email" class="form-control glass-input" name="email" value="<?= $pendingEmail ?? old('email') ?>" required placeholder="Masukkan email">
+                    <input type="email" class="form-control glass-input" name="email"
+                           value="<?= $pendingEmail ?? old('email') ?>" required placeholder="Masukkan email">
                 </div>
                 <div class="mb-4">
                     <label class="form-label text-white-50 small mb-1">Kode OTP</label>
-                    <input type="text" class="form-control glass-input" name="otp" maxlength="6" required placeholder="XXXXXX">
+                    <input type="text" class="form-control glass-input" name="otp"
+                           maxlength="6" required placeholder="XXXXXX" autocomplete="one-time-code">
                 </div>
                 <button class="btn glass-btn w-100 fw-bold" type="submit">Verifikasi</button>
             </form>
-            
+
             <div class="mt-4 pt-3 border-top border-secondary border-opacity-50 text-center">
                 <a href="<?= base_url('/login') ?>" class="text-white-50 text-decoration-none hover-white small">
                     <i class="bi bi-arrow-left me-1"></i> Kembali ke Login

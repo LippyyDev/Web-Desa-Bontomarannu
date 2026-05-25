@@ -13,6 +13,10 @@ $heroImages = [
     base_url('assets/img/Bantaeng (4).jpg'),
     base_url('assets/img/Bantaeng (5).jpg')
 ];
+$isFrozen     = !empty($otpRateLimit['frozen']);
+$isCooldown   = !empty($otpRateLimit['cooldown']);
+$otpSeconds   = (int) ($otpRateLimit['seconds_left'] ?? 0);
+$isRestricted = $isFrozen || $isCooldown;
 ?>
 
 <section class="auth-section position-relative overflow-hidden">
@@ -21,7 +25,7 @@ $heroImages = [
         <div id="heroBgCarousel" class="carousel slide carousel-fade h-100 w-100" data-bs-ride="carousel" data-bs-pause="false" data-bs-interval="4000">
             <div class="carousel-inner h-100 w-100">
                 <?php foreach ($heroImages as $index => $img): ?>
-                    <div class="carousel-item h-100 w-100 <?= $index === 0 ? 'active' : '' ?>" 
+                    <div class="carousel-item h-100 w-100 <?= $index === 0 ? 'active' : '' ?>"
                          style="background-image: url('<?= esc($img) ?>'); background-size: cover; background-position: center;">
                     </div>
                 <?php endforeach; ?>
@@ -41,16 +45,27 @@ $heroImages = [
                 <h4 class="fw-bold mb-1 text-white">Lupa Password</h4>
                 <p class="text-white-50 small">Masukkan email Anda untuk menerima kode OTP reset.</p>
             </div>
-            
-            <form method="post" action="<?= base_url('/forgot-password') ?>">
+
+            <form method="post" action="<?= base_url('/forgot-password') ?>" id="forgotForm">
                 <?= csrf_field() ?>
                 <div class="mb-4">
                     <label class="form-label text-white-50 small mb-1">Email</label>
-                    <input type="email" class="form-control glass-input" name="email" required placeholder="Masukkan email">
+                    <input id="forgotEmail" type="email" class="form-control glass-input" name="email"
+                           required placeholder="Masukkan email"
+                           <?= $isRestricted ? 'disabled' : '' ?>>
                 </div>
-                <button class="btn glass-btn w-100 fw-bold" type="submit">Kirim OTP</button>
+                <button id="sendOtpBtn" class="btn glass-btn w-100 fw-bold" type="submit"
+                        <?= $isRestricted ? 'disabled' : '' ?>>
+                    <?php if ($isFrozen): ?>
+                        IP Dibekukan
+                    <?php elseif ($isCooldown): ?>
+                        Harap Tunggu
+                    <?php else: ?>
+                        Kirim OTP
+                    <?php endif; ?>
+                </button>
             </form>
-            
+
             <div class="mt-4 pt-3 border-top border-secondary border-opacity-50 text-center">
                 <a href="<?= base_url('/login') ?>" class="text-white-50 text-decoration-none hover-white small">
                     <i class="bi bi-arrow-left me-1"></i> Kembali ke Login
@@ -59,4 +74,53 @@ $heroImages = [
         </div>
     </div>
 </section>
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+(function () {
+    const isFrozen   = <?= $isFrozen   ? 'true' : 'false' ?>;
+    const isCooldown = <?= $isCooldown ? 'true' : 'false' ?>;
+    let   countdown  = <?= $otpSeconds ?>;
+
+    if (countdown <= 0) return;
+
+    const btn   = document.getElementById('sendOtpBtn');
+    const input = document.getElementById('forgotEmail');
+    btn.disabled   = true;
+    input.disabled = true;
+
+    function formatTime(s) {
+        if (s >= 3600) {
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            return h + 'j ' + m + 'm';
+        }
+        if (s >= 60) {
+            const m   = Math.floor(s / 60);
+            const sec = s % 60;
+            return m + 'm ' + sec + 'd';
+        }
+        return s + ' detik';
+    }
+
+    function tick() {
+        if (countdown <= 0) {
+            btn.disabled   = false;
+            input.disabled = false;
+            btn.innerHTML  = 'Kirim OTP';
+            return;
+        }
+        if (isFrozen) {
+            btn.innerHTML = 'Dibekukan (' + formatTime(countdown) + ')';
+        } else {
+            btn.innerHTML = 'Coba lagi dalam ' + formatTime(countdown);
+        }
+        countdown--;
+        setTimeout(tick, 1000);
+    }
+
+    tick();
+})();
+</script>
 <?= $this->endSection() ?>

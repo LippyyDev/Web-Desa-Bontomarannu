@@ -176,20 +176,26 @@ class LetterController extends ProtectedController
         $this->handleAttachments($letterId);
 
         // Buat notifikasi untuk semua staff
-        $userModel = new UserModel();
+        $userModel    = new UserModel();
         $profileModel = new \App\Models\UserProfileModel();
-        $staffList = $userModel->where('role', 'staf')->findAll();
-        $notifModel = new NotificationModel();
-        $emailService = new \App\Libraries\EmailService();
-        
+        $staffList    = $userModel->where('role', 'staf')->findAll();
+        $notifModel   = new NotificationModel();
+        $letterUrl    = base_url('/staff/surat/' . $letterId);
+
         // Ambil nama user (nama_lengkap dari profile, fallback ke username)
         $userProfile = $profileModel->find($this->currentUser['id']);
-        $userName = ($userProfile && !empty($userProfile['nama_lengkap'])) 
-            ? $userProfile['nama_lengkap'] 
+        $userName    = ($userProfile && !empty($userProfile['nama_lengkap']))
+            ? $userProfile['nama_lengkap']
             : $this->currentUser['username'];
-        
-        $letterUrl = base_url('/staff/surat/' . $letterId);
-        
+
+        // Instantiate EmailService sekali di luar loop
+        try {
+            $emailService = new \App\Libraries\EmailService();
+        } catch (\Exception $e) {
+            log_message('error', 'Gagal init EmailService di User/LetterController: ' . $e->getMessage());
+            $emailService = null;
+        }
+
         foreach ($staffList as $staff) {
             $notifModel->insert([
                 'user_id'           => $staff['id'],
@@ -200,18 +206,24 @@ class LetterController extends ProtectedController
                 'is_read'           => 0,
                 'created_at'        => date('Y-m-d H:i:s'),
             ]);
-            
+
             // Kirim email notifikasi ke staff
-            $emailService->sendNotification(
-                $staff['email'],
-                $staff['username'],
-                'Surat Baru Masuk',
-                'Surat baru dari ' . $userName,
-                'new_letter',
-                $letterUrl,
-                $data['judul_perihal'],
-                $data['tipe_surat']
-            );
+            if ($emailService !== null) {
+                try {
+                    $emailService->sendNotification(
+                        $staff['email'],
+                        $staff['username'],
+                        'Surat Baru Masuk',
+                        'Surat baru dari ' . $userName,
+                        'new_letter',
+                        $letterUrl,
+                        $data['judul_perihal'],
+                        $data['tipe_surat']
+                    );
+                } catch (\Exception $e) {
+                    log_message('error', 'Gagal queue email surat baru ke staff ' . $staff['email'] . ': ' . $e->getMessage());
+                }
+            }
         }
 
         return redirect()->to('/user/surat')->with('success', 'Surat berhasil dikirim.');

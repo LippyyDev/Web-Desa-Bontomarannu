@@ -451,9 +451,15 @@ class LandingController extends BaseController
         $userModel    = new \App\Models\UserModel();
         $staffList    = $userModel->where('role', 'staf')->findAll();
         $notifModel   = new \App\Models\NotificationModel();
-        $emailService = new \App\Libraries\EmailService();
-
         $pengaduanUrl = base_url('/staff/pengaduan/' . $pengaduanId);
+
+        // Instantiate EmailService sekali di luar loop
+        try {
+            $emailService = new \App\Libraries\EmailService();
+        } catch (\Exception $e) {
+            log_message('error', 'Gagal init EmailService di Guest submitPengaduan: ' . $e->getMessage());
+            $emailService = null;
+        }
 
         foreach ($staffList as $staff) {
             $notifModel->insert([
@@ -466,16 +472,22 @@ class LandingController extends BaseController
                 'created_at'           => date('Y-m-d H:i:s'),
             ]);
 
-            $emailService->sendNotification(
-                $staff['email'],
-                $staff['username'],
-                'Pengaduan Baru Masuk',
-                'Pengaduan baru dari ' . $data['nama'],
-                'info',
-                $pengaduanUrl,
-                $data['perihal'],
-                'Pengaduan'
-            );
+            if ($emailService !== null) {
+                try {
+                    $emailService->sendNotification(
+                        $staff['email'],
+                        $staff['username'],
+                        'Pengaduan Baru Masuk',
+                        'Pengaduan baru dari ' . $data['nama'],
+                        'info',
+                        $pengaduanUrl,
+                        $data['perihal'],
+                        'Pengaduan'
+                    );
+                } catch (\Exception $e) {
+                    log_message('error', 'Gagal queue email pengaduan ke staff ' . $staff['email'] . ': ' . $e->getMessage());
+                }
+            }
         }
 
         return redirect()->to('/pengaduan')->with('message', 'Pengaduan Anda telah berhasil dikirim. Terima kasih.');

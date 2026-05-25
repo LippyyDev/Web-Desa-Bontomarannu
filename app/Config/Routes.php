@@ -45,11 +45,17 @@ $routes->get('/verify', 'Guest\AuthController::verify');
 $routes->post('/verify', 'Guest\AuthController::doVerify');
 $routes->get('/verify/(:segment)', 'Guest\AuthController::verifyByLink/$1');
 
-// Email queue processing endpoint (removed, now using cron)
+// Email queue processing endpoint — dipanggil via cron job atau scheduler eksternal
+// POST /api/email-queue/process  (dengan header X-Cron-Secret atau ?secret=xxx)
+$routes->post('/api/email-queue/process', 'Api\EmailQueueController::process');
+$routes->get('/api/email-queue/process',  'Api\EmailQueueController::process');
+
 $routes->get('/forgot-password', 'Guest\AuthController::forgotPassword');
 $routes->post('/forgot-password', 'Guest\AuthController::sendReset');
+$routes->get('/reset-password/(:any)', 'Guest\AuthController::resetByLink/$1');
 $routes->get('/verify-reset', 'Guest\AuthController::verifyReset');
 $routes->post('/verify-reset', 'Guest\AuthController::doVerifyReset');
+$routes->post('/resend-otp', 'Guest\AuthController::resendOtp');
 $routes->get('/new-password', 'Guest\AuthController::newPassword');
 $routes->post('/new-password', 'Guest\AuthController::doNewPassword');
 $routes->get('/logout', 'Guest\AuthController::logout');
