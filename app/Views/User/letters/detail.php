@@ -137,7 +137,7 @@ function truncateFilename(string $filename, int $maxLength = 35): string {
                                 <div class="small text-muted"><?= date('d M Y H:i', strtotime($reply['created_at'])) ?></div>
                             </div>
                         </div>
-                        <div class="text-muted mb-2"><?= nl2br($reply['reply_text']) ?></div>
+                        <div class="text-muted mb-2"><?= nl2br(esc($reply['reply_text'])) ?></div>
                     </div>
                 </div>
                 <?php if (!empty($replyAttachments[$reply['id']])): ?>

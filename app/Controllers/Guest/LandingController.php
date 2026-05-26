@@ -40,9 +40,18 @@ class LandingController extends BaseController
         $umkmGambarModel = new \App\Models\UmkmProdukGambarModel();
         
         $randomProducts = $umkmProdukModel->orderBy('RAND()')->findAll(6);
-        foreach ($randomProducts as &$produk) {
-            $gambar = $umkmGambarModel->where('produk_id', $produk['id'])->orderBy('id', 'ASC')->first();
-            $produk['gambar_path'] = $gambar ? $gambar['gambar_path'] : null;
+        if (!empty($randomProducts)) {
+            $productIds = array_column($randomProducts, 'id');
+            $allGambar = $umkmGambarModel->whereIn('produk_id', $productIds)->orderBy('id', 'ASC')->findAll();
+            $gambarByProduct = [];
+            foreach ($allGambar as $g) {
+                if (!isset($gambarByProduct[$g['produk_id']])) {
+                    $gambarByProduct[$g['produk_id']] = $g['gambar_path'];
+                }
+            }
+            foreach ($randomProducts as &$produk) {
+                $produk['gambar_path'] = $gambarByProduct[$produk['id']] ?? null;
+            }
         }
 
         $pariwisataModel = new \App\Models\PariwisataModel();
@@ -50,10 +59,26 @@ class LandingController extends BaseController
         
         // Ambil 6 pariwisata terbaru
         $pariwisataList = $pariwisataModel->orderBy('created_at', 'DESC')->findAll(6);
+        $pariwisataIds = [];
+        foreach ($pariwisataList as $pariwisata) {
+            if (empty($pariwisata['thumbnail'])) {
+                $pariwisataIds[] = $pariwisata['id'];
+            }
+        }
+        
+        $gambarByPariwisata = [];
+        if (!empty($pariwisataIds)) {
+            $allGambar = $pariwisataGambarModel->whereIn('pariwisata_id', $pariwisataIds)->orderBy('id', 'ASC')->findAll();
+            foreach ($allGambar as $g) {
+                if (!isset($gambarByPariwisata[$g['pariwisata_id']])) {
+                    $gambarByPariwisata[$g['pariwisata_id']] = $g['gambar_path'];
+                }
+            }
+        }
+
         foreach ($pariwisataList as &$pariwisata) {
             if (empty($pariwisata['thumbnail'])) {
-                $gambar = $pariwisataGambarModel->where('pariwisata_id', $pariwisata['id'])->first();
-                $pariwisata['thumbnail_display'] = $gambar ? $gambar['gambar_path'] : null;
+                $pariwisata['thumbnail_display'] = $gambarByPariwisata[$pariwisata['id']] ?? null;
             } else {
                 $pariwisata['thumbnail_display'] = $pariwisata['thumbnail'];
             }
@@ -538,28 +563,36 @@ class LandingController extends BaseController
             ->findAll($limit, $offset);
 
         $data = [];
-        foreach ($albums as $album) {
-            // Ambil media pertama dari album (foto), fallback ke thumbnail album
-            $firstMedia = $mediaModel
-                ->where('album_id', $album['id'])
+        if (!empty($albums)) {
+            $albumIds = array_column($albums, 'id');
+            $allMedia = $mediaModel->whereIn('album_id', $albumIds)
                 ->where('media_type', 'foto')
                 ->orderBy('id', 'ASC')
-                ->first();
-
-            $coverPath = null;
-            if ($firstMedia) {
-                $coverPath = base_url($firstMedia['media_path']);
-            } elseif (!empty($album['thumbnail'])) {
-                $coverPath = base_url($album['thumbnail']);
+                ->findAll();
+                
+            $mediaByAlbum = [];
+            foreach ($allMedia as $m) {
+                if (!isset($mediaByAlbum[$m['album_id']])) {
+                    $mediaByAlbum[$m['album_id']] = $m['media_path'];
+                }
             }
 
-            $data[] = [
-                'id'           => $album['id'],
-                'nama_album'   => $album['nama_album'],
-                'deskripsi'    => $album['deskripsi'] ?? '',
-                'tanggal_waktu'=> date('d M Y', strtotime($album['tanggal_waktu'])),
-                'cover_url'    => $coverPath,
-            ];
+            foreach ($albums as $album) {
+                $coverPath = null;
+                if (isset($mediaByAlbum[$album['id']])) {
+                    $coverPath = base_url($mediaByAlbum[$album['id']]);
+                } elseif (!empty($album['thumbnail'])) {
+                    $coverPath = base_url($album['thumbnail']);
+                }
+
+                $data[] = [
+                    'id'           => $album['id'],
+                    'nama_album'   => $album['nama_album'],
+                    'deskripsi'    => $album['deskripsi'] ?? '',
+                    'tanggal_waktu'=> date('d M Y', strtotime($album['tanggal_waktu'])),
+                    'cover_url'    => $coverPath,
+                ];
+            }
         }
 
         return $this->response->setJSON([
@@ -782,29 +815,61 @@ class LandingController extends BaseController
             ->findAll($limit, $offset);
 
         $data = [];
-        foreach ($list as $item) {
-            // Cover: foto_toko utama, fallback ke gambar produk pertama
-            $coverUrl = null;
-            if (!empty($item['foto_toko'])) {
-                $coverUrl = base_url($item['foto_toko']);
-            } else {
-                $produkPertama = $produkModel->where('umkm_id', $item['id'])->first();
-                if ($produkPertama) {
-                    $gambar = $gambarModel->where('produk_id', $produkPertama['id'])->first();
-                    if ($gambar) {
-                        $coverUrl = base_url($gambar['gambar_path']);
+        if (!empty($list)) {
+            $umkmIdsToFetch = [];
+            foreach ($list as $item) {
+                if (empty($item['foto_toko'])) {
+                    $umkmIdsToFetch[] = $item['id'];
+                }
+            }
+
+            $coverByUmkm = [];
+            if (!empty($umkmIdsToFetch)) {
+                $firstProducts = $produkModel->whereIn('umkm_id', $umkmIdsToFetch)->orderBy('id', 'ASC')->findAll();
+                $firstProductByUmkm = [];
+                $firstProductIds = [];
+                
+                foreach ($firstProducts as $fp) {
+                    if (!isset($firstProductByUmkm[$fp['umkm_id']])) {
+                        $firstProductByUmkm[$fp['umkm_id']] = $fp;
+                        $firstProductIds[] = $fp['id'];
+                    }
+                }
+                
+                if (!empty($firstProductIds)) {
+                    $gambars = $gambarModel->whereIn('produk_id', $firstProductIds)->orderBy('id', 'ASC')->findAll();
+                    $gambarByProduct = [];
+                    foreach ($gambars as $g) {
+                        if (!isset($gambarByProduct[$g['produk_id']])) {
+                            $gambarByProduct[$g['produk_id']] = $g['gambar_path'];
+                        }
+                    }
+                    
+                    foreach ($firstProductByUmkm as $umkmId => $fp) {
+                        if (isset($gambarByProduct[$fp['id']])) {
+                            $coverByUmkm[$umkmId] = $gambarByProduct[$fp['id']];
+                        }
                     }
                 }
             }
 
-            $data[] = [
-                'id'        => $item['id'],
-                'nama_toko' => $item['nama_toko'],
-                'deskripsi' => strip_tags($item['deskripsi'] ?? ''),
-                'alamat'    => $item['alamat'] ?? '',
-                'kontak'    => $item['kontak'] ?? '',
-                'cover_url' => $coverUrl,
-            ];
+            foreach ($list as $item) {
+                $coverUrl = null;
+                if (!empty($item['foto_toko'])) {
+                    $coverUrl = base_url($item['foto_toko']);
+                } elseif (isset($coverByUmkm[$item['id']])) {
+                    $coverUrl = base_url($coverByUmkm[$item['id']]);
+                }
+
+                $data[] = [
+                    'id'        => $item['id'],
+                    'nama_toko' => $item['nama_toko'],
+                    'deskripsi' => strip_tags($item['deskripsi'] ?? ''),
+                    'alamat'    => $item['alamat'] ?? '',
+                    'kontak'    => $item['kontak'] ?? '',
+                    'cover_url' => $coverUrl,
+                ];
+            }
         }
 
         return $this->response->setJSON([

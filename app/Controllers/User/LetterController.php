@@ -45,12 +45,14 @@ class LetterController extends ProtectedController
         $tipeSuratFilter = $this->request->getPost('tipe_surat_filter') ?? '';
         $statusFilter    = $this->request->getPost('status_filter') ?? '';
 
+        $hasFilters = !empty($dateStart) || !empty($dateEnd) || !empty($tipeSuratFilter) || !empty($statusFilter) || !empty($search);
+
         // Build base query — hanya surat milik user yang login
         $builder = $db->table('letters')
             ->where('user_id', $this->currentUser['id']);
 
-        // Total sebelum filter
-        $recordsTotal = (clone $builder)->countAllResults(false);
+        // Total sebelum filter (tanpa clone builder untuk efisiensi)
+        $recordsTotal = $db->table('letters')->where('user_id', $this->currentUser['id'])->countAllResults();
 
         // Apply filter
         if (!empty($dateStart)) {
@@ -74,8 +76,8 @@ class LetterController extends ProtectedController
                 ->groupEnd();
         }
 
-        // Total setelah filter
-        $recordsFiltered = (clone $builder)->countAllResults(false);
+        // Total setelah filter (hanya eksekusi COUNT jika ada filter pencarian)
+        $recordsFiltered = $hasFilters ? (clone $builder)->countAllResults(false) : $recordsTotal;
 
         // Ordering & pagination
         $builder->orderBy('sent_at', 'DESC')

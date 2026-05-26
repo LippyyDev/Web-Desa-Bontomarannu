@@ -46,14 +46,16 @@ class LetterController extends ProtectedController
         $tipeSuratFilter = $this->request->getPost('tipe_surat_filter') ?? '';
         $statusFilter    = $this->request->getPost('status_filter') ?? '';
 
+        $hasFilters = !empty($dateStart) || !empty($dateEnd) || !empty($tipeSuratFilter) || !empty($statusFilter) || !empty($search);
+
         // Build base query with join
         $builder = $db->table('letters l')
             ->select('l.*, COALESCE(up.nama_lengkap, u.username, "Unknown") as sender_name')
             ->join('users u', 'u.id = l.user_id', 'left')
             ->join('user_profiles up', 'up.user_id = l.user_id', 'left');
 
-        // Total sebelum filter
-        $recordsTotal = (clone $builder)->countAllResults(false);
+        // Total sebelum filter (tanpa query JOIN yang berat)
+        $recordsTotal = $db->table('letters')->countAllResults();
 
         // Apply filter
         if (!empty($dateStart)) {
@@ -78,8 +80,8 @@ class LetterController extends ProtectedController
                 ->groupEnd();
         }
 
-        // Total setelah filter
-        $recordsFiltered = (clone $builder)->countAllResults(false);
+        // Total setelah filter (hanya eksekusi COUNT jika ada filter pencarian)
+        $recordsFiltered = $hasFilters ? (clone $builder)->countAllResults(false) : $recordsTotal;
 
         // Ordering & pagination
         $builder->orderBy('l.sent_at', 'DESC')

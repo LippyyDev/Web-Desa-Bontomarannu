@@ -42,7 +42,7 @@ class AccountController extends ProtectedController
 
         // Build base query with join
         $builder = $db->table('users u')
-            ->select('u.id, u.username, u.email, u.role, u.status, u.created_at, u.last_seen_at, up.foto_profil')
+            ->select('u.id, u.username, u.email, u.role, u.status, u.created_at, u.last_seen_at, up.foto_profil, TIMESTAMPDIFF(SECOND, u.last_seen_at, NOW()) as seconds_since_last_seen')
             ->join('user_profiles up', 'up.user_id = u.id', 'left');
 
         // Apply search filter
@@ -72,7 +72,6 @@ class AccountController extends ProtectedController
 
         // Threshold online: 5 menit (300 detik)
         $onlineThreshold = 300;
-        $now = time();
 
         $data = [];
         foreach ($users as $user) {
@@ -81,8 +80,10 @@ class AccountController extends ProtectedController
             $lastSeenStr = 'Belum pernah';
 
             if (!empty($lastSeenAt)) {
+                $seconds = (int)$user['seconds_since_last_seen'];
+                $isOnline = ($seconds >= 0 && $seconds <= $onlineThreshold);
+                
                 $lastSeenTs  = strtotime($lastSeenAt);
-                $isOnline    = ($now - $lastSeenTs) <= $onlineThreshold;
                 $lastSeenStr = date('d M Y, H:i', $lastSeenTs);
             }
 

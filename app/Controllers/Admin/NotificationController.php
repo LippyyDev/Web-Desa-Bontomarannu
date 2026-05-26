@@ -27,12 +27,17 @@ class NotificationController extends ProtectedController
         $page = (int)$this->request->getPost('page') ?: 1;
         $perPage = (int)$this->request->getPost('per_page') ?: 15;
         
-        $builder = $notifModel->where('user_id', $this->currentUser['id'])->orderBy('created_at', 'DESC');
+        $offset = ($page - 1) * $perPage;
         
-        $total = $builder->countAllResults(false);
-        $notifications = $builder->paginate($perPage, 'default', $page);
+        // Optimasi: Ambil data per_page + 1 untuk mengecek has_more tanpa mengeksekusi query COUNT(*)
+        $notifications = $notifModel->where('user_id', $this->currentUser['id'])
+                                    ->orderBy('created_at', 'DESC')
+                                    ->findAll($perPage + 1, $offset);
         
-        $hasMore = ($page * $perPage) < $total;
+        $hasMore = count($notifications) > $perPage;
+        if ($hasMore) {
+            array_pop($notifications);
+        }
         
         foreach ($notifications as &$notif) {
             $notif['created_at_formatted'] = date('d M Y H:i', strtotime($notif['created_at']));

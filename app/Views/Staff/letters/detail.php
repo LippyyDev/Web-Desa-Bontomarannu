@@ -199,7 +199,7 @@ async function submitAction(actionUrl, requireText = false, confirmMsg = null) {
                             </div>
                             <?php endif; ?>
                         </div>
-                        <div class="text-muted mb-2"><?= nl2br($reply['reply_text']) ?></div>
+                        <div class="text-muted mb-2"><?= nl2br(esc($reply['reply_text'])) ?></div>
                     </div>
                 </div>
                 <?php if (!empty($replyAttachments[$reply['id']])): ?>

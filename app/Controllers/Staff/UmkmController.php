@@ -80,9 +80,18 @@ class UmkmController extends ProtectedController
                          ->get()
                          ->getResultArray();
 
+        $userIds = array_filter(array_column($list, 'user_id'));
+        $profilesById = [];
+        if (!empty($userIds)) {
+            $profiles = $profileModel->whereIn('user_id', $userIds)->findAll();
+            foreach ($profiles as $prof) {
+                $profilesById[$prof['user_id']] = $prof;
+            }
+        }
+
         foreach ($list as &$item) {
             if ($item['user_id']) {
-                $profile = $profileModel->find($item['user_id']);
+                $profile = $profilesById[$item['user_id']] ?? null;
                 $item['pemilik'] = $profile['nama_lengkap'] ?? 'User';
             } else {
                 $item['pemilik'] = 'Staff';
@@ -132,12 +141,23 @@ class UmkmController extends ProtectedController
                              ->limit($limit, $offset)
                              ->findAll();
 
-        foreach ($list as &$p) {
-            $gambar = $gambarModel->where('produk_id', $p['id'])->findAll();
-            $p['gambar_path'] = !empty($gambar) ? $gambar[0]['gambar_path'] : null;
-            $p['harga_fmt']   = $p['harga'] ? 'Rp ' . number_format((float)$p['harga'], 0, ',', '.') : null;
+        if (!empty($list)) {
+            $productIds = array_column($list, 'id');
+            $allGambar = $gambarModel->whereIn('produk_id', $productIds)->orderBy('id', 'ASC')->findAll();
+            
+            $gambarByProduct = [];
+            foreach ($allGambar as $g) {
+                if (!isset($gambarByProduct[$g['produk_id']])) {
+                    $gambarByProduct[$g['produk_id']] = $g['gambar_path'];
+                }
+            }
+
+            foreach ($list as &$p) {
+                $p['gambar_path'] = $gambarByProduct[$p['id']] ?? null;
+                $p['harga_fmt']   = $p['harga'] ? 'Rp ' . number_format((float)$p['harga'], 0, ',', '.') : null;
+            }
+            unset($p);
         }
-        unset($p);
 
         return $this->response->setJSON([
             'success'     => true,
@@ -748,10 +768,20 @@ class UmkmController extends ProtectedController
         $ecommerce  = $ecomModel->where('umkm_id', $id)->findAll();
         $produkList = $produkModel->where('umkm_id', $id)->findAll();
 
-        foreach ($produkList as &$produk) {
-            $produk['gambar'] = $gambarModel->where('produk_id', $produk['id'])->findAll();
+        if (!empty($produkList)) {
+            $productIds = array_column($produkList, 'id');
+            $allGambar = $gambarModel->whereIn('produk_id', $productIds)->findAll();
+            
+            $gambarByProduct = [];
+            foreach ($allGambar as $g) {
+                $gambarByProduct[$g['produk_id']][] = $g;
+            }
+
+            foreach ($produkList as &$produk) {
+                $produk['gambar'] = $gambarByProduct[$produk['id']] ?? [];
+            }
+            unset($produk);
         }
-        unset($produk);
 
         return [
             'umkm'      => $umkm,
