@@ -559,11 +559,12 @@ class AuthController extends BaseController
         $directUrl = base_url('/reset-password/' . urlencode($token));
 
         $resetData = [
-            'user_id'    => $user['id'],
-            'email'      => $user['email'],
-            'username'   => $user['username'],
-            'otp'        => $otp,
-            'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour')),
+            'user_id'               => $user['id'],
+            'email'                 => $user['email'],
+            'username'              => $user['username'],
+            'otp'                   => $otp,
+            'expires_at'            => date('Y-m-d H:i:s', strtotime('+1 hour')),
+            'has_security_question' => !empty($user['security_question']),
         ];
         session()->set('pending_password_reset', $resetData);
         session()->set('pending_reset', $email);
@@ -593,11 +594,20 @@ class AuthController extends BaseController
     public function verifyReset()
     {
         $otpRateLimit = $this->getOtpRateLimit();
+        $resetData    = session()->get('pending_password_reset');
+
+        // Cek apakah sebelumnya dari halaman SQ yang error (auto-buka kembali form SQ)
+        $sqOpen          = (bool) session()->getFlashdata('sq_open');
+        $sqLockedSeconds = (int)  (session()->getFlashdata('sq_locked_seconds') ?? 0);
 
         return view('Guest/auth/verify_reset', [
-            'title'        => 'Verifikasi OTP | Website Desa Bonto Marannu',
-            'pendingEmail' => session()->get('pending_reset'),
-            'otpRateLimit' => $otpRateLimit,
+            'title'               => 'Verifikasi OTP | Website Desa Bonto Marannu',
+            'pendingEmail'        => session()->get('pending_reset'),
+            'otpRateLimit'        => $otpRateLimit,
+            'hasSecurityQuestion' => !empty($resetData['has_security_question']),
+            'sqOpen'              => $sqOpen,
+            'sqLockedSeconds'     => $sqLockedSeconds,
+            'securityQuestion'    => '', // Pertanyaan tidak ditampilkan di sini — hanya di form JS toggle
         ]);
     }
 
@@ -732,8 +742,21 @@ class AuthController extends BaseController
             return redirect()->back()->with('error', 'Email tidak sesuai.');
         }
 
+        // Cek rate limit percobaan OTP salah (maks 3x per 1 jam per IP)
+        $otpFailKey = 'otp_fail_' . md5($this->request->getIPAddress());
+        $otpFails   = (int) (cache($otpFailKey) ?? 0);
+        if ($otpFails >= 3) {
+            return redirect()->back()->with('error', 'Terlalu banyak percobaan OTP salah. Silakan request OTP baru dalam 1 jam.');
+        }
+
         if ($resetData['otp'] !== $otp) {
-            return redirect()->back()->with('error', 'OTP tidak valid.');
+            $otpFails++;
+            cache()->save($otpFailKey, $otpFails, 3600); // lock 1 jam
+            $remaining = 3 - $otpFails;
+            if ($remaining <= 0) {
+                return redirect()->back()->with('error', 'Terlalu banyak percobaan OTP salah. Silakan request OTP baru dalam 1 jam.');
+            }
+            return redirect()->back()->with('error', 'OTP tidak valid. Sisa percobaan: ' . $remaining . ' kali.');
         }
 
         if (strtotime($resetData['expires_at']) < time()) {
@@ -741,9 +764,115 @@ class AuthController extends BaseController
             return redirect()->to('/forgot-password')->with('error', 'Kode OTP kadaluarsa. Silakan request ulang.');
         }
 
+        // OTP benar — reset counter
+        cache()->delete($otpFailKey);
         session()->set('reset_otp_verified', true);
 
         return redirect()->to('/new-password')->with('success', 'Kode OTP valid. Silakan buat password baru Anda.');
+    }
+
+    // ─── Verify Security Question ─────────────────────────────────────────────
+
+    /**
+     * Verifikasi identitas via pertanyaan keamanan saat reset password.
+     * Endpoint: POST /verify-security-question
+     */
+    public function verifySecurityQuestion()
+    {
+        $resetData = session()->get('pending_password_reset');
+
+        if (!$resetData) {
+            return redirect()->to('/forgot-password')
+                ->with('error', 'Sesi tidak ditemukan. Silakan mulai ulang proses lupa password.');
+        }
+
+        if (empty($resetData['has_security_question'])) {
+            return redirect()->to('/verify-reset')
+                ->with('error', 'Akun ini tidak memiliki pertanyaan keamanan.');
+        }
+
+        // Cek rate limit percobaan jawaban salah (maks 3x per 1 jam per IP)
+        $sqFailKey = 'sq_fail_'     . md5($this->request->getIPAddress());
+        $sqExpKey  = 'sq_fail_exp_' . md5($this->request->getIPAddress());
+        $sqFails   = (int) (cache($sqFailKey) ?? 0);
+
+        if ($sqFails >= 3) {
+            // Sudah terkunci — hitung sisa waktu lalu buka form SQ dengan countdown
+            $expiry  = (int) (cache($sqExpKey) ?? 0);
+            $secsLeft = max(0, $expiry - time());
+            session()->setFlashdata('sq_open', true);
+            session()->setFlashdata('sq_locked_seconds', $secsLeft);
+            return redirect()->to('/verify-reset')
+                ->with('error', 'Terlalu banyak percobaan salah. Tunggu ' . ceil($secsLeft / 60) . ' menit atau gunakan OTP email.');
+        }
+
+        $answer    = trim($this->request->getPost('security_answer') ?? '');
+        $userModel = new UserModel();
+        $user      = $userModel->find($resetData['user_id']);
+
+        if (!$user || empty($user['security_answer_hash'])) {
+            return redirect()->to('/verify-reset')
+                ->with('error', 'Pertanyaan keamanan tidak ditemukan.');
+        }
+
+        // Cocokkan jawaban (case-insensitive: di-lowercase sebelum hash)
+        if (!password_verify(strtolower($answer), $user['security_answer_hash'])) {
+            $sqFails++;
+            $expiry = time() + 3600;
+            cache()->save($sqFailKey, $sqFails, 3600);  // lock 1 jam
+            cache()->save($sqExpKey,  $expiry,  3600);  // simpan waktu kunci
+
+            $remaining = 3 - $sqFails;
+
+            // Selalu buka kembali form SQ setelah error
+            session()->setFlashdata('sq_open', true);
+
+            if ($remaining <= 0) {
+                $secsLeft = 3600;
+                session()->setFlashdata('sq_locked_seconds', $secsLeft);
+                return redirect()->to('/verify-reset')
+                    ->with('error', 'Terlalu banyak percobaan salah. Tunggu 60 menit atau gunakan OTP email.');
+            }
+
+            return redirect()->to('/verify-reset')
+                ->with('error', 'Jawaban salah. Sisa percobaan: ' . $remaining . ' kali.');
+        }
+
+        // Jawaban benar — reset counter & set session verified
+        cache()->delete($sqFailKey);
+        session()->set('reset_otp_verified', true);
+
+        return redirect()->to('/new-password')
+            ->with('success', 'Identitas berhasil diverifikasi. Silakan buat password baru Anda.');
+    }
+
+    /**
+     * Ambil teks pertanyaan keamanan dari sesi reset yang aktif.
+     * Endpoint: POST /get-security-question (AJAX)
+     */
+    public function getSecurityQuestion()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['success' => false]);
+        }
+
+        $resetData = session()->get('pending_password_reset');
+
+        if (!$resetData || empty($resetData['has_security_question'])) {
+            return $this->response->setJSON(['success' => false, 'question' => null]);
+        }
+
+        $userModel = new UserModel();
+        $user      = $userModel->find($resetData['user_id']);
+
+        if (!$user || empty($user['security_question'])) {
+            return $this->response->setJSON(['success' => false, 'question' => null]);
+        }
+
+        return $this->response->setJSON([
+            'success'  => true,
+            'question' => $user['security_question'],
+        ]);
     }
 
     // ─── New Password ─────────────────────────────────────────────────────────

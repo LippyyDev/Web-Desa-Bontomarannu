@@ -168,6 +168,42 @@ class ProfileController extends ProtectedController
 
         return redirect()->to('/staff/profil')->with('success', 'Password berhasil diubah.');
     }
+
+    public function updateSecurityQuestion()
+    {
+        if ($redirect = $this->guard(['staf'])) {
+            return $redirect;
+        }
+
+        $userModel = new UserModel();
+        $uid       = $this->currentUser['id'];
+
+        $question = trim($this->request->getPost('security_question') ?? '');
+        $answer   = trim($this->request->getPost('security_answer') ?? '');
+
+        // Jika keduanya kosong → hapus pertanyaan keamanan
+        if ($question === '' && $answer === '') {
+            $userModel->update($uid, [
+                'security_question'    => null,
+                'security_answer_hash' => null,
+            ]);
+            return redirect()->to('/staff/profil')->with('success', 'Pertanyaan keamanan dihapus.');
+        }
+
+        if ($question === '') {
+            return redirect()->to('/staff/profil')->with('error', 'Pertanyaan keamanan tidak boleh kosong.');
+        }
+        if ($answer === '') {
+            return redirect()->to('/staff/profil')->with('error', 'Jawaban tidak boleh kosong.');
+        }
+
+        $userModel->update($uid, [
+            'security_question'    => $question,
+            'security_answer_hash' => password_hash(strtolower($answer), PASSWORD_DEFAULT),
+        ]);
+
+        return redirect()->to('/staff/profil')->with('success', 'Pertanyaan keamanan berhasil disimpan.');
+    }
 }
 
 

@@ -39,63 +39,110 @@ class DashboardController extends ProtectedController
         // Hitung total surat masuk
         $incoming = $letterModel->countAllResults();
 
-        // Ambil 5 surat terbaru
-        $recentLetters = (new LetterModel())->orderBy('created_at', 'DESC')->findAll(5);
+        // Ambil 5 surat terbaru (Optimasi JOIN)
+        $recentLetters = (new LetterModel())
+            ->select('letters.*, users.username, user_profiles.nama_lengkap')
+            ->join('users', 'users.id = letters.user_id', 'left')
+            ->join('user_profiles', 'user_profiles.user_id = letters.user_id', 'left')
+            ->orderBy('letters.created_at', 'DESC')
+            ->findAll(5);
         foreach ($recentLetters as &$letter) {
-            $user    = $userModel->find($letter['user_id']);
-            $profile = $profileModel->find($letter['user_id']);
-            $letter['sender_name'] = ($profile && !empty($profile['nama_lengkap']))
-                ? $profile['nama_lengkap']
-                : ($user['username'] ?? 'Unknown');
+            $letter['sender_name'] = !empty($letter['nama_lengkap']) 
+                ? $letter['nama_lengkap'] 
+                : ($letter['username'] ?? 'Unknown');
         }
 
-        // Breakdown status surat (untuk donut chart)
-        $statusMenunggu  = (new LetterModel())->where('status', 'Menunggu')->countAllResults();
-        $statusDibaca    = (new LetterModel())->where('status', 'Dibaca')->countAllResults();
-        $statusDiterima  = (new LetterModel())->where('status', 'Diterima')->countAllResults();
-        $statusDitolak   = (new LetterModel())->where('status', 'Ditolak')->countAllResults();
+        // Breakdown status surat (untuk donut chart - Optimasi)
+        $db = \Config\Database::connect();
+        $suratStats = $db->query("
+            SELECT 
+                SUM(CASE WHEN status = 'Menunggu' THEN 1 ELSE 0 END) as menunggu,
+                SUM(CASE WHEN status = 'Dibaca' THEN 1 ELSE 0 END) as dibaca,
+                SUM(CASE WHEN status = 'Diterima' THEN 1 ELSE 0 END) as diterima,
+                SUM(CASE WHEN status = 'Ditolak' THEN 1 ELSE 0 END) as ditolak
+            FROM letters
+        ")->getRowArray();
+        $statusMenunggu  = (int)($suratStats['menunggu'] ?? 0);
+        $statusDibaca    = (int)($suratStats['dibaca'] ?? 0);
+        $statusDiterima  = (int)($suratStats['diterima'] ?? 0);
+        $statusDitolak   = (int)($suratStats['ditolak'] ?? 0);
 
-        // 5 Pengaduan terbaru
-        $recentPengaduan = $pengaduanModel->orderBy('created_at', 'DESC')->findAll(5);
+        // 5 Pengaduan terbaru (Optimasi JOIN)
+        $recentPengaduan = $pengaduanModel
+            ->select('pengaduan.*, users.username, user_profiles.nama_lengkap')
+            ->join('users', 'users.id = pengaduan.user_id', 'left')
+            ->join('user_profiles', 'user_profiles.user_id = pengaduan.user_id', 'left')
+            ->orderBy('pengaduan.created_at', 'DESC')
+            ->findAll(5);
         foreach ($recentPengaduan as &$p) {
-            $pUser    = $userModel->find($p['user_id'] ?? 0);
-            $pProfile = $profileModel->find($p['user_id'] ?? 0);
-            $p['sender_name'] = ($pProfile && !empty($pProfile['nama_lengkap']))
-                ? $pProfile['nama_lengkap']
-                : ($pUser['username'] ?? 'Anonim');
+            $p['sender_name'] = !empty($p['nama_lengkap']) 
+                ? $p['nama_lengkap'] 
+                : (!empty($p['username']) ? $p['username'] : 'Anonim');
         }
 
-        // Data grafik 6 bulan terakhir
-        $chartLabels   = [];
-        $chartIncoming = [];
-        $chartReplied  = [];
+        // Data grafik 6 bulan terakhir (Optimasi GROUP BY)
+        $chartLabels    = [];
+        $chartIncoming  = [];
+        $chartReplied   = [];
+        $chartPengaduan = [];
 
+        // Inisialisasi default 0 untuk 6 bulan terakhir
         for ($i = 5; $i >= 0; $i--) {
-            $monthStart = date('Y-m-01', strtotime("-$i months"));
-            $monthEnd   = date('Y-m-t 23:59:59', strtotime("-$i months"));
+            $monthKey = date('Y-m', strtotime("-$i months"));
             $chartLabels[] = date('M Y', strtotime("-$i months"));
+            $chartIncoming[$monthKey]  = 0;
+            $chartReplied[$monthKey]   = 0;
+            $chartPengaduan[$monthKey] = 0;
+        }
+        
+        $sixMonthsAgo = date('Y-m-01 00:00:00', strtotime("-5 months"));
 
-            $chartIncoming[] = (new LetterModel())
-                ->where('created_at >=', $monthStart . ' 00:00:00')
-                ->where('created_at <=', $monthEnd)
-                ->countAllResults(false);
-
-            $chartReplied[] = (new LetterModel())
-                ->whereIn('status', ['Diterima', 'Ditolak'])
-                ->where('decided_at >=', $monthStart . ' 00:00:00')
-                ->where('decided_at <=', $monthEnd)
-                ->countAllResults(false);
-
-            $chartPengaduan[] = (new PengaduanModel())
-                ->where('created_at >=', $monthStart . ' 00:00:00')
-                ->where('created_at <=', $monthEnd)
-                ->countAllResults(false);
+        // Query 1: Letters (Masuk - based on created_at)
+        $incomingData = $db->query("
+            SELECT DATE_FORMAT(created_at, '%Y-%m') as bulan, COUNT(*) as total
+            FROM letters WHERE created_at >= ?
+            GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        ", [$sixMonthsAgo])->getResultArray();
+        foreach ($incomingData as $row) {
+            if (isset($chartIncoming[$row['bulan']])) $chartIncoming[$row['bulan']] = (int)$row['total'];
         }
 
-        // UMKM Breakdown — status di DB: pending, approved, rejected
-        $umkmPending  = $umkmModel->where('status', 'pending')->countAllResults();
-        $umkmApproved = $umkmModel->where('status', 'approved')->countAllResults();
-        $umkmRejected = $umkmModel->where('status', 'rejected')->countAllResults();
+        // Query 2: Letters (Dibalas - based on decided_at)
+        $repliedData = $db->query("
+            SELECT DATE_FORMAT(decided_at, '%Y-%m') as bulan, COUNT(*) as total
+            FROM letters WHERE status IN ('Diterima', 'Ditolak') AND decided_at >= ?
+            GROUP BY DATE_FORMAT(decided_at, '%Y-%m')
+        ", [$sixMonthsAgo])->getResultArray();
+        foreach ($repliedData as $row) {
+            if (isset($chartReplied[$row['bulan']])) $chartReplied[$row['bulan']] = (int)$row['total'];
+        }
+
+        // Query 3: Pengaduan
+        $pengaduanChartData = $db->query("
+            SELECT DATE_FORMAT(created_at, '%Y-%m') as bulan, COUNT(*) as total
+            FROM pengaduan WHERE created_at >= ?
+            GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        ", [$sixMonthsAgo])->getResultArray();
+        foreach ($pengaduanChartData as $row) {
+            if (isset($chartPengaduan[$row['bulan']])) $chartPengaduan[$row['bulan']] = (int)$row['total'];
+        }
+
+        // Re-index arrays for charts
+        $chartIncoming  = array_values($chartIncoming);
+        $chartReplied   = array_values($chartReplied);
+        $chartPengaduan = array_values($chartPengaduan);
+
+        // UMKM Breakdown (Optimasi Conditional Aggregation)
+        $umkmStats = $db->query("
+            SELECT 
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
+            FROM umkm
+        ")->getRowArray();
+        $umkmPending  = (int)($umkmStats['pending'] ?? 0);
+        $umkmApproved = (int)($umkmStats['approved'] ?? 0);
+        $umkmRejected = (int)($umkmStats['rejected'] ?? 0);
 
         $data = [
             'incoming'        => $incoming,

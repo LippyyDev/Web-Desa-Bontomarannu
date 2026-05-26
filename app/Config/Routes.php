@@ -56,6 +56,8 @@ $routes->get('/reset-password/(:any)', 'Guest\AuthController::resetByLink/$1');
 $routes->get('/verify-reset', 'Guest\AuthController::verifyReset');
 $routes->post('/verify-reset', 'Guest\AuthController::doVerifyReset');
 $routes->post('/resend-otp', 'Guest\AuthController::resendOtp');
+$routes->post('/verify-security-question', 'Guest\AuthController::verifySecurityQuestion');
+$routes->post('/get-security-question', 'Guest\AuthController::getSecurityQuestion');
 $routes->get('/new-password', 'Guest\AuthController::newPassword');
 $routes->post('/new-password', 'Guest\AuthController::doNewPassword');
 $routes->get('/logout', 'Guest\AuthController::logout');
@@ -67,6 +69,7 @@ $routes->group('user', static function ($routes) {
     $routes->get('profil', 'User\ProfileController::index');
     $routes->post('profil', 'User\ProfileController::update');
     $routes->post('profil/ubah-password', 'User\ProfileController::changePassword');
+    $routes->post('profil/pertanyaan-keamanan', 'User\ProfileController::updateSecurityQuestion');
 
     $routes->get('surat', 'User\LetterController::index');
     $routes->post('surat/api', 'User\LetterController::api');
@@ -110,6 +113,7 @@ $routes->group('staff', static function ($routes) {
     $routes->get('profil', 'Staff\ProfileController::index');
     $routes->post('profil', 'Staff\ProfileController::update');
     $routes->post('profil/ubah-password', 'Staff\ProfileController::changePassword');
+    $routes->post('profil/pertanyaan-keamanan', 'Staff\ProfileController::updateSecurityQuestion');
 
     $routes->get('surat', 'Staff\LetterController::index');
     $routes->post('surat/api', 'Staff\LetterController::api');
@@ -227,6 +231,7 @@ $routes->group('admin', static function ($routes) {
     $routes->get('profil', 'Admin\ProfileController::index');
     $routes->post('profil', 'Admin\ProfileController::update');
     $routes->post('profil/ubah-password', 'Admin\ProfileController::changePassword');
+    $routes->post('profil/pertanyaan-keamanan', 'Admin\ProfileController::updateSecurityQuestion');
     
     $routes->get('notifikasi', 'Admin\NotificationController::index');
     $routes->post('notifikasi/data', 'Admin\NotificationController::data');

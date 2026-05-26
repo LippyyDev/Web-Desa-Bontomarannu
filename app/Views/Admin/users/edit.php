@@ -113,17 +113,17 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Username</label>
-                            <input type="text" class="form-control" name="username" id="inputUsername" value="<?= old('username', esc($user['username'])) ?>">
+                            <input type="text" class="form-control" name="username" id="inputUsername" value="<?= old('username', esc($user['username'])) ?>" maxlength="50">
                             <div class="invalid-feedback">Username hanya boleh berisi huruf dan angka tanpa spasi.</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" id="inputEmail" value="<?= old('email', esc($user['email'])) ?>">
+                            <input type="email" class="form-control" name="email" id="inputEmail" value="<?= old('email', esc($user['email'])) ?>" maxlength="100">
                             <div class="invalid-feedback">Format email tidak valid (harus mengandung @).</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Nama Lengkap</label>
-                            <input type="text" class="form-control" name="nama_lengkap" id="inputNama" value="<?= old('nama_lengkap', esc($profile['nama_lengkap'] ?? '')) ?>">
+                            <input type="text" class="form-control" name="nama_lengkap" id="inputNama" value="<?= old('nama_lengkap', esc($profile['nama_lengkap'] ?? '')) ?>" maxlength="100">
                             <div class="invalid-feedback">Nama lengkap hanya boleh berisi huruf dan spasi.</div>
                         </div>
                         <div class="col-md-4">
@@ -152,7 +152,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Tempat Lahir</label>
-                            <input type="text" class="form-control" name="tempat_lahir" id="inputTempatLahir" value="<?= old('tempat_lahir', esc($profile['tempat_lahir'] ?? '')) ?>">
+                            <input type="text" class="form-control" name="tempat_lahir" id="inputTempatLahir" value="<?= old('tempat_lahir', esc($profile['tempat_lahir'] ?? '')) ?>" maxlength="100">
                             <div class="invalid-feedback">Tempat lahir hanya boleh berisi huruf, spasi, dan tanda hubung.</div>
                         </div>
                         <div class="col-md-4">
@@ -162,12 +162,12 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Agama</label>
-                            <input type="text" class="form-control" name="agama" id="inputAgama" value="<?= old('agama', esc($profile['agama'] ?? '')) ?>">
+                            <input type="text" class="form-control" name="agama" id="inputAgama" value="<?= old('agama', esc($profile['agama'] ?? '')) ?>" maxlength="50">
                             <div class="invalid-feedback">Agama hanya boleh berisi huruf dan spasi.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Pekerjaan</label>
-                            <input type="text" class="form-control" name="pekerjaan" id="inputPekerjaan" value="<?= old('pekerjaan', esc($profile['pekerjaan'] ?? '')) ?>">
+                            <input type="text" class="form-control" name="pekerjaan" id="inputPekerjaan" value="<?= old('pekerjaan', esc($profile['pekerjaan'] ?? '')) ?>" maxlength="100">
                             <div class="invalid-feedback">Pekerjaan hanya boleh berisi huruf dan spasi.</div>
                         </div>
                         <div class="col-md-4">
@@ -177,7 +177,7 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Alamat</label>
-                            <textarea class="form-control" name="alamat" rows="2"><?= old('alamat', esc($profile['alamat'] ?? '')) ?></textarea>
+                            <textarea class="form-control" name="alamat" rows="2" maxlength="255"><?= old('alamat', esc($profile['alamat'] ?? '')) ?></textarea>
                         </div>
                     </div>
                     <div class="mt-4">

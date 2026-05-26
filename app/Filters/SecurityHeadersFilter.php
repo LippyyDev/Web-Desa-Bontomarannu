@@ -63,7 +63,7 @@ class SecurityHeadersFilter implements FilterInterface
         // ----------------------------------------------------------------
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.jsdelivr.net/npm/apexcharts https://cdn.jsdelivr.net/npm/sweetalert2@11",
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.jsdelivr.net/npm/apexcharts https://cdn.jsdelivr.net/npm/sweetalert2@11 https://code.jquery.com",
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
             "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com",
             "img-src 'self' data: blob:",

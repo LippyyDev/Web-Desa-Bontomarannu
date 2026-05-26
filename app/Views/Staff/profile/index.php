@@ -96,6 +96,11 @@
                     <i class="bi bi-shield-lock me-2"></i> Ganti Password
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-security" data-bs-toggle="tab" data-bs-target="#content-security" type="button" role="tab" aria-selected="false">
+                    <i class="bi bi-shield-exclamation me-2"></i> Pertanyaan Keamanan
+                </button>
+            </li>
         </ul>
     </div>
     
@@ -109,17 +114,17 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Username</label>
-                            <input type="text" class="form-control" name="username" id="inputUsername" value="<?= old('username', $user['username'] ?? '') ?>" placeholder="Contoh: ahmad123">
+                            <input type="text" class="form-control" name="username" id="inputUsername" value="<?= old('username', $user['username'] ?? '') ?>" placeholder="Contoh: ahmad123" maxlength="50">
                             <div class="invalid-feedback">Username hanya boleh berisi huruf dan angka tanpa spasi.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" id="inputEmail" value="<?= old('email', $user['email'] ?? '') ?>" placeholder="Contoh: ahmad@gmail.com">
+                            <input type="email" class="form-control" name="email" id="inputEmail" value="<?= old('email', $user['email'] ?? '') ?>" placeholder="Contoh: ahmad@gmail.com" maxlength="100">
                             <div class="invalid-feedback">Format email tidak valid (harus mengandung @).</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Nama Lengkap</label>
-                            <input type="text" class="form-control" name="nama_lengkap" id="inputNama" value="<?= old('nama_lengkap', $profile['nama_lengkap'] ?? '') ?>" placeholder="Contoh: Ahmad Fauzi">
+                            <input type="text" class="form-control" name="nama_lengkap" id="inputNama" value="<?= old('nama_lengkap', $profile['nama_lengkap'] ?? '') ?>" placeholder="Contoh: Ahmad Fauzi" maxlength="100">
                             <div class="invalid-feedback">Nama lengkap hanya boleh berisi huruf dan spasi.</div>
                         </div>
                         <div class="col-md-4">
@@ -133,7 +138,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Tempat Lahir</label>
-                            <input type="text" class="form-control" name="tempat_lahir" id="inputTempatLahir" value="<?= old('tempat_lahir', $profile['tempat_lahir'] ?? '') ?>" placeholder="Contoh: Bulukumba">
+                            <input type="text" class="form-control" name="tempat_lahir" id="inputTempatLahir" value="<?= old('tempat_lahir', $profile['tempat_lahir'] ?? '') ?>" placeholder="Contoh: Bulukumba" maxlength="100">
                             <div class="invalid-feedback">Tempat lahir hanya boleh berisi huruf, spasi, dan tanda hubung.</div>
                         </div>
                         <div class="col-md-4">
@@ -143,12 +148,12 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Agama</label>
-                            <input type="text" class="form-control" name="agama" id="inputAgama" value="<?= old('agama', $profile['agama'] ?? '') ?>" placeholder="Contoh: Islam">
+                            <input type="text" class="form-control" name="agama" id="inputAgama" value="<?= old('agama', $profile['agama'] ?? '') ?>" placeholder="Contoh: Islam" maxlength="50">
                             <div class="invalid-feedback">Agama hanya boleh berisi huruf dan spasi.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Pekerjaan</label>
-                            <input type="text" class="form-control" name="pekerjaan" id="inputPekerjaan" value="<?= old('pekerjaan', $profile['pekerjaan'] ?? '') ?>" placeholder="Contoh: Petani">
+                            <input type="text" class="form-control" name="pekerjaan" id="inputPekerjaan" value="<?= old('pekerjaan', $profile['pekerjaan'] ?? '') ?>" placeholder="Contoh: Petani" maxlength="100">
                             <div class="invalid-feedback">Pekerjaan hanya boleh berisi huruf dan spasi.</div>
                         </div>
                         <div class="col-md-4">
@@ -158,7 +163,7 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Alamat</label>
-                            <textarea class="form-control" name="alamat" rows="2" placeholder="Contoh: Jl. Poros Bulukumba No. 1, Desa Padang Loang"><?= old('alamat', $profile['alamat'] ?? '') ?></textarea>
+                            <textarea class="form-control" name="alamat" rows="2" placeholder="Contoh: Jl. Poros Bulukumba No. 1, Desa Padang Loang" maxlength="255"><?= old('alamat', $profile['alamat'] ?? '') ?></textarea>
                         </div>
                     </div>
                     <div class="mt-4">
@@ -210,7 +215,75 @@
                     </div>
                 </form>
             </div>
-            
+
+            <!-- TAB PERTANYAAN KEAMANAN -->
+            <div class="tab-pane fade" id="content-security" role="tabpanel">
+                <?php $hasSQ = !empty($user['security_question']); ?>
+
+                <?php if ($hasSQ): ?>
+                <div class="alert d-flex align-items-start gap-3 mb-4" style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 1px solid #6ee7b7; border-radius: 12px; padding: 1rem 1.25rem;">
+                    <div style="color: #059669; font-size: 1.4rem; line-height: 1;"><i class="bi bi-shield-check-fill"></i></div>
+                    <div>
+                        <div class="fw-semibold" style="color: #065f46; margin-bottom: 2px;">Pertanyaan Keamanan Aktif</div>
+                        <div class="text-muted small">Pertanyaan: <em>&ldquo;<?= esc($user['security_question']) ?>&rdquo;</em></div>
+                    </div>
+                </div>
+                <?php else: ?>
+                <div class="alert d-flex align-items-start gap-3 mb-4" style="background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1px solid #fcd34d; border-radius: 12px; padding: 1rem 1.25rem;">
+                    <div style="color: #d97706; font-size: 1.4rem; line-height: 1;"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <div>
+                        <div class="fw-semibold" style="color: #92400e; margin-bottom: 2px;">Belum Diatur</div>
+                        <div class="text-muted small">Tambahkan pertanyaan keamanan agar Anda bisa reset password tanpa OTP email.</div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <form method="post" action="<?= base_url('/staff/profil/pertanyaan-keamanan') ?>">
+                    <?= csrf_field() ?>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Pertanyaan Keamanan</label>
+                            <input type="text" class="form-control" name="security_question"
+                                   value="<?= esc($user['security_question'] ?? '') ?>"
+                                   placeholder="Contoh: Nama hewan peliharaan pertama saya?" maxlength="500">
+                            <div class="form-text text-muted">Tulis pertanyaan yang hanya Anda yang tahu jawabannya.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Jawaban</label>
+                            <div class="password-wrapper">
+                                <input type="password" class="form-control" name="security_answer"
+                                       id="securityAnswer"
+                                       placeholder="<?= $hasSQ ? 'Isi untuk mengubah jawaban' : 'Masukkan jawaban Anda' ?>">
+                                <button class="toggle-password" type="button" onclick="togglePassword('securityAnswer', this)" aria-label="Tampilkan jawaban">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text text-muted">Jawaban tidak case-sensitive (huruf besar/kecil diabaikan).</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2 flex-wrap">
+                        <button class="btn btn-success" type="submit">
+                            <i class="bi bi-shield-check me-1"></i>
+                            <?= $hasSQ ? 'Perbarui Pertanyaan' : 'Simpan Pertanyaan' ?>
+                        </button>
+                        <?php if ($hasSQ): ?>
+                        <button class="btn btn-danger" type="button" id="btnHapusPertanyaan"
+                                onclick="hapusPertanyaanKeamanan()">
+                            <i class="bi bi-trash me-1"></i> Hapus Pertanyaan
+                        </button>
+                        <?php endif; ?>
+                    </div>
+                </form>
+
+                <?php if ($hasSQ): ?>
+                <form id="formHapusPertanyaan" method="post" action="<?= base_url('/staff/profil/pertanyaan-keamanan') ?>" style="display:none;">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="security_question" value="">
+                    <input type="hidden" name="security_answer" value="">
+                </form>
+                <?php endif; ?>
+            </div>
+
         </div>
     </div>
 </div>
@@ -226,6 +299,16 @@ function togglePassword(id, btn) {
         input.type = 'password';
         icon.classList.replace('bi-eye-slash', 'bi-eye');
     }
+}
+
+function hapusPertanyaanKeamanan() {
+    showConfirm(
+        'Hapus Pertanyaan Keamanan',
+        'Apakah Anda yakin ingin menghapus pertanyaan keamanan? Anda tidak akan bisa menggunakan fitur ini untuk reset password.',
+        function() {
+            document.getElementById('formHapusPertanyaan').submit();
+        }
+    );
 }
 
 document.addEventListener('DOMContentLoaded', function() {

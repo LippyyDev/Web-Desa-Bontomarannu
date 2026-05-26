@@ -15,16 +15,26 @@ class DashboardController extends ProtectedController
 
         $db = \Config\Database::connect();
 
-        // Statistik akun
-        $totalAkun    = (int) $db->query("SELECT COUNT(*) as c FROM users")->getRow()->c;
-        $aktifAkun    = (int) $db->query("SELECT COUNT(*) as c FROM users WHERE status = 'aktif'")->getRow()->c;
-        $nonaktifAkun = (int) $db->query("SELECT COUNT(*) as c FROM users WHERE status = 'nonaktif'")->getRow()->c;
-        $onlineAkun   = (int) $db->query("SELECT COUNT(*) as c FROM users WHERE last_seen_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)")->getRow()->c;
+        // Optimasi: Gunakan Conditional Aggregation untuk Statistik & Distribusi role
+        $stats = $db->query("
+            SELECT 
+                COUNT(*) as totalAkun,
+                SUM(CASE WHEN status = 'aktif' THEN 1 ELSE 0 END) as aktifAkun,
+                SUM(CASE WHEN status = 'nonaktif' THEN 1 ELSE 0 END) as nonaktifAkun,
+                SUM(CASE WHEN last_seen_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN 1 ELSE 0 END) as onlineAkun,
+                SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as adminCount,
+                SUM(CASE WHEN role = 'staf' THEN 1 ELSE 0 END) as stafCount,
+                SUM(CASE WHEN role = 'user' THEN 1 ELSE 0 END) as userCount
+            FROM users
+        ")->getRowArray();
 
-        // Distribusi role
-        $adminCount = (int) $db->query("SELECT COUNT(*) as c FROM users WHERE role = 'admin'")->getRow()->c;
-        $stafCount  = (int) $db->query("SELECT COUNT(*) as c FROM users WHERE role = 'staf'")->getRow()->c;
-        $userCount  = (int) $db->query("SELECT COUNT(*) as c FROM users WHERE role = 'user'")->getRow()->c;
+        $totalAkun    = (int)($stats['totalAkun'] ?? 0);
+        $aktifAkun    = (int)($stats['aktifAkun'] ?? 0);
+        $nonaktifAkun = (int)($stats['nonaktifAkun'] ?? 0);
+        $onlineAkun   = (int)($stats['onlineAkun'] ?? 0);
+        $adminCount   = (int)($stats['adminCount'] ?? 0);
+        $stafCount    = (int)($stats['stafCount'] ?? 0);
+        $userCount    = (int)($stats['userCount'] ?? 0);
 
         // Akun terbaru (5 terakhir) dengan profil
         $recentAccounts = $db->query("

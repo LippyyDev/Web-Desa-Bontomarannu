@@ -120,19 +120,19 @@
                         <div class="col-md-4">
                             <label class="form-label">Nama Lengkap</label>
                             <input type="text" class="form-control" name="nama_lengkap" id="inputNama"
-                                   value="<?= old('nama_lengkap') ?>" placeholder="Contoh: Ahmad Fauzi">
+                                   value="<?= old('nama_lengkap') ?>" placeholder="Contoh: Ahmad Fauzi" maxlength="100">
                             <div class="invalid-feedback">Nama lengkap hanya boleh berisi huruf dan spasi.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Username <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="username" id="inputUsername"
-                                   value="<?= old('username') ?>" placeholder="Contoh: ahmad123" required>
+                                   value="<?= old('username') ?>" placeholder="Contoh: ahmad123" required maxlength="50">
                             <div class="invalid-feedback">Username hanya boleh berisi huruf dan angka tanpa spasi.</div>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" name="email" id="inputEmail"
-                                   value="<?= old('email') ?>" placeholder="Contoh: ahmad@gmail.com" required>
+                                   value="<?= old('email') ?>" placeholder="Contoh: ahmad@gmail.com" required maxlength="100">
                             <div class="invalid-feedback">Format email tidak valid (harus mengandung @).</div>
                         </div>
                         <div class="col-md-6">

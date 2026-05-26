@@ -35,43 +35,91 @@ $otpSeconds = (int) ($otpRateLimit['seconds_left'] ?? 0);
     <div class="hero-texture position-absolute w-100 h-100" aria-hidden="true" style="inset: 0; z-index: -1; pointer-events: none;"></div>
     <!-- Hero Background End -->
 
+<?php
+$hasSecurityQuestion = $hasSecurityQuestion ?? false;
+$sqOpen              = $sqOpen              ?? false;
+$sqLockedSeconds     = (int) ($sqLockedSeconds  ?? 0);
+?>
+
     <div class="container position-relative z-2 d-flex justify-content-center align-items-center w-100 h-100">
         <div class="glass-card p-4 p-md-5">
             <div class="text-center mb-4">
                 <a href="<?= base_url('/') ?>">
                     <img src="<?= base_url('assets/img/logo.png') ?>" alt="Logo Desa" width="60" class="mb-3 drop-shadow">
                 </a>
-                <h4 class="fw-bold mb-1 text-white">Verifikasi OTP</h4>
-                <p class="text-white-50 small">Masukkan email dan kode OTP yang kami kirimkan ke email Anda.</p>
+                <h4 class="fw-bold mb-1 text-white" id="verifyCardTitle">Verifikasi OTP</h4>
+                <p class="text-white-50 small" id="verifyCardSubtitle">Masukkan email dan kode OTP yang kami kirimkan ke email Anda.</p>
             </div>
 
-            <form method="post" action="<?= base_url('/verify-reset') ?>">
-                <?= csrf_field() ?>
-                <div class="mb-3">
-                    <label class="form-label text-white-50 small mb-1">Email</label>
-                    <input type="email" class="form-control glass-input" name="email"
-                           value="<?= $pendingEmail ?? old('email') ?>" required placeholder="Masukkan email">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-white-50 small mb-1">Kode OTP</label>
-                    <input type="text" class="form-control glass-input" name="otp"
-                           maxlength="6" required placeholder="XXXXXX" autocomplete="one-time-code">
-                </div>
-                <button class="btn glass-btn w-100 fw-bold mb-2" type="submit">Verifikasi Kode</button>
-            </form>
+            <!-- FORM OTP (default) -->
+            <div id="formOtpSection">
+                <form method="post" action="<?= base_url('/verify-reset') ?>">
+                    <?= csrf_field() ?>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small mb-1">Email</label>
+                        <input type="email" class="form-control glass-input" name="email"
+                               value="<?= $pendingEmail ?? old('email') ?>" required placeholder="Masukkan email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small mb-1">Kode OTP</label>
+                        <input type="text" class="form-control glass-input" name="otp"
+                               maxlength="6" required placeholder="XXXXXX" autocomplete="one-time-code">
+                    </div>
+                    <button class="btn glass-btn w-100 fw-bold mb-2" type="submit">Verifikasi Kode</button>
+                </form>
 
-            <!-- Tombol Kirim Ulang OTP -->
-            <button id="resendOtpBtn" type="button"
-                    class="btn glass-btn-outline w-100 fw-semibold"
-                    <?= ($isFrozen || $isCooldown) ? 'disabled' : '' ?>>
-                <?php if ($isFrozen): ?>
-                    IP Dibekukan
-                <?php elseif ($isCooldown): ?>
-                    Harap Tunggu
-                <?php else: ?>
-                    Kirim Ulang Kode OTP
+                <!-- Tombol Kirim Ulang OTP -->
+                <button id="resendOtpBtn" type="button"
+                        class="btn glass-btn-outline w-100 fw-semibold"
+                        <?= ($isFrozen || $isCooldown) ? 'disabled' : '' ?>>
+                    <?php if ($isFrozen): ?>
+                        IP Dibekukan
+                    <?php elseif ($isCooldown): ?>
+                        Harap Tunggu
+                    <?php else: ?>
+                        Kirim Ulang Kode OTP
+                    <?php endif; ?>
+                </button>
+
+                <!-- Opsi Pertanyaan Keamanan (hanya muncul jika ada) -->
+                <?php if ($hasSecurityQuestion): ?>
+                <div class="mt-3 text-center">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <hr class="flex-grow-1" style="border-color: rgba(255,255,255,0.2);">
+                        <span class="text-white-50 small">atau</span>
+                        <hr class="flex-grow-1" style="border-color: rgba(255,255,255,0.2);">
+                    </div>
+                    <button type="button" class="btn glass-btn-outline w-100 fw-semibold"
+                            onclick="toggleSecurityQuestion()" id="btnUseSQ">
+                        <i class="bi bi-shield-lock me-2"></i>Gunakan Pertanyaan Keamanan
+                    </button>
+                </div>
                 <?php endif; ?>
-            </button>
+            </div>
+
+            <!-- FORM PERTANYAAN KEAMANAN (tersembunyi default) -->
+            <?php if ($hasSecurityQuestion): ?>
+            <div id="formSQSection" style="display:none;">
+                <form method="post" action="<?= base_url('/verify-security-question') ?>">
+                    <?= csrf_field() ?>
+                    <div class="mb-4 p-3" style="background: rgba(255,255,255,0.08); border-radius: 10px; border: 1px solid rgba(255,255,255,0.15);">
+                        <div class="text-white-50 small mb-1">Pertanyaan Keamanan:</div>
+                        <div class="text-white fw-semibold" id="sqDisplay">Memuat...</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small mb-1">Jawaban Anda</label>
+                        <input type="text" class="form-control glass-input" name="security_answer"
+                               required placeholder="Masukkan jawaban" autocomplete="off">
+                    </div>
+                    <button class="btn glass-btn w-100 fw-bold mb-2" type="submit"
+                            id="sqSubmitBtn">Verifikasi Jawaban</button>
+                </form>
+                <button type="button" class="btn glass-btn-outline w-100 fw-semibold mt-2"
+                        onclick="toggleSecurityQuestion()">
+                    <i class="bi bi-arrow-left me-2"></i>Kembali ke OTP
+                </button>
+            </div>
+            <?php endif; ?>
 
             <div class="mt-4 pt-3 border-top border-secondary border-opacity-50 text-center">
                 <a href="<?= base_url('/login') ?>" class="text-white-50 text-decoration-none hover-white small">
@@ -85,11 +133,11 @@ $otpSeconds = (int) ($otpRateLimit['seconds_left'] ?? 0);
 
 <?= $this->section('scripts') ?>
 <script>
-(function () {
-    /* ── CSRF helper ──────────────────────────────────────────────────────── */
-    const csrfHeaderName = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
-    const getCsrfHash    = () => document.querySelector(`meta[name="${csrfHeaderName}"]`)?.content || '';
+/* ── CSRF helper (global scope, dipakai IIFE & toggleSecurityQuestion) ── */
+const csrfHeaderName = document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN';
+const getCsrfHash    = () => document.querySelector(`meta[name="${csrfHeaderName}"]`)?.content || '';
 
+(function () {
     /* ── State dari server ────────────────────────────────────────────────── */
     let isFrozen  = <?= $isFrozen   ? 'true' : 'false' ?>;
     let countdown = <?= $otpSeconds ?>;
@@ -215,5 +263,101 @@ $otpSeconds = (int) ($otpRateLimit['seconds_left'] ?? 0);
         });
     });
 })();
+
+<?php if ($hasSecurityQuestion ?? false): ?>
+/* ── Toggle Pertanyaan Keamanan ──────────────────────────────────── */
+let sqLoaded = false;
+
+function toggleSecurityQuestion() {
+    const otpSection = document.getElementById('formOtpSection');
+    const sqSection  = document.getElementById('formSQSection');
+    const title      = document.getElementById('verifyCardTitle');
+    const subtitle   = document.getElementById('verifyCardSubtitle');
+
+    if (sqSection.style.display === 'none') {
+        // Tampilkan form SQ, sembunyikan OTP
+        otpSection.style.display = 'none';
+        sqSection.style.display  = '';
+        title.textContent    = 'Pertanyaan Keamanan';
+        subtitle.textContent = 'Jawab pertanyaan keamanan untuk mereset password Anda.';
+
+        // Fetch teks pertanyaan jika belum dimuat
+        if (!sqLoaded) {
+            const formData = new URLSearchParams();
+            formData.append(csrfHeaderName, getCsrfHash());
+
+            fetch('<?= base_url('/get-security-question') ?>', {
+                method:  'POST',
+                body:    formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            })
+            .then(res => res.json())
+            .then(data => {
+                const el = document.getElementById('sqDisplay');
+                if (data.success && data.question) {
+                    el.textContent = data.question;
+                } else {
+                    el.textContent = '(Pertanyaan tidak tersedia)';
+                }
+                sqLoaded = true;
+            })
+            .catch(() => {
+                document.getElementById('sqDisplay').textContent = '(Gagal memuat pertanyaan)';
+            });
+        }
+    } else {
+        // Kembali ke form OTP
+        sqSection.style.display  = 'none';
+        otpSection.style.display = '';
+        title.textContent    = 'Verifikasi OTP';
+        subtitle.textContent = 'Masukkan email dan kode OTP yang kami kirimkan ke email Anda.';
+    }
+}
+<?php endif; ?>
+
+<?php if (($hasSecurityQuestion ?? false) && ($sqOpen ?? false)): ?>
+/* ── Auto-buka form SQ saat kembali dari error jawaban salah ─────── */
+document.addEventListener('DOMContentLoaded', function () {
+    toggleSecurityQuestion();
+
+    /* ── Countdown tombol Verifikasi Jawaban jika sedang dikunci ── */
+    const sqSubmitBtn = document.getElementById('sqSubmitBtn');
+    let sqCountdown   = <?= (int) $sqLockedSeconds ?>;
+
+    if (sqSubmitBtn && sqCountdown > 0) {
+        sqSubmitBtn.disabled = true;
+
+        function formatSqTime(s) {
+            if (s >= 3600) {
+                const h = Math.floor(s / 3600);
+                const m = Math.floor((s % 3600) / 60);
+                return h + 'j ' + m + 'm';
+            }
+            if (s >= 60) {
+                const m   = Math.floor(s / 60);
+                const sec = s % 60;
+                return m + 'm ' + sec + 'd';
+            }
+            return s + ' detik';
+        }
+
+        function updateSqBtn() {
+            sqSubmitBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Terkunci (' + formatSqTime(sqCountdown) + ')';
+        }
+
+        updateSqBtn();
+        const sqTimer = setInterval(function () {
+            sqCountdown--;
+            if (sqCountdown <= 0) {
+                clearInterval(sqTimer);
+                sqSubmitBtn.disabled  = false;
+                sqSubmitBtn.innerHTML = 'Verifikasi Jawaban';
+                return;
+            }
+            updateSqBtn();
+        }, 1000);
+    }
+});
+<?php endif; ?>
 </script>
 <?= $this->endSection() ?>

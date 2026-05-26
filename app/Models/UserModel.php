@@ -13,6 +13,8 @@ class UserModel extends Model
         'username',
         'email',
         'password_hash',
+        'security_question',
+        'security_answer_hash',
         'role',
         'status',
         'is_verified',
